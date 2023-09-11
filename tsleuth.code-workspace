@@ -1,21 +1,23 @@
 {
-	"folders": [
-		{
-			"path": "."
-		}
-	],
-	"settings": {
-    "files.eol":"\n",
-		"editor.detectIndentation": false,
-		"editor.autoIndent": "full",
-		"editor.tabSize":2,
-		"editor.wordWrap":"wordWrapColumn",
-		"editor.wordWrapColumn": 80,
-		"editor.rulers":[80],
+  "folders": [
+    {
+      "path": "."
+    }
+  ],
+  "settings": {
+    "files.eol": "\n",
+    "editor.detectIndentation": false,
+    "editor.autoIndent": "full",
+    "editor.tabSize": 2,
+    "editor.wordWrap": "wordWrapColumn",
+    "editor.wordWrapColumn": 80,
+    "editor.rulers": [80],
     "editor.codeActionsOnSave": {
-      "source.fixAll": true,
+      "source.fixAll": true
     },
     "editor.defaultFormatter": "esbenp.prettier-vscode",
-    "terminal.integrated.defaultProfile.windows": "Command Prompt"
-	}
+    "terminal.integrated.defaultProfile.windows": "Command Prompt",
+    "editor.formatOnSave": true,
+    "editor.formatOnPaste": false
+  }
 }

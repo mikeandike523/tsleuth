@@ -15,6 +15,7 @@ import { ExitCode } from "./exit-code"
  * as well support it anyway
  */
 export interface FeatureArgumentsObject {
+  _: string[];
   [key: string | number]: string | number | boolean | Array<string | number | boolean> | string[] | number[] | boolean[]
 }
 

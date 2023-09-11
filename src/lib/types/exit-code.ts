@@ -7,4 +7,5 @@ export enum ExitCode {
   InvalidFeature = 5,
   ArgumentParsingFailure = 6,
   UnknownError = 7,
+  MissingFile = 8,
 }
