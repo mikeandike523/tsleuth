@@ -25,7 +25,7 @@ const featureSchemas = {
 
 function main() {
 
-  const argv = yargs(process.argv.slice(2)) as unknown  as {
+  const argv = yargs(process.argv.slice(2)).argv as unknown  as {
     callingDirectory: string;
     _: Array<string>;
     [key: string]: unknown;

@@ -1,1 +1,1 @@
-node dist/main.js --calling-directory=%CD% %*
+node %~dp0dist/main.js --calling-directory="%CD%" %*
