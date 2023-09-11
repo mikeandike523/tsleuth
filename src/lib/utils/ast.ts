@@ -2,8 +2,9 @@
  * Helful tools for traversing and modifying the typescript (5+) AST
  */
 
-import * as ts from 'typescript';
 import fs from 'fs';
+
+import * as ts from 'typescript';
 
 /**
  * Updates static import declarations in the given file.

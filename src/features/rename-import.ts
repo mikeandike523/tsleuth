@@ -3,17 +3,13 @@
  */
 
 import path from 'path';
-import fs from 'fs';
-import { readFileSync } from 'fs';
-import { resolve, dirname, join } from 'path';
-import * as ignore from 'ignore';
 
 import { z } from 'zod';
 
-import { FeatureArgumentsObject, Feature } from '<^w^>/lib/types/feature';
 import { ExitCode } from '<^w^>/lib/types/exit-code';
-import { collectSourceFiles } from '<^w^>/lib/utils/git';
+import { Feature, FeatureArgumentsObject } from '<^w^>/lib/types/feature';
 import { renameImportDeclaration } from '<^w^>/lib/utils/ast';
+import { collectSourceFiles } from '<^w^>/lib/utils/git';
 
 export interface FeatureRenameImportArgs extends FeatureArgumentsObject {
   _: string[];

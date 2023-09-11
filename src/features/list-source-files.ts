@@ -2,16 +2,16 @@
  * List the source files in the calling directory according to its gitignore
  */
 
-import path from 'path';
 import fs from 'fs';
 import { readFileSync } from 'fs';
+import path from 'path';
 import { resolve, dirname, join } from 'path';
-import * as ignore from 'ignore';
 
+import * as ignore from 'ignore';
 import { z } from 'zod';
 
-import { FeatureArgumentsObject, Feature } from '<^w^>/lib/types/feature';
 import { ExitCode } from '<^w^>/lib/types/exit-code';
+import { FeatureArgumentsObject, Feature } from '<^w^>/lib/types/feature';
 import { collectSourceFiles } from '<^w^>/lib/utils/git';
 
 export interface FeatureListSourceFilesArgs extends FeatureArgumentsObject {}

@@ -1,7 +1,8 @@
-import path from 'path';
 import fs from 'fs';
 import { readFileSync } from 'fs';
+import path from 'path';
 import { resolve, dirname, join } from 'path';
+
 import * as ignore from 'ignore';
 
 export const ignoreFactory = (gitignoreRealpath: string) => {
