@@ -17,9 +17,9 @@
     "@types/node": "^20.6.0",
     "@types/yargs": "^17.0.24",
     "ignore": "^5.2.4",
-    "typescript": "^5.2.2",
     "yargs": "^17.7.2",
-    "zod": "^3.22.2"
+    "zod": "^3.22.2",
+    "typescript": "^5.2.2"
   },
   "devDependencies": {
     "@babel/cli": "^7.22.15",

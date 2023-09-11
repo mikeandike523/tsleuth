@@ -14,15 +14,21 @@ import {
   featureListSourceFilesArgsSchema,
 } from './features/list-source-files';
 import { featureCD, featureCDArgsSchema } from './features/cd';
+import {
+  featureRenameImport,
+  featureRenameImportArgsSchema,
+} from './features/rename-import';
 
 const features = {
   cd: featureCD,
   listSourceFiles: featureListSourceFiles,
+  renameImport: featureRenameImport,
 };
 
 const featureSchemas = {
   cd: featureCDArgsSchema,
   listSourceFiles: featureListSourceFilesArgsSchema,
+  renameImport: featureRenameImportArgsSchema,
 };
 
 function main() {
