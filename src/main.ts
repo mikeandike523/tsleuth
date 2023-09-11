@@ -5,18 +5,18 @@
 import yargs from 'yargs';
 import { z } from 'zod';
 
-import { featureCD, featureCDArgsSchema } from './features/cd';
+import { featureCD, featureCDArgsSchema } from '<^w^>/features/cd';
 import {
   featureListSourceFiles,
   featureListSourceFilesArgsSchema,
-} from './features/list-source-files';
+} from '<^w^>/features/list-source-files';
 import {
   featureRenameImport,
   featureRenameImportArgsSchema,
-} from './features/rename-import';
-import { ExitCode } from './lib/types/exit-code';
-import { FeatureArgumentsObject } from './lib/types/feature';
-import { formatZodErrorForFeature } from './lib/validation/format-zod-error-for-feature';
+} from '<^w^>/features/rename-import';
+import { ExitCode } from '<^w^>/lib/types/exit-code';
+import { FeatureArgumentsObject } from '<^w^>/lib/types/feature';
+import { formatZodErrorForFeature } from '<^w^>/lib/validation/format-zod-error-for-feature';
 
 const features = {
   cd: featureCD,

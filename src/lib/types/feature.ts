@@ -2,7 +2,7 @@
  * Specifies a function that can be called from main.ts, taking in arguments as a specific object
  */
 
-import { ExitCode } from './exit-code';
+import { ExitCode } from '<^w^>/lib/types/exit-code';
 
 /**
  * A super-type that constains how a feature can take in arguments.
