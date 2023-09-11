@@ -7,14 +7,18 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint 'src/**/*.{js,ts}'",
     "lint:fix": "eslint --fix 'src/**/*.{js,ts}'",
-    "format": "prettier --write 'src/**/*.{js,ts}'"
+    "format": "prettier --write 'src/**/*.{js,ts}'",
+    "build": "tsc"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@types/node": "^20.6.0",
-    "typescript": "^5.2.2"
+    "@types/yargs": "^17.0.24",
+    "typescript": "^5.2.2",
+    "yargs": "^17.7.2",
+    "zod": "^3.22.2"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^6.6.0",
