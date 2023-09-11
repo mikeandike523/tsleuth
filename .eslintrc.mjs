@@ -6,15 +6,25 @@ export const exports ={
       'plugin:prettier/recommended'
     ],
     plugins:[
-      'tsdoc'
+      'tsdoc',
+      'import'
     ],
     parserOptions: {
       ecmaVersion: 2020,
       sourceType: 'module'
     },
     rules: {
-      // Add any custom rules if needed
       'prettier/prettier': 'off',
       'tsdoc/syntax': 'warn',
-    }
+      "import/no-relative-parent-imports": "warn",
+      "import/order": ["warn", {
+        "groups": ["builtin", "external", "parent", "sibling", "index"],
+        "newlines-between": "always",
+        "alphabetize": {
+          "order": "asc",
+          "caseInsensitive": true
+        }
+      }],
+      "no-unused-vars": ["warn", { "vars": "all", "args": "after-used", "ignoreRestSiblings": false, "varsIgnorePattern": "^_" }]
+    } 
   };
