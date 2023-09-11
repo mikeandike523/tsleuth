@@ -7,6 +7,10 @@ import { z } from 'zod';
 
 import { featureCD, featureCDArgsSchema } from '<^w^>/features/cd';
 import {
+  featureGenerateDocs,
+  featureGenerateDocsArgsSchema,
+} from '<^w^>/features/generate-docs';
+import {
   featureListSourceFiles,
   featureListSourceFilesArgsSchema,
 } from '<^w^>/features/list-source-files';
@@ -27,6 +31,7 @@ const features = {
   listSourceFiles: featureListSourceFiles,
   renameImport: featureRenameImport,
   stripComments: featureStripComments,
+  generateDocs: featureGenerateDocs,
 };
 
 const featureSchemas = {
@@ -34,6 +39,7 @@ const featureSchemas = {
   listSourceFiles: featureListSourceFilesArgsSchema,
   renameImport: featureRenameImportArgsSchema,
   stripComments: featureStripCommentsArgsSchema,
+  generateDocs: featureGenerateDocsArgsSchema,
 };
 
 function main() {
@@ -41,7 +47,6 @@ function main() {
     callingDirectory: string;
     _: Array<string>;
     [key: string]: unknown;
-    listFeatures?: boolean;
   };
 
   if (!argv.callingDirectory) {
@@ -51,17 +56,17 @@ function main() {
     process.exit(ExitCode.BrokenInstallation);
   }
 
-  if (argv.listFeatures) {
+  const featureName = argv._[0];
+
+  if (featureName === 'list') {
     const featureList = Object.keys(features);
     process.stdout.write('Features:\n' + featureList.join('\n'));
     process.exit(ExitCode.Success);
   }
 
-  const featureName = argv._[0];
-
   if (!featureName) {
     process.stderr.write(
-      'You must specify a feature to run. You can use the flag --list-features.\n',
+      'Usage: `tseluth <feature> <...options>`\nUse `tsleuth list` to see a list of available features.\n',
     );
     process.exit(ExitCode.MissingArguments);
   }
@@ -72,7 +77,7 @@ function main() {
     process.stderr.write(
       'The feature ' +
         featureName +
-        ' is not available. You can use the flag --list-features to see a list of available features.\n',
+        ' is not available. You can use `tsleuth list` to see the available features.\n',
     );
     process.exit(ExitCode.InvalidFeature);
   }

@@ -35,7 +35,6 @@ export const featureRenameImport: Feature = async (
   for (const sourceFile of sourceFiles) {
     process.stdout.write(`Updating ${sourceFile}...\n`);
     renameImportDeclaration(sourceFile, __old, __new);
-    process.stdout.write('Done\n');
   }
 
   return ExitCode.Success;

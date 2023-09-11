@@ -124,7 +124,7 @@ export type SymbolDetails = {
   link: string;
   parameters?: string[];
   returnType?: string;
-  export?: 'normal' | 'default';
+  export: ('ExportHasLocal' | 'ModuleExports' | 'ExportStar' | 'ExportValue')[];
   kind: SymbolKind;
 };
 
@@ -221,12 +221,16 @@ export function analyzeFile(filename: string) {
       const documentation = ts.displayPartsToString(
         symbol.getDocumentationComment(checker),
       );
+      if (!documentation) {
+        return;
+      }
       const details: SymbolDetails = {
         name: symbol.name,
         documentation,
         start: { line: startLine + 1, column: startChar + 1 },
         link,
         kind,
+        export: [],
       };
 
       if (ts.isFunctionLike(node)) {
@@ -244,13 +248,27 @@ export function analyzeFile(filename: string) {
         }
       }
 
+      if (symbol.flags & ts.SymbolFlags.ExportHasLocal)
+        details.export.push('ExportHasLocal');
+      if (symbol.flags & ts.SymbolFlags.ModuleExports)
+        details.export.push('ModuleExports');
+      if (symbol.flags & ts.SymbolFlags.ExportStar)
+        details.export.push('ExportStar');
+      if (symbol.flags & ts.SymbolFlags.ExportValue)
+        details.export.push('ExportValue');
+
       output.push(details);
     }
 
     if (!['FunctionLike', 'UnhandledSymbolKind'].includes(kind)) {
-      const symbol = checker.getSymbolAtLocation(node);
-      if (symbol) {
-        handleDocumentedNode(symbol);
+      console.log(kind);
+
+      const children = node.getChildren();
+      for (const child of children) {
+        const symbol = checker.getSymbolAtLocation(child);
+        if (symbol) {
+          handleDocumentedNode(symbol);
+        }
       }
     }
 
