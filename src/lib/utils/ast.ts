@@ -100,3 +100,163 @@ function removeCommentsTransformer<
   };
   return createVisit;
 }
+
+export type SymbolKind =
+  | 'UnhandledSymbolKind'
+  | 'FunctionLike'
+  | 'Interface'
+  | 'Variable'
+  | 'Class'
+  | 'Property'
+  | 'Method'
+  | 'Accessor'
+  | 'Enum'
+  | 'EnumMember'
+  | 'TypeAlias';
+
+export type SymbolDetails = {
+  name: string;
+  documentation?: string;
+  start: {
+    line: number;
+    column: number;
+  };
+  link: string;
+  parameters?: string[];
+  returnType?: string;
+  export?: 'normal' | 'default';
+  kind: SymbolKind;
+};
+
+export function generateLink(
+  filePath: string,
+  startLine: number,
+  startChar: number,
+): string {
+  return `${filePath}:${startLine + 1}:${startChar + 1}`; // Adding 1 to match 1-indexing for lines and columns
+}
+
+export function getFunctionDetails(
+  node: ts.Node,
+  checker: ts.TypeChecker,
+  signature: ts.Signature,
+): {
+  parameters: string[];
+  returnType: string;
+} {
+  const parameters = signature.parameters.map((paramSymbol) => {
+    const paramName = paramSymbol.getName();
+    const paramType = checker.typeToString(
+      checker.getTypeOfSymbolAtLocation(
+        paramSymbol,
+        paramSymbol.valueDeclaration ?? node,
+      ),
+    );
+    return `${paramName}: ${paramType}`;
+  });
+
+  const returnType = checker.typeToString(signature.getReturnType());
+  return { parameters, returnType };
+}
+
+export function analyzeFile(filename: string) {
+  const program = ts.createProgram([filename], {});
+  const checker = program.getTypeChecker();
+  const output: SymbolDetails[] = [];
+
+  function visit(node: ts.Node) {
+    const sourceFile = node.getSourceFile();
+    const { line: startLine, character: startChar } =
+      sourceFile.getLineAndCharacterOfPosition(node.getStart());
+    const link = generateLink(filename, startLine, startChar);
+
+    let kind: SymbolKind = 'UnhandledSymbolKind';
+
+    if (ts.isFunctionLike(node)) {
+      kind = 'FunctionLike';
+    }
+
+    if (ts.isInterfaceDeclaration(node)) {
+      kind = 'Interface';
+    }
+
+    if (ts.isVariableDeclaration(node)) {
+      kind = 'Variable';
+    }
+
+    if (ts.isTypeAliasDeclaration(node)) {
+      kind = 'TypeAlias';
+    }
+
+    if (ts.isClassDeclaration(node)) {
+      kind = 'Class';
+    }
+
+    if (ts.isPropertyDeclaration(node)) {
+      kind = 'Property';
+    }
+
+    if (ts.isMethodDeclaration(node)) {
+      kind = 'Method';
+    }
+
+    if (ts.isGetAccessorDeclaration(node)) {
+      kind = 'Accessor';
+    }
+
+    if (ts.isSetAccessorDeclaration(node)) {
+      kind = 'Accessor';
+    }
+
+    if (ts.isEnumDeclaration(node)) {
+      kind = 'Enum';
+    }
+
+    if (ts.isEnumMember(node)) {
+      kind = 'EnumMember';
+    }
+
+    // Function to handle nodes that could be documented
+    function handleDocumentedNode(symbol: ts.Symbol) {
+      const documentation = ts.displayPartsToString(
+        symbol.getDocumentationComment(checker),
+      );
+      const details: SymbolDetails = {
+        name: symbol.name,
+        documentation,
+        start: { line: startLine + 1, column: startChar + 1 },
+        link,
+        kind,
+      };
+
+      if (ts.isFunctionLike(node)) {
+        const signatures = checker
+          .getTypeOfSymbolAtLocation(symbol, symbol.valueDeclaration ?? node)
+          .getCallSignatures();
+        if (signatures.length) {
+          const { parameters, returnType } = getFunctionDetails(
+            node,
+            checker,
+            signatures[0],
+          );
+          details.parameters = parameters;
+          details.returnType = returnType;
+        }
+      }
+
+      output.push(details);
+    }
+
+    if (!['FunctionLike', 'UnhandledSymbolKind'].includes(kind)) {
+      const symbol = checker.getSymbolAtLocation(node);
+      if (symbol) {
+        handleDocumentedNode(symbol);
+      }
+    }
+
+    ts.forEachChild(node, visit);
+  }
+
+  visit(program.getSourceFile(filename)!);
+  return output;
+}
