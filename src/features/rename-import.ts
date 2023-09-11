@@ -9,7 +9,7 @@ import { z } from 'zod';
 import { ExitCode } from '<^w^>/lib/types/exit-code';
 import { Feature, FeatureArgumentsObject } from '<^w^>/lib/types/feature';
 import { renameImportDeclaration } from '<^w^>/lib/utils/ast';
-import { collectSourceFiles } from '<^w^>/lib/utils/git';
+import { collectTSSourceFiles } from '<^w^>/lib/utils/git';
 
 export interface FeatureRenameImportArgs extends FeatureArgumentsObject {
   _: string[];
@@ -26,7 +26,7 @@ export const featureRenameImport: Feature = async (
   args: FeatureRenameImportArgs,
 ) => {
   const cdRealpath = path.resolve(callingDirectory);
-  const sourceFiles = collectSourceFiles(cdRealpath);
+  const sourceFiles = collectTSSourceFiles(cdRealpath);
   process.stdout.write(
     `Renaming imports in ${sourceFiles.length} source files\n`,
   );

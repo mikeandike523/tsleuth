@@ -1,7 +1,6 @@
 import fs from 'fs';
-import { readFileSync } from 'fs';
 import path from 'path';
-import { resolve, dirname, join } from 'path';
+import { dirname, join } from 'path';
 
 import * as ignore from 'ignore';
 
@@ -20,7 +19,7 @@ export const ignoreFactory = (gitignoreRealpath: string) => {
 
 export const emptyIgnoreFactory = () => (_realpathToCheck: string) => false;
 
-export const collectSourceFiles = (dirRealpath: string): string[] => {
+export const collectTSSourceFiles = (dirRealpath: string): string[] => {
   const recursion = function recursion(__dir: string) {
     const collected: string[] = [];
     const gitignoreRealpath = join(__dir, '.gitignore');
@@ -44,5 +43,6 @@ export const collectSourceFiles = (dirRealpath: string): string[] => {
     }
     return collected;
   };
-  return recursion(dirRealpath);
+  const result = recursion(dirRealpath);
+  return result.filter((p) => p.endsWith('.ts'));
 };

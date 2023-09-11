@@ -12,7 +12,7 @@ import { z } from 'zod';
 
 import { ExitCode } from '<^w^>/lib/types/exit-code';
 import { FeatureArgumentsObject, Feature } from '<^w^>/lib/types/feature';
-import { collectSourceFiles } from '<^w^>/lib/utils/git';
+import { collectTSSourceFiles } from '<^w^>/lib/utils/git';
 
 export interface FeatureListSourceFilesArgs extends FeatureArgumentsObject {}
 
@@ -23,7 +23,7 @@ export const featureListSourceFiles: Feature = async (
   args: FeatureListSourceFilesArgs,
 ) => {
   const cdRealpath = path.resolve(callingDirectory);
-  const sourceFiles = collectSourceFiles(cdRealpath);
+  const sourceFiles = collectTSSourceFiles(cdRealpath);
   process.stdout.write(`Source files (relative to "${callingDirectory}"):\n\n`);
   for (const sourceFile of sourceFiles) {
     const relpath = path.relative(cdRealpath, sourceFile);

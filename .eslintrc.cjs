@@ -6,13 +6,25 @@ module.exports = {
     'plugin:@typescript-eslint/recommended',
     'plugin:prettier/recommended',
   ],
-  plugins: ['tsdoc', 'import', 'no-relative-import-paths'],
+  plugins: ['tsdoc', 'import', 'no-relative-import-paths', 'unused-imports'],
   parserOptions: {
     ecmaVersion: 2020,
     sourceType: 'module',
   },
   rules: {
-    '@typescript-eslint/no-unused-vars': 'warn',
+    'no-unused-vars': 'off',
+    '@typescript-eslint/no-unused-vars': 'off',
+    'unused-imports/no-unused-imports': 'warn',
+    'unused-imports/no-unused-vars': [
+      'warn',
+      {
+        vars: 'all',
+        varsIgnorePattern: '^_',
+        args: 'after-used',
+        argsIgnorePattern: '^_',
+        ignoreRestSiblings: true,
+      },
+    ],
     'prettier/prettier': 'off',
     'tsdoc/syntax': 'warn',
     'import/no-relative-parent-imports': 'warn',
@@ -25,15 +37,6 @@ module.exports = {
           order: 'asc',
           caseInsensitive: true,
         },
-      },
-    ],
-    'no-unused-vars': [
-      'warn',
-      {
-        vars: 'all',
-        args: 'after-used',
-        ignoreRestSiblings: false,
-        varsIgnorePattern: '^_',
       },
     ],
     'no-relative-import-paths/no-relative-import-paths': [

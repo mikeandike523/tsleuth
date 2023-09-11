@@ -56,3 +56,23 @@ export function renameImportDeclaration(
 
   fs.writeFileSync(filename, updatedCode, 'utf8');
 }
+
+/**
+ * Removes all comments from the TypeScript source code of the given file.
+ *
+ * @param filename - The filename containing the source code
+ */
+export function removeCommentsFromSource(filename: string): void {
+  const sourceCode = fs.readFileSync(filename, 'utf8');
+  const sourceFile = ts.createSourceFile(
+    filename,
+    sourceCode,
+    ts.ScriptTarget.ESNext,
+    true,
+  );
+
+  const printer = ts.createPrinter({ removeComments: true });
+  const result = printer.printFile(sourceFile);
+
+  fs.writeFileSync(filename, result, 'utf8');
+}

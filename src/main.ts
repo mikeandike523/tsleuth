@@ -14,6 +14,10 @@ import {
   featureRenameImport,
   featureRenameImportArgsSchema,
 } from '<^w^>/features/rename-import';
+import {
+  featureStripComments,
+  featureStripCommentsArgsSchema,
+} from '<^w^>/features/strip-comments';
 import { ExitCode } from '<^w^>/lib/types/exit-code';
 import { FeatureArgumentsObject } from '<^w^>/lib/types/feature';
 import { formatZodErrorForFeature } from '<^w^>/lib/validation/format-zod-error-for-feature';
@@ -22,12 +26,14 @@ const features = {
   cd: featureCD,
   listSourceFiles: featureListSourceFiles,
   renameImport: featureRenameImport,
+  stripComments: featureStripComments,
 };
 
 const featureSchemas = {
   cd: featureCDArgsSchema,
   listSourceFiles: featureListSourceFilesArgsSchema,
   renameImport: featureRenameImportArgsSchema,
+  stripComments: featureStripCommentsArgsSchema,
 };
 
 function main() {
