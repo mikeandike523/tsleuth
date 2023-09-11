@@ -6,7 +6,7 @@ module.exports = {
     'plugin:@typescript-eslint/recommended',
     'plugin:prettier/recommended',
   ],
-  plugins: ['tsdoc', 'import'],
+  plugins: ['tsdoc', 'import', 'no-relative-import-paths'],
   parserOptions: {
     ecmaVersion: 2020,
     sourceType: 'module',
@@ -34,6 +34,14 @@ module.exports = {
         args: 'after-used',
         ignoreRestSiblings: false,
         varsIgnorePattern: '^_',
+      },
+    ],
+    'no-relative-import-paths/no-relative-import-paths': [
+      'warn',
+      {
+        allowSameFolder: false,
+        rootDir: 'src',
+        prefix: '<^w^>',
       },
     ],
   },
