@@ -44,5 +44,5 @@ export const collectTSSourceFiles = (dirRealpath: string): string[] => {
     return collected;
   };
   const result = recursion(dirRealpath);
-  return result.filter((p) => p.endsWith('.ts'));
+  return result.filter((p) => p.endsWith('.ts') || p.endsWith('.tsx'));
 };

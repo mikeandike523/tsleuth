@@ -71,8 +71,32 @@ export function removeCommentsFromSource(filename: string): void {
     true,
   );
 
-  const printer = ts.createPrinter({ removeComments: true });
-  const result = printer.printFile(sourceFile);
+  const transformedSource = ts.transform(sourceFile, [
+    removeCommentsTransformer(),
+  ]).transformed[0];
+  const printer = ts.createPrinter();
+  const result = printer.printNode(
+    ts.EmitHint.Unspecified,
+    transformedSource,
+    sourceFile,
+  );
 
   fs.writeFileSync(filename, result, 'utf8');
+}
+
+function removeCommentsTransformer<
+  T extends ts.Node,
+>(): ts.TransformerFactory<T> {
+  const createVisit = (context: ts.TransformationContext) => {
+    const visit: ts.Visitor = (node) => {
+      // Remove the comments from the current node
+      ts.setTextRange(node, { pos: node.pos, end: node.end });
+      ts.setEmitFlags(node, ts.EmitFlags.NoComments);
+
+      // Use the default visit function to continue visiting other nodes
+      return ts.visitEachChild(node, visit, context);
+    };
+    return ((node: T) => ts.visitNode(node, visit)) as ts.Transformer<T>;
+  };
+  return createVisit;
 }
