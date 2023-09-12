@@ -4,6 +4,7 @@
 
 import fs from 'fs';
 import path from 'path';
+import childProcess from 'child_process';
 
 import { z } from 'zod';
 
@@ -14,14 +15,57 @@ import { analyzeFile } from '<^w^>/lib/utils/ast';
 import { uuidv4InDirectory } from '<^w^>/lib/utils/filesystem';
 import { collectTSSourceFiles } from '<^w^>/lib/utils/git';
 
-export interface GenerateDocsArgs extends FeatureArgumentsObject {}
+export interface GenerateDocsArgs extends FeatureArgumentsObject {
+  _: string[];
+}
 
-export const featureGenerateDocsArgsSchema = z.object({});
+export const featureGenerateDocsArgsSchema = z.object({
+  _: z.array(z.string()),
+});
 
 export const featureGenerateDocs: Feature = (
   callingDirectory: string,
   _args: GenerateDocsArgs
 ) => {
+  if (_args._.length > 1) {
+    process.stderr.write('Too many arguments\n');
+    process.stdout.write(`
+Usage:
+    tsleuth generateDocs - generate documentation for the cwd                 
+  OR
+    tsleuth generateDocs open - open the documentation index.html in the default web browser    
+    \n`);
+    return ExitCode.InvalidArguments;
+  }
+  if (_args._.length === 1 && _args._[0] !== 'open') {
+    process.stderr.write('Invalid arguments\n');
+    process.stdout.write(`
+    Usage:
+        tsleuth generateDocs - generate documentation for the cwd                 
+      OR
+        tsleuth generateDocs open - open the documentation index.html in the default web browser    
+        \n`);
+    return ExitCode.InvalidArguments;
+  }
+
+  if (_args._[0] === 'open') {
+    const cdRealpath = path.resolve(callingDirectory);
+    const docsDir = path.resolve(cdRealpath, '.tsleuth', 'generated', 'docs');
+    const docsIndex = path.resolve(docsDir, 'index.html');
+    if (!fs.existsSync(docsIndex)) {
+      process.stderr.write('Could not find docs index.html\n');
+      return ExitCode.MissingFile;
+    }
+    if (process.platform === 'win32') {
+      const cmd = `start \"\" \"file://${docsIndex}\"`;
+      childProcess.spawnSync(cmd, { shell: true });
+    } else {
+      process.stderr.write('Linux not yet supported\n');
+      return ExitCode.IncompatibleOS;
+    }
+    return ExitCode.Success;
+  }
+
   const cdRealpath = path.resolve(callingDirectory);
   const cacheDir = path.resolve(
     cdRealpath,

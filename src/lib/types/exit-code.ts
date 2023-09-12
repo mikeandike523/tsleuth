@@ -8,4 +8,5 @@ export enum ExitCode {
   ArgumentParsingFailure = 6,
   UnknownError = 7,
   MissingFile = 8,
+  IncompatibleOS = 9,
 }
