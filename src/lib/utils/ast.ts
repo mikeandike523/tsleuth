@@ -352,9 +352,13 @@ export function analyzeFile(filename: string) {
 
       const nodesToTest: ts.Node[] = [node];
 
-      const children = node.getChildren();
-      for (const child of children) {
-        nodesToTest.push(child);
+      const testSymbol = checker.getSymbolAtLocation(node);
+
+      if (!testSymbol || !isDocumented(testSymbol)) {
+        const children = node.getChildren();
+        for (const child of children) {
+          nodesToTest.push(child);
+        }
       }
 
       for (const node of nodesToTest) {
