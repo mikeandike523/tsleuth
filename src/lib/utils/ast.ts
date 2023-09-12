@@ -16,14 +16,14 @@ import * as ts from 'typescript';
 export function renameImportDeclaration(
   filename: string,
   oldName: string,
-  newName: string,
+  newName: string
 ) {
   const sourceCode = fs.readFileSync(filename, 'utf8');
   const sourceFile = ts.createSourceFile(
     filename,
     sourceCode,
     ts.ScriptTarget.ESNext,
-    true,
+    true
   );
 
   let updatedCode = sourceCode;
@@ -68,7 +68,7 @@ export function removeCommentsFromSource(filename: string): void {
     filename,
     sourceCode,
     ts.ScriptTarget.ESNext,
-    true,
+    true
   );
 
   const transformedSource = ts.transform(sourceFile, [
@@ -78,7 +78,7 @@ export function removeCommentsFromSource(filename: string): void {
   const result = printer.printNode(
     ts.EmitHint.Unspecified,
     transformedSource,
-    sourceFile,
+    sourceFile
   );
 
   fs.writeFileSync(filename, result, 'utf8');
@@ -88,7 +88,7 @@ function removeCommentsTransformer<
   T extends ts.Node,
 >(): ts.TransformerFactory<T> {
   const createVisit = (context: ts.TransformationContext) => {
-    const visit: ts.Visitor = (node) => {
+    const visit: ts.Visitor = (node: ts.Node) => {
       // Remove the comments from the current node
       ts.setTextRange(node, { pos: node.pos, end: node.end });
       ts.setEmitFlags(node, ts.EmitFlags.NoComments);
@@ -140,7 +140,7 @@ export type SymbolDetails = {
 export function generateLink(
   filePath: string,
   startLine: number,
-  startChar: number,
+  startChar: number
 ): string {
   return `${filePath}:${startLine + 1}:${startChar + 1}`; // Adding 1 to match 1-indexing for lines and columns
 }
@@ -148,18 +148,18 @@ export function generateLink(
 export function getFunctionDetails(
   node: ts.Node,
   checker: ts.TypeChecker,
-  signature: ts.Signature,
+  signature: ts.Signature
 ): {
   parameters: string[];
   returnType: string;
 } {
-  const parameters = signature.parameters.map((paramSymbol) => {
+  const parameters = signature.parameters.map((paramSymbol: ts.Symbol) => {
     const paramName = paramSymbol.getName();
     const paramType = checker.typeToString(
       checker.getTypeOfSymbolAtLocation(
         paramSymbol,
-        paramSymbol.valueDeclaration ?? node,
-      ),
+        paramSymbol.valueDeclaration ?? node
+      )
     );
     return `${paramName}: ${paramType}`;
   });
@@ -182,7 +182,7 @@ export function analyzeFile(filename: string) {
       sourceFile.getLineAndCharacterOfPosition(node.getEnd());
     const sourceCode = sourceFile.text.substring(
       node.getStart(),
-      node.getEnd(),
+      node.getEnd()
     );
     const link = generateLink(filename, startLine, startChar);
 
@@ -234,7 +234,7 @@ export function analyzeFile(filename: string) {
 
     const isDocumented = (symbol: ts.Symbol) => {
       const documentation = ts.displayPartsToString(
-        symbol.getDocumentationComment(checker),
+        symbol.getDocumentationComment(checker)
       );
       return Boolean(documentation);
     };
@@ -242,7 +242,7 @@ export function analyzeFile(filename: string) {
     // Function to handle nodes that could be documented
     function handleDocumentedNode(symbol: ts.Symbol) {
       const documentation = ts.displayPartsToString(
-        symbol.getDocumentationComment(checker),
+        symbol.getDocumentationComment(checker)
       );
       if (!documentation) {
         return;
@@ -267,7 +267,7 @@ export function analyzeFile(filename: string) {
           const { parameters, returnType } = getFunctionDetails(
             node,
             checker,
-            signatures[0],
+            signatures[0]
           );
           details.parameters = parameters;
           details.returnType = returnType;

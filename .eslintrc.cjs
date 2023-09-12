@@ -2,16 +2,36 @@
 module.exports = {
   parser: '@typescript-eslint/parser',
   extends: [
+    'plugin:react/recommended',
     'eslint:recommended',
     'plugin:@typescript-eslint/recommended',
     'plugin:prettier/recommended',
+    'prettier/react',
   ],
-  plugins: ['tsdoc', 'import', 'no-relative-import-paths', 'unused-imports'],
+  plugins: [
+    'react',
+    'react-hooks',
+    'tsdoc',
+    'import',
+    'no-relative-import-paths',
+    'unused-imports',
+  ],
   parserOptions: {
     ecmaVersion: 2020,
     sourceType: 'module',
+    ecmaFeatures: {
+      jsx: true,
+    },
+  },
+  settings: {
+    react: {
+      version: 'detect',
+    },
   },
   rules: {
+    'react/react-in-jsx-scope': 'error',
+    'react-hooks/rules-of-hooks': 'error',
+    'react-hooks/exhaustive-deps': 'warn',
     'no-unused-vars': 'off',
     '@typescript-eslint/no-unused-vars': 'off',
     'unused-imports/no-unused-imports': 'warn',

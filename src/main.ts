@@ -50,7 +50,7 @@ function myfunc1() {}
 /**
  * The main entry point for the program
  * */
-function main() {
+async function main() {
   const argv = yargs(process.argv.slice(2)).argv as unknown as {
     callingDirectory: string;
     _: Array<string>;
@@ -59,7 +59,7 @@ function main() {
 
   if (!argv.callingDirectory) {
     process.stderr.write(
-      'The launcher for tsleuth is broken. Please check the integrity of your installation.\n',
+      'The launcher for tsleuth is broken. Please check the integrity of your installation.\n'
     );
     process.exit(ExitCode.BrokenInstallation);
   }
@@ -74,7 +74,7 @@ function main() {
 
   if (!featureName) {
     process.stderr.write(
-      'Usage: `tseluth <feature> <...options>`\nUse `tsleuth list` to see a list of available features.\n',
+      'Usage: `tseluth <feature> <...options>`\nUse `tsleuth list` to see a list of available features.\n'
     );
     process.exit(ExitCode.MissingArguments);
   }
@@ -85,7 +85,7 @@ function main() {
     process.stderr.write(
       'The feature ' +
         featureName +
-        ' is not available. You can use `tsleuth list` to see the available features.\n',
+        ' is not available. You can use `tsleuth list` to see the available features.\n'
     );
     process.exit(ExitCode.InvalidFeature);
   }
@@ -114,14 +114,14 @@ function main() {
     if (error instanceof z.ZodError) {
       const formattedError = formatZodErrorForFeature(
         error,
-        featureName as string,
+        featureName as string
       );
       process.stderr.write(formattedError);
       process.exit(ExitCode.InvalidArguments);
     } else {
       if (error instanceof Error) {
         process.stderr.write(
-          'could not parse arguments: ' + error.message + '\n',
+          'could not parse arguments: ' + error.message + '\n'
         );
         process.exit(ExitCode.ArgumentParsingFailure);
       } else if (
@@ -135,12 +135,12 @@ function main() {
         error === null
       ) {
         process.stderr.write(
-          `could not parse arguments: ${error?.toString() ?? 'unknown'}\n`,
+          `could not parse arguments: ${error?.toString() ?? 'unknown'}\n`
         );
         process.exit(ExitCode.ArgumentParsingFailure);
       } else {
         process.stderr.write(
-          'Could not parse arguments due to unknown error: ' + error + '\n',
+          'Could not parse arguments due to unknown error: ' + error + '\n'
         );
         process.exit(ExitCode.ArgumentParsingFailure);
       }
@@ -165,7 +165,7 @@ function main() {
         process.stderr.write(
           'Feature ' +
             featureName +
-            ' failed with an error that was not internally handled',
+            ' failed with an error that was not internally handled'
         );
         process.exit(ExitCode.UnknownError);
       });
@@ -174,4 +174,6 @@ function main() {
   }
 }
 
-main();
+(async function () {
+  await main();
+})();

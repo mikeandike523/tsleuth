@@ -20,7 +20,7 @@ export const featureGenerateDocsArgsSchema = z.object({});
 
 export const featureGenerateDocs: Feature = async (
   callingDirectory: string,
-  _args: GenerateDocsArgs,
+  _args: GenerateDocsArgs
 ) => {
   const cdRealpath = path.resolve(callingDirectory);
   const cacheDir = path.resolve(
@@ -28,7 +28,7 @@ export const featureGenerateDocs: Feature = async (
     '.tsleuth',
     'cache',
     'generate-docs',
-    'intermediates',
+    'intermediates'
   );
 
   if (fs.existsSync(cacheDir)) {
@@ -41,7 +41,7 @@ export const featureGenerateDocs: Feature = async (
 
   const sourceFiles = collectTSSourceFiles(cdRealpath);
   process.stdout.write(
-    `Generating intermediates for ${sourceFiles.length} files...\n`,
+    `Generating intermediates for ${sourceFiles.length} files...\n`
   );
   for (const sourceFile of sourceFiles) {
     process.stdout.write(`\rGenerating intermediates for ${sourceFile}...\n`);
@@ -65,8 +65,8 @@ export const featureGenerateDocs: Feature = async (
           }
           return value;
         },
-        2,
-      ).replace(/\r\n/g, '\n'),
+        2
+      ).replace(/\r\n/g, '\n')
     );
   }
 
@@ -82,7 +82,7 @@ export const featureGenerateDocs: Feature = async (
 
   process.stdout.write(`Generating documentation website...\n`);
 
-  intermediatesToHTML(cacheDir, docsDir);
+  await intermediatesToHTML(cacheDir, docsDir);
 
   process.stdout.write('Done.\n');
 
