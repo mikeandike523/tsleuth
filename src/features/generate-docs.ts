@@ -45,6 +45,9 @@ export const featureGenerateDocs: Feature = async (
   for (const sourceFile of sourceFiles) {
     process.stdout.write(`\rGenerating intermediates for ${sourceFile}...\n`);
     const symbols = analyzeFile(sourceFile);
+    if (symbols.length === 0) {
+      continue;
+    }
     const cacheObject = {
       callingDirectory: cdRealpath,
       sourceFileRealPath: sourceFile,

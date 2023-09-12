@@ -121,10 +121,16 @@ export type SymbolDetails = {
     line: number;
     column: number;
   };
+  end: {
+    line: number;
+    column: number;
+  };
+  sourceCode: string;
   link: string;
   parameters?: string[];
   returnType?: string;
-  export: ('ExportHasLocal' | 'ModuleExports' | 'ExportStar' | 'ExportValue')[];
+  export?: 'normal' | 'default';
+  privacy?: 'normal' | 'protected' | 'private' | 'public';
   kind: SymbolKind;
 };
 
@@ -168,6 +174,12 @@ export function analyzeFile(filename: string) {
     const sourceFile = node.getSourceFile();
     const { line: startLine, character: startChar } =
       sourceFile.getLineAndCharacterOfPosition(node.getStart());
+    const { line: endLine, character: endChar } =
+      sourceFile.getLineAndCharacterOfPosition(node.getEnd());
+    const sourceCode = sourceFile.text.substring(
+      node.getStart(),
+      node.getEnd(),
+    );
     const link = generateLink(filename, startLine, startChar);
 
     let kind: SymbolKind = 'UnhandledSymbolKind';
@@ -227,10 +239,11 @@ export function analyzeFile(filename: string) {
       const details: SymbolDetails = {
         name: symbol.name,
         documentation,
-        start: { line: startLine + 1, column: startChar + 1 },
+        start: { line: startLine, column: startChar },
+        end: { line: endLine, column: endChar },
+        sourceCode,
         link,
         kind,
-        export: [],
       };
 
       if (ts.isFunctionLike(node)) {
@@ -248,21 +261,35 @@ export function analyzeFile(filename: string) {
         }
       }
 
-      if (symbol.flags & ts.SymbolFlags.ExportHasLocal)
-        details.export.push('ExportHasLocal');
-      if (symbol.flags & ts.SymbolFlags.ModuleExports)
-        details.export.push('ModuleExports');
-      if (symbol.flags & ts.SymbolFlags.ExportStar)
-        details.export.push('ExportStar');
-      if (symbol.flags & ts.SymbolFlags.ExportValue)
-        details.export.push('ExportValue');
+      // The only way I could figure out how to get export and privacy
+      // Not going to be perfect
+
+      const nodeText = node.getText();
+
+      if (/^\s*export\s+/.test(nodeText)) {
+        details.export = 'normal';
+      }
+
+      if (/^\s*export\s+default\s+/.test(nodeText)) {
+        details.export = 'default';
+      }
+
+      if (/^[a-z\s]*protected\s+/.test(nodeText)) {
+        details.privacy = 'protected';
+      }
+
+      if (/^[a-z\s]*private\s+/.test(nodeText)) {
+        details.privacy = 'private';
+      }
+
+      if (/^[a-z\s]*public\s+/.test(nodeText)) {
+        details.privacy = 'public';
+      }
 
       output.push(details);
     }
 
     if (!['FunctionLike', 'UnhandledSymbolKind'].includes(kind)) {
-      console.log(kind);
-
       const children = node.getChildren();
       for (const child of children) {
         const symbol = checker.getSymbolAtLocation(child);
