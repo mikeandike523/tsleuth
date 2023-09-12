@@ -1,4 +1,5 @@
 import path from 'path';
+import getCommonPrefix from 'common-prefix';
 
 export function stripExt(filename: string): string {
   if (!filename.includes('.')) return filename;
@@ -7,37 +8,15 @@ export function stripExt(filename: string): string {
 
 export function commonPrefix(items: string[]): string | null {
   if (items.length === 0) return null;
-  const normalizedItems = items.map((item) => path.normalize(item));
-  const seperator = path.sep;
-  const segmentedPaths = normalizedItems.map((item) => item.split(seperator));
-  let longest = segmentedPaths[0];
-  for (let i = 1; i < segmentedPaths.length; i++) {
-    const segment = segmentedPaths[i];
-    if (segment.length > longest.length) {
-      longest = segment;
-    }
-  }
 
-  let riser = -1;
-  for (const segmentedPath of segmentedPaths) {
-    if (segmentedPath.length <= riser) {
-      riser = segmentedPath.length;
-    } else {
-      for (let testIndex = 0; testIndex < segmentedPath.length; testIndex++) {
-        if (segmentedPath[testIndex] === longest[testIndex]) {
-          riser = testIndex;
-        }
-      }
-    }
-  }
+  const normalizedItems = items.map((item) => item.replace(/\\/g, '/')); // Ensure all paths use forward slashes
+  const prefix = getCommonPrefix(normalizedItems);
 
-  if (riser < 0) return null;
-
-  return longest.slice(0, riser).join(path.sep);
+  return prefix || null;
 }
 
 export function absoluteFilepathListToRootAndRelativeFilepaths(
-  absolutePaths: string[],
+  absolutePaths: string[]
 ): {
   root: string;
   relativePaths: string[];
@@ -56,7 +35,7 @@ export function absoluteFilepathListToRootAndRelativeFilepaths(
         .substring(_prefix.length)
         .replace(new RegExp(`^\\${path.sep}+`), '')
         .replace(new RegExp(`\\${path.sep}+$`), '')
-        .replace(new RegExp(`\\${path.sep}+`), path.sep),
+        .replace(new RegExp(`\\${path.sep}+`), path.sep)
     ),
   };
 }
@@ -79,7 +58,7 @@ export function calculateDirectoryStructureFromFiles<
   T extends object | null = null,
 >(
   relativePaths: string[],
-  callback?: (relativePath: string) => T | null,
+  callback?: (relativePath: string) => T | null
 ): DirectoryStructure<T> {
   const cb = callback ?? ((_relativePath: string) => null);
   const cleaned = relativePaths.map((p) =>
@@ -87,7 +66,7 @@ export function calculateDirectoryStructureFromFiles<
       .normalize(p)
       .replace(new RegExp(`^\\${path.sep}+`), '')
       .replace(new RegExp(`\\${path.sep}+$`), '')
-      .replace(new RegExp(`\\${path.sep}+`), path.sep),
+      .replace(new RegExp(`\\${path.sep}+`), path.sep)
   );
   const segmentedPaths = cleaned.map((p) => p.split(path.sep));
   const directoryStructure: DirectoryStructure<T> = {};

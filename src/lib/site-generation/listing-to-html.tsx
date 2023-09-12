@@ -5,7 +5,7 @@ import prettier from 'prettier';
 
 import { SymbolDetails } from '<^w^>/lib/utils/ast';
 import { Container } from '<^w^>/ui/components/common/container';
-import { MainLayout as ChildPageMainLayout } from '<^w^>/ui/components/child-page/main-layout';
+import { MainLayout as IndexPageMainLayout } from '<^w^>/ui/components/index-page/main-layout';
 
 import { mainCss } from '<^w^>/ui/components/main-css';
 
@@ -17,18 +17,21 @@ import { mainCss } from '<^w^>/ui/components/main-css';
  * @param crumbs - The path from the root to the file, includes the file basename
  * @param ast
  */
-export function astToHTML(
+export function listingToHTML(
   root: string,
   crumbs: string[],
-  ast: SymbolDetails[],
+  listing: {
+    name: string;
+    isLeaf: boolean;
+  }[],
   outputDir: string
 ) {
   const page = (
     <Container>
-      <ChildPageMainLayout
-        outDir={outputDir.replace(/\\/g, '/')}
+      <IndexPageMainLayout
         crumbs={crumbs}
-        symbols={ast}
+        listing={listing}
+        outDir={outputDir}
       />
     </Container>
   );

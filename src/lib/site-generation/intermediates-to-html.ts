@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 
 import { astToHTML } from '<^w^>/lib/site-generation/ast-to-html';
+import { listingToHTML } from '<^w^>/lib/site-generation/listing-to-html';
 import { SymbolDetails } from '<^w^>/lib/utils/ast';
 import {
   DirectoryStructure,
@@ -47,6 +48,7 @@ export function intermediatesToHTML(
   }
   process.stdout.write('Assembling hierarchical data structure...\n');
   const { root, relativePaths } = result;
+  console.log(root, relativePaths);
   const analysis = calculateDirectoryStructureFromFiles<SymbolDetails[]>(
     relativePaths,
     (relativePath: string) => {
@@ -109,7 +111,7 @@ export function intermediatesToHTML(
             crumbs.concat([key]).join(path.sep)
         );
         console.log('cacheObject', cacheObject?.sourceFileRealPath);
-        const symbolDetails = obj[key] as SymbolDetails[];
+        const symbolDetails = cacheObject?.symbols ?? ([] as SymbolDetails[]);
         const fullCrumbs = crumbs.concat([key]);
         const renderedHTML = astToHTML(
           root,
@@ -130,6 +132,41 @@ export function intermediatesToHTML(
           renderedHTML
         );
       } else {
+        const dS = obj[key] as object as DirectoryStructure<SymbolDetails[]>;
+
+        const keys1 = Object.keys(dS);
+
+        const items: {
+          name: string;
+          isLeaf: boolean;
+        }[] = [];
+
+        for (const key1 of keys1) {
+          items.push({
+            name: key1,
+            isLeaf: nodeIsLeaf(dS[key1]),
+          });
+        }
+
+        const html = listingToHTML(
+          root,
+          crumbs.concat([key]),
+          items,
+          outputDirectory
+        );
+
+        const combinedOutDir = `${outputDirectory}/${crumbs.join(path.sep)}${
+          path.sep
+        }${key}`.replace(/\\/g, '/');
+
+        if (!fs.existsSync(combinedOutDir)) {
+          fs.mkdirSync(combinedOutDir, {
+            recursive: true,
+          });
+        }
+
+        fs.writeFileSync(`${combinedOutDir}/index.html`, html);
+
         recursion(
           crumbs.concat([key]),
           obj[key] as object as DirectoryStructure<SymbolDetails[]>
@@ -137,6 +174,34 @@ export function intermediatesToHTML(
       }
     }
   };
+
+  const dS = analysis as object as DirectoryStructure<SymbolDetails[]>;
+
+  const keys1 = Object.keys(dS);
+
+  const items: {
+    name: string;
+    isLeaf: boolean;
+  }[] = [];
+
+  for (const key1 of keys1) {
+    items.push({
+      name: key1,
+      isLeaf: nodeIsLeaf(dS[key1]),
+    });
+  }
+
+  const html = listingToHTML(root, [], items, outputDirectory);
+
+  const combinedOutDir = `${outputDirectory}`.replace(/\\/g, '/');
+
+  if (!fs.existsSync(combinedOutDir)) {
+    fs.mkdirSync(combinedOutDir, {
+      recursive: true,
+    });
+  }
+
+  fs.writeFileSync(`${combinedOutDir}/index.html`, html);
 
   recursion([], analysis);
 }

@@ -14,19 +14,21 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@types/common-prefix": "^1.1.0",
     "@types/node": "^20.6.0",
     "@types/react": "^18.2.21",
     "@types/react-dom": "^18.2.7",
     "@types/uuid": "^9.0.3",
     "@types/yargs": "^17.0.24",
+    "common-prefix": "^1.1.0",
     "ignore": "^5.2.4",
+    "prettier": "^3.0.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "typescript": "^5.2.2",
     "uuid": "^9.0.0",
     "yargs": "^17.7.2",
-    "zod": "^3.22.2",
-    "prettier": "^3.0.3"
+    "zod": "^3.22.2"
   },
   "devDependencies": {
     "@babel/cli": "^7.22.15",

@@ -70,13 +70,7 @@ export const featureGenerateDocs: Feature = (
     );
   }
 
-  const docsDir = path.resolve(
-    cdRealpath,
-    '.tsleuth',
-    'generated',
-    'docs',
-    'pages'
-  );
+  const docsDir = path.resolve(cdRealpath, '.tsleuth', 'generated', 'docs');
 
   if (fs.existsSync(docsDir)) {
     fs.rmdirSync(docsDir, { recursive: true });
