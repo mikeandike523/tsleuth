@@ -126,6 +126,8 @@ export type SymbolDetails = {
     column: number;
   };
   sourceCode: string;
+  nodeText: string;
+  nodeFullText: string;
   link: string;
   parameters?: string[];
   returnType?: string;
@@ -242,6 +244,8 @@ export function analyzeFile(filename: string) {
         start: { line: startLine, column: startChar },
         end: { line: endLine, column: endChar },
         sourceCode,
+        nodeText: node.getText(),
+        nodeFullText: node.getFullText(),
         link,
         kind,
       };
