@@ -43,11 +43,6 @@ const featureSchemas = {
 };
 
 /**
- * Documetation test of functions
- */
-function myfunc1() {}
-
-/**
  * The main entry point for the program
  * */
 async function main() {
