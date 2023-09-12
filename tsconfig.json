@@ -14,6 +14,6 @@
       "<^w^>/*": ["./src/*"]
     }
   },
-  "include": ["src/**/*.ts", "src/lib/site-generation/ast-to-html.tsx"],
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
   "exclude": ["node_modules"]
 }

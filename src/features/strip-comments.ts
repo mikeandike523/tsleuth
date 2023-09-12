@@ -14,14 +14,14 @@ export interface StripCommentsArgs extends FeatureArgumentsObject {}
 
 export const featureStripCommentsArgsSchema = z.object({});
 
-export const featureStripComments: Feature = async (
+export const featureStripComments: Feature = (
   callingDirectory: string,
-  _args: StripCommentsArgs,
+  _args: StripCommentsArgs
 ) => {
   const cdRealpath = path.resolve(callingDirectory);
   const sourceFiles = collectTSSourceFiles(cdRealpath);
   process.stdout.write(
-    `Removing comments in ${sourceFiles.length} source files\n`,
+    `Removing comments in ${sourceFiles.length} source files\n`
   );
   for (const sourceFile of sourceFiles) {
     process.stdout.write(`Removing comments in ${sourceFile}...\n`);

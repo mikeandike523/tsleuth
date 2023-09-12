@@ -5,6 +5,7 @@ import prettier from 'prettier';
 
 import { SymbolDetails } from '<^w^>/lib/utils/ast';
 import { Container } from '<^w^>/ui/components/common/container';
+import { MainLayout as ChildPageMainLayout } from '<^w^>/ui/components/child-page/main-layout';
 
 /**
  *
@@ -14,32 +15,32 @@ import { Container } from '<^w^>/ui/components/common/container';
  * @param crumbs - The path from the root to the file, includes the file basename
  * @param ast
  */
-export async function astToHTML(
+export function astToHTML(
   root: string,
   crumbs: string[],
-  ast: SymbolDetails[]
+  ast: SymbolDetails[],
+  outputDir: string
 ) {
   const page = (
     <Container>
-      <>placeholder content</>
+      <ChildPageMainLayout
+        outDir={outputDir.replace(/\\/g, '/')}
+        crumbs={crumbs}
+        symbols={ast}
+      />
     </Container>
   );
 
   const finalRenderedString = ReactDOMServer.renderToString(page);
 
-  return await prettier.format(
-    `
+  `
   <!DOCTYPE html>
   <html lang="en">
-  <head>
-    <base href="${root}" />
-  </head>
   <body style="margin:0;padding:0;overflow:auto">
   ${finalRenderedString}
   </body>
   </html>
   
-  `,
-    { parser: 'html' }
-  );
+  `;
+  return finalRenderedString;
 }

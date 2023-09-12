@@ -18,7 +18,7 @@ export interface GenerateDocsArgs extends FeatureArgumentsObject {}
 
 export const featureGenerateDocsArgsSchema = z.object({});
 
-export const featureGenerateDocs: Feature = async (
+export const featureGenerateDocs: Feature = (
   callingDirectory: string,
   _args: GenerateDocsArgs
 ) => {
@@ -70,7 +70,13 @@ export const featureGenerateDocs: Feature = async (
     );
   }
 
-  const docsDir = path.resolve(cdRealpath, '.tsleuth', 'generated', 'docs');
+  const docsDir = path.resolve(
+    cdRealpath,
+    '.tsleuth',
+    'generated',
+    'docs',
+    'pages'
+  );
 
   if (fs.existsSync(docsDir)) {
     fs.rmdirSync(docsDir, { recursive: true });
@@ -82,7 +88,7 @@ export const featureGenerateDocs: Feature = async (
 
   process.stdout.write(`Generating documentation website...\n`);
 
-  await intermediatesToHTML(cacheDir, docsDir);
+  intermediatesToHTML(cacheDir, docsDir);
 
   process.stdout.write('Done.\n');
 

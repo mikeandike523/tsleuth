@@ -25,7 +25,7 @@ export type AstIntermediateJson = {
  * @param intermediatesDirectory - The directory containing the json-based ASTs
  * @param outputDirectory - The directory to write the documentation website to
  */
-export async function intermediatesToHTML(
+export function intermediatesToHTML(
   intermediatesDirectory: string,
   outputDirectory: string
 ) {
@@ -50,13 +50,10 @@ export async function intermediatesToHTML(
   const analysis = calculateDirectoryStructureFromFiles<SymbolDetails[]>(
     relativePaths,
     (relativePath: string) => {
-      const fullpath = path.join(root, relativePath);
-      const intermediate = intermediates.find(
-        (i) => path.normalize(i.sourceFileRealPath) === path.normalize(fullpath)
-      );
-      return intermediate?.symbols ?? null;
+      return null;
     }
   );
+  console.log(root, JSON.stringify(analysis, null, 2));
   const fullProjectAnalysis = {
     root,
     analysis,
@@ -96,35 +93,44 @@ export async function intermediatesToHTML(
 
   fs.mkdirSync(outputDirectory, { recursive: true });
 
-  const recursion = async (
+  const recursion = (
     crumbs: string[],
     obj: DirectoryStructure<SymbolDetails[]>
   ) => {
     const keys = Object.keys(obj);
     for (const key of keys) {
-      process.stdout.write(
-        `(Async) Generating HTML for ${crumbs.concat([key]).join('>>')}\n`
-      );
       if (nodeIsLeaf(obj[key])) {
-        if (nodeIsNullLeaf(obj[key])) {
-          throw new Error(
-            `Expected leaf to be SymbolDetails[], but got null. Check the callback used when assembling  full project analysis from the ast intermediates`
-          );
-        }
+        process.stdout.write(
+          `Generating HTML for ${crumbs.concat([key]).join('>>')}\n`
+        );
+        const cacheObject = intermediates.find(
+          (i) =>
+            path.relative(root, i.sourceFileRealPath) ===
+            crumbs.concat([key]).join(path.sep)
+        );
+        console.log('cacheObject', cacheObject?.sourceFileRealPath);
         const symbolDetails = obj[key] as SymbolDetails[];
         const fullCrumbs = crumbs.concat([key]);
-        const renderedHTML = await astToHTML(root, fullCrumbs, symbolDetails);
+        const renderedHTML = astToHTML(
+          root,
+          fullCrumbs,
+          symbolDetails,
+          outputDirectory
+        );
+        if (!fs.existsSync(path.join(outputDirectory, ...crumbs))) {
+          fs.mkdirSync(path.join(outputDirectory, ...crumbs), {
+            recursive: true,
+          });
+        }
         fs.writeFileSync(
-          path.join(outputDirectory, `${key}.html`),
+          path.join(
+            outputDirectory,
+            `${crumbs.join(path.sep)}${path.sep}${key}.html`
+          ),
           renderedHTML
         );
-        process.stdout.write(
-          `(Async) Done Generating HTML for ${crumbs
-            .concat([key])
-            .join('>>')}\n`
-        );
       } else {
-        await recursion(
+        recursion(
           crumbs.concat([key]),
           obj[key] as object as DirectoryStructure<SymbolDetails[]>
         );
@@ -132,5 +138,5 @@ export async function intermediatesToHTML(
     }
   };
 
-  await recursion([], analysis);
+  recursion([], analysis);
 }

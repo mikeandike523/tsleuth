@@ -47,7 +47,7 @@ const featureSchemas = {
 /**
  * The main entry point for the program
  * */
-async function main() {
+function main() {
   const argv = yargs(process.argv.slice(2)).argv as unknown as {
     callingDirectory: string;
     _: Array<string>;
@@ -153,15 +153,7 @@ async function main() {
 
   const result = feature(argv.callingDirectory, parsedArgs);
 
-  if (result instanceof Promise) {
-    return await result;
-  } else {
-    return result;
-  }
+  return result;
 }
 
-(async function () {
-  const code = await main();
-  process.exit(code);
-})();
-createServer().listen();
+process.exit(main());

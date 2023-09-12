@@ -21,14 +21,14 @@ export const featureRenameImportArgsSchema = z.object({
     .length(2, '2 Positional arguments are required: <old> <new>'),
 });
 
-export const featureRenameImport: Feature = async (
+export const featureRenameImport: Feature = (
   callingDirectory: string,
-  args: FeatureRenameImportArgs,
+  args: FeatureRenameImportArgs
 ) => {
   const cdRealpath = path.resolve(callingDirectory);
   const sourceFiles = collectTSSourceFiles(cdRealpath);
   process.stdout.write(
-    `Renaming imports in ${sourceFiles.length} source files\n`,
+    `Renaming imports in ${sourceFiles.length} source files\n`
   );
   const __old = args._[0];
   const __new = args._[1];

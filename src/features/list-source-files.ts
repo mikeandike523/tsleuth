@@ -18,9 +18,9 @@ export interface FeatureListSourceFilesArgs extends FeatureArgumentsObject {}
 
 export const featureListSourceFilesArgsSchema = z.object({});
 
-export const featureListSourceFiles: Feature = async (
+export const featureListSourceFiles: Feature = (
   callingDirectory: string,
-  args: FeatureListSourceFilesArgs,
+  args: FeatureListSourceFilesArgs
 ) => {
   const cdRealpath = path.resolve(callingDirectory);
   const sourceFiles = collectTSSourceFiles(cdRealpath);
