@@ -3,8 +3,9 @@
  */
 
 import fs from 'fs';
+import path from 'path';
 
-import * as ts from 'typescript';
+import ts from 'typescript';
 
 /**
  * Updates static import declarations in the given file.
@@ -357,6 +358,12 @@ export function analyzeFile(filename: string) {
       }
 
       for (const node of nodesToTest) {
+        if (
+          path.normalize(node.getSourceFile().fileName) !==
+          path.normalize(filename)
+        ) {
+          continue;
+        }
         const symbol = checker.getSymbolAtLocation(node);
         if (!symbol) {
           continue;
@@ -376,7 +383,11 @@ export function analyzeFile(filename: string) {
       }
     }
 
-    ts.forEachChild(node, visit);
+    if (
+      path.normalize(node.getSourceFile().fileName) === path.normalize(filename)
+    ) {
+      ts.forEachChild(node, visit);
+    }
   }
 
   visit(program.getSourceFile(filename)!);
