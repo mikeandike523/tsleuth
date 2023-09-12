@@ -2,6 +2,8 @@
  * The main entry point and command/feature router for tsleuth
  */
 
+import { createServer } from 'net';
+
 import yargs from 'yargs';
 import { z } from 'zod';
 
@@ -152,23 +154,14 @@ async function main() {
   const result = feature(argv.callingDirectory, parsedArgs);
 
   if (result instanceof Promise) {
-    result
-      .then((exitCode) => {
-        process.exit(exitCode);
-      })
-      .catch((error) => {
-        process.stderr.write(
-          'Feature ' +
-            featureName +
-            ' failed with an error that was not internally handled'
-        );
-        process.exit(ExitCode.UnknownError);
-      });
+    return await result;
   } else {
-    process.exit(result);
+    return result;
   }
 }
 
 (async function () {
-  await main();
+  const code = await main();
+  process.exit(code);
 })();
+createServer().listen();

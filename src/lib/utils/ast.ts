@@ -135,6 +135,7 @@ export type SymbolDetails = {
   privacy?: 'normal' | 'protected' | 'private' | 'public';
   kind: SymbolKind;
   storageQualifier?: 'const' | 'var' | 'let' | 'unqualifiedOrGlobal';
+  isAsync?: boolean;
 };
 
 export function generateLink(
@@ -145,6 +146,18 @@ export function generateLink(
   return `${filePath}:${startLine + 1}:${startChar + 1}`; // Adding 1 to match 1-indexing for lines and columns
 }
 
+// Might not work, need to come back to this
+// Does this need to be made recursive with some well designed stop condition?
+function isAsyncFunction(node: ts.Node): boolean {
+  const children = node.getChildren();
+  for (const child of children) {
+    if (child.kind === ts.SyntaxKind.AsyncKeyword) {
+      return true;
+    }
+  }
+  return false;
+}
+
 export function getFunctionDetails(
   node: ts.Node,
   checker: ts.TypeChecker,
@@ -152,7 +165,9 @@ export function getFunctionDetails(
 ): {
   parameters: string[];
   returnType: string;
+  isAsync: boolean;
 } {
+  const isAsync = isAsyncFunction(node);
   const parameters = signature.parameters.map((paramSymbol: ts.Symbol) => {
     const paramName = paramSymbol.getName();
     const paramType = checker.typeToString(
@@ -165,7 +180,7 @@ export function getFunctionDetails(
   });
 
   const returnType = checker.typeToString(signature.getReturnType());
-  return { parameters, returnType };
+  return { parameters, returnType, isAsync };
 }
 
 export function analyzeFile(filename: string) {
@@ -264,11 +279,12 @@ export function analyzeFile(filename: string) {
           .getTypeOfSymbolAtLocation(symbol, symbol.valueDeclaration ?? node)
           .getCallSignatures();
         if (signatures.length) {
-          const { parameters, returnType } = getFunctionDetails(
+          const { parameters, returnType, isAsync } = getFunctionDetails(
             node,
             checker,
             signatures[0]
           );
+          details.isAsync = isAsync;
           details.parameters = parameters;
           details.returnType = returnType;
         }
