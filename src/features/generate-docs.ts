@@ -87,12 +87,15 @@ Usage:
   process.stdout.write(
     `Generating intermediates for ${sourceFiles.length} files...\n`
   );
+  let numFiles = 0;
   for (const sourceFile of sourceFiles) {
     process.stdout.write(`\rGenerating intermediates for ${sourceFile}...\n`);
     const symbols = analyzeFile(sourceFile);
     if (symbols.length === 0) {
+      process.stdout.write(`No documented symbols found in ${sourceFile}\n`);
       continue;
     }
+    numFiles += 1;
     const cacheObject = {
       callingDirectory: cdRealpath,
       sourceFileRealPath: sourceFile,
@@ -112,6 +115,14 @@ Usage:
         2
       ).replace(/\r\n/g, '\n')
     );
+  }
+
+  if (numFiles === 0) {
+    // Trivial case is technically not an error
+    process.stdout.write(
+      `No documented symbols in your project.\n Will not generate docs.\n`
+    );
+    return ExitCode.Success;
   }
 
   const docsDir = path.resolve(cdRealpath, '.tsleuth', 'generated', 'docs');
