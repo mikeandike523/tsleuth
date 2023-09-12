@@ -42,6 +42,14 @@ const featureSchemas = {
   generateDocs: featureGenerateDocsArgsSchema,
 };
 
+/**
+ * Documetation test of functions
+ */
+function myfunc1() {}
+
+/**
+ * The main entry point for the program
+ * */
 function main() {
   const argv = yargs(process.argv.slice(2)).argv as unknown as {
     callingDirectory: string;

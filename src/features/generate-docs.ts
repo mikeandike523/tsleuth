@@ -7,6 +7,7 @@ import path from 'path';
 
 import { z } from 'zod';
 
+import { intermediatesToHTML } from '<^w^>/lib/site-generation/intermediates-to-html';
 import { ExitCode } from '<^w^>/lib/types/exit-code';
 import { Feature, FeatureArgumentsObject } from '<^w^>/lib/types/feature';
 import { analyzeFile } from '<^w^>/lib/utils/ast';
@@ -25,8 +26,8 @@ export const featureGenerateDocs: Feature = async (
   const cacheDir = path.resolve(
     cdRealpath,
     '.tsleuth',
-    'generate-docs',
     'cache',
+    'generate-docs',
     'intermediates',
   );
 
@@ -65,8 +66,25 @@ export const featureGenerateDocs: Feature = async (
           return value;
         },
         2,
-      ),
+      ).replace(/\r\n/g, '\n'),
     );
   }
+
+  const docsDir = path.resolve(cdRealpath, '.tsleuth', 'generated', 'docs');
+
+  if (fs.existsSync(docsDir)) {
+    fs.rmdirSync(docsDir, { recursive: true });
+  }
+
+  fs.mkdirSync(docsDir, {
+    recursive: true,
+  });
+
+  process.stdout.write(`Generating documentation website...\n`);
+
+  intermediatesToHTML(cacheDir, docsDir);
+
+  process.stdout.write('Done.\n');
+
   return ExitCode.Success;
 };

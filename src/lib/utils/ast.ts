@@ -134,6 +134,7 @@ export type SymbolDetails = {
   export?: 'normal' | 'default';
   privacy?: 'normal' | 'protected' | 'private' | 'public';
   kind: SymbolKind;
+  storageQualifier?: 'const' | 'var' | 'let' | 'unqualifiedOrGlobal';
 };
 
 export function generateLink(
@@ -169,6 +170,7 @@ export function getFunctionDetails(
 
 export function analyzeFile(filename: string) {
   const program = ts.createProgram([filename], {});
+
   const checker = program.getTypeChecker();
   const output: SymbolDetails[] = [];
 
@@ -230,6 +232,13 @@ export function analyzeFile(filename: string) {
       kind = 'EnumMember';
     }
 
+    const isDocumented = (symbol: ts.Symbol) => {
+      const documentation = ts.displayPartsToString(
+        symbol.getDocumentationComment(checker),
+      );
+      return Boolean(documentation);
+    };
+
     // Function to handle nodes that could be documented
     function handleDocumentedNode(symbol: ts.Symbol) {
       const documentation = ts.displayPartsToString(
@@ -290,16 +299,60 @@ export function analyzeFile(filename: string) {
         details.privacy = 'public';
       }
 
+      if (ts.isVariableDeclaration(node)) {
+        const parent = node.parent;
+        if (ts.isVariableDeclarationList(parent)) {
+          const isConst = (parent.flags & ts.NodeFlags.Const) !== 0;
+          const isLet = (parent.flags & ts.NodeFlags.Let) !== 0;
+
+          const isUnqualifiedOrGlobal =
+            (parent.flags & ts.NodeFlags.GlobalAugmentation) !== 0;
+          const isVar =
+            (parent.flags & ts.NodeFlags.Let) === 0 &&
+            (parent.flags & ts.NodeFlags.Const) === 0 &&
+            !isUnqualifiedOrGlobal;
+
+          if (isConst) {
+            details.storageQualifier = 'const';
+          }
+          if (isVar) {
+            details.storageQualifier = 'var';
+          }
+          if (isLet) {
+            details.storageQualifier = 'let';
+          }
+          if (isUnqualifiedOrGlobal) {
+            details.storageQualifier = 'unqualifiedOrGlobal';
+          }
+        }
+      }
+
       output.push(details);
     }
 
-    if (!['FunctionLike', 'UnhandledSymbolKind'].includes(kind)) {
+    if (kind !== 'UnhandledSymbolKind') {
+      const existingNames: string[] = [];
+
+      const nodesToTest: ts.Node[] = [node];
+
       const children = node.getChildren();
       for (const child of children) {
-        const symbol = checker.getSymbolAtLocation(child);
-        if (symbol) {
-          handleDocumentedNode(symbol);
+        nodesToTest.push(child);
+      }
+
+      for (const node of nodesToTest) {
+        const symbol = checker.getSymbolAtLocation(node);
+        if (!symbol) {
+          continue;
         }
+        if (!isDocumented(symbol)) {
+          continue;
+        }
+        if (existingNames.includes(symbol.getName())) {
+          continue;
+        }
+        existingNames.push(symbol.getName());
+        handleDocumentedNode(symbol);
       }
     }
 
