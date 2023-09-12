@@ -364,7 +364,11 @@ export function analyzeFile(filename: string) {
         if (!isDocumented(symbol)) {
           continue;
         }
-        if (existingNames.includes(symbol.getName())) {
+        if (
+          existingNames.includes(symbol.getName()) ||
+          // hard coded exclusions
+          ['__function'].includes(symbol.getName())
+        ) {
           continue;
         }
         existingNames.push(symbol.getName());
