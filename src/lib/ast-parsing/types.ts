@@ -28,6 +28,11 @@ export type ClassStorageQualifier = 'Static';
 export type ClassAccessQualifier = 'Public' | 'Protected' | 'Private';
 
 /**
+ * export qualifier for entities outside a class
+ */
+export type ExportQualifier = 'Export' | 'ExportDefault';
+
+/**
  * Holds line and column number, 0-indexed
  */
 export type SourceCodePosition = {
@@ -77,6 +82,15 @@ export type NodeInfo = {
    * optional because it could be absent or not relevant
    */
   classAccessQualifier?: ClassAccessQualifier;
+
+  /**
+   * The export qualityifier for the node if present and relevant
+   *
+   * @remarks
+   * optional because it could be absent or not relevant
+   */
+  exportQualifier?: ExportQualifier;
+
   /**
    * Whether or not the symbol is inside a class
    *

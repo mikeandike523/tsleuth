@@ -8,6 +8,7 @@ import { Container } from '<^w^>/ui/components/common/container';
 import { MainLayout as ChildPageMainLayout } from '<^w^>/ui/components/child-page/main-layout';
 
 import { mainCss } from '<^w^>/ui/components/main-css';
+import { NodeInfo } from '../ast-parsing/types';
 
 /**
  *
@@ -20,7 +21,7 @@ import { mainCss } from '<^w^>/ui/components/main-css';
 export function astToHTML(
   root: string,
   crumbs: string[],
-  ast: SymbolDetails[],
+  ast: NodeInfo[],
   outputDir: string
 ) {
   const page = (

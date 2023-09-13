@@ -9,14 +9,13 @@ import {
   absoluteFilepathListToRootAndRelativeFilepaths,
   calculateDirectoryStructureFromFiles,
 } from '<^w^>/lib/utils/filepath';
+import { NodeInfo, SourceFileInfo } from '../ast-parsing/types';
 
 /**
  * Represents the structure of the AST intermediate json files
  */
-export type AstIntermediateJson = {
+export type AstIntermediateJson = SourceFileInfo & {
   callingDirectory: string;
-  sourceFileRealPath: string;
-  symbols: SymbolDetails[];
 };
 
 /**
@@ -39,7 +38,7 @@ export function intermediatesToHTML(
     const intermediate = JSON.parse(intermediateJson) as AstIntermediateJson;
     intermediates.push(intermediate);
   }
-  const filenames = intermediates.map((i) => i.sourceFileRealPath);
+  const filenames = intermediates.map((i) => i.absolutePath);
   const result = absoluteFilepathListToRootAndRelativeFilepaths(filenames);
   if (result === null) {
     throw new Error(
@@ -105,10 +104,10 @@ export function intermediatesToHTML(
         );
         const cacheObject = intermediates.find(
           (i) =>
-            path.relative(root, i.sourceFileRealPath) ===
+            path.relative(root, i.absolutePath) ===
             crumbs.concat([key]).join(path.sep)
         );
-        const symbolDetails = cacheObject?.symbols ?? ([] as SymbolDetails[]);
+        const symbolDetails = cacheObject?.root.children ?? ([] as NodeInfo[]);
         const fullCrumbs = crumbs.concat([key]);
         const renderedHTML = astToHTML(
           root,

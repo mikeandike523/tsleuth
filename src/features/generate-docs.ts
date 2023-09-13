@@ -149,11 +149,11 @@ Usage:
     recursive: true,
   });
 
-  // process.stdout.write(`Generating documentation website...\n`);
+  process.stdout.write(`Generating documentation website...\n`);
 
-  // intermediatesToHTML(cacheDir, docsDir);
+  intermediatesToHTML(cacheDir, docsDir);
 
-  // process.stdout.write('Done.\n');
+  process.stdout.write('Done.\n');
 
   return ExitCode.Success;
 };

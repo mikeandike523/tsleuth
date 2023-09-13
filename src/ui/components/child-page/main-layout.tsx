@@ -2,10 +2,11 @@ import React, { ReactNode } from 'react';
 
 import { SymbolDetails } from '<^w^>/lib/utils/ast';
 import { Navbar } from '../common/navbar';
+import { NodeInfo } from '<^w^>/lib/ast-parsing/types';
 
 export interface MainLayoutProps {
   crumbs: string[];
-  symbols: SymbolDetails[];
+  symbols: NodeInfo[];
   outDir: string;
 }
 
@@ -79,9 +80,9 @@ export function MainLayout({ crumbs, outDir, symbols }: MainLayoutProps) {
                   <tr>
                     <td>Qualifiers:</td>
                     <td>
-                      {symbol.export ? (
+                      {symbol.exportQualifier ? (
                         <>
-                          {'export: ' + symbol.export}
+                          {'export: ' + symbol.exportQualifier}
                           <br />
                         </>
                       ) : (
