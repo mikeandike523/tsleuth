@@ -48,14 +48,12 @@ export function intermediatesToHTML(
   }
   process.stdout.write('Assembling hierarchical data structure...\n');
   const { root, relativePaths } = result;
-  console.log(root, relativePaths);
   const analysis = calculateDirectoryStructureFromFiles<SymbolDetails[]>(
     relativePaths,
     (relativePath: string) => {
       return null;
     }
   );
-  console.log(root, JSON.stringify(analysis, null, 2));
   const fullProjectAnalysis = {
     root,
     analysis,
@@ -110,7 +108,6 @@ export function intermediatesToHTML(
             path.relative(root, i.sourceFileRealPath) ===
             crumbs.concat([key]).join(path.sep)
         );
-        console.log('cacheObject', cacheObject?.sourceFileRealPath);
         const symbolDetails = cacheObject?.symbols ?? ([] as SymbolDetails[]);
         const fullCrumbs = crumbs.concat([key]);
         const renderedHTML = astToHTML(

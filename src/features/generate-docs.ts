@@ -14,6 +14,12 @@ import { Feature, FeatureArgumentsObject } from '<^w^>/lib/types/feature';
 import { analyzeFile } from '<^w^>/lib/utils/ast';
 import { uuidv4InDirectory } from '<^w^>/lib/utils/filesystem';
 import { collectTSSourceFiles } from '<^w^>/lib/utils/git';
+import {
+  SourceFileInfo,
+  createEmptyNodeInfo,
+} from '<^w^>/lib/ast-parsing/types';
+import { deepCopyWithoutUndefined } from '<^w^>/lib/utils/objects';
+import { walkAST } from '<^w^>/lib/ast-parsing/walk-ast';
 
 export interface GenerateDocsArgs extends FeatureArgumentsObject {
   _: string[];
@@ -90,17 +96,25 @@ Usage:
   let numFiles = 0;
   for (const sourceFile of sourceFiles) {
     process.stdout.write(`\rGenerating intermediates for ${sourceFile}...\n`);
-    const symbols = analyzeFile(sourceFile);
-    if (symbols.length === 0) {
-      process.stdout.write(`No documented symbols found in ${sourceFile}\n`);
+
+    let cacheObject: SourceFileInfo & {
+      callingDirectory: string;
+    } = {
+      absolutePath: sourceFile,
+      callingDirectory: cdRealpath,
+      root: createEmptyNodeInfo(),
+    };
+
+    walkAST(cacheObject);
+
+    if (cacheObject.root.children.length === 0) {
       continue;
     }
+
+    cacheObject = deepCopyWithoutUndefined<typeof cacheObject>(cacheObject);
+
     numFiles += 1;
-    const cacheObject = {
-      callingDirectory: cdRealpath,
-      sourceFileRealPath: sourceFile,
-      symbols: symbols,
-    };
+
     const uuid = uuidv4InDirectory(cacheDir, 'json');
     fs.writeFileSync(
       path.resolve(cacheDir, uuid),
@@ -135,11 +149,11 @@ Usage:
     recursive: true,
   });
 
-  process.stdout.write(`Generating documentation website...\n`);
+  // process.stdout.write(`Generating documentation website...\n`);
 
-  intermediatesToHTML(cacheDir, docsDir);
+  // intermediatesToHTML(cacheDir, docsDir);
 
-  process.stdout.write('Done.\n');
+  // process.stdout.write('Done.\n');
 
   return ExitCode.Success;
 };
