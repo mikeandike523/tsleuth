@@ -35,29 +35,25 @@ export function walkAST(sourceFileInfo: SourceFileInfo) {
     const result = ts
       .displayPartsToString(symbol.getDocumentationComment(checker))
       .trim();
-    // if (result.length === 0) {
-    //   const candidateDocs = [];
-    //   for (const child of node.getChildren()) {
-    //     candidateDocs.push(getDocumentation(child));
-    //   }
-    //   if (candidateDocs.length > 0) {
-    //     return candidateDocs.join('\n').trim();
-    //   }
-    //   return undefined;
-    // } else {
-    //   return result;
-    // }
     return result;
   };
   const isDocumented = (node: ts.Node) => {
     const docs = getDocumentation(node);
     return typeof docs !== 'undefined' && docs.length > 0;
   };
+  const getName = (node: ts.Node): string | undefined => {
+    const symbol = checker.getSymbolAtLocation(node);
+    if (!symbol) {
+      return undefined;
+    }
+    return symbol.getName();
+  };
 
   const extract = (
     node: ts.Node,
     containingNodeInfo: NodeInfo | undefined = undefined,
-    knownDocumentation: string | undefined = undefined
+    knownDocumentation: string | undefined = undefined,
+    knownName: string | undefined = undefined
   ) => {
     if (
       path.resolve(node.getSourceFile().fileName) !==
@@ -109,6 +105,7 @@ export function walkAST(sourceFileInfo: SourceFileInfo) {
         column: sourceFile.getLineAndCharacterOfPosition(endChar).character,
       };
       const nodeInfo: NodeInfo = {
+        name: knownName,
         documentation: knownDocumentation,
         tsKindString: ts.SyntaxKind[node.kind] + ' ' + `(${node.kind})`,
         kind,
@@ -132,14 +129,20 @@ export function walkAST(sourceFileInfo: SourceFileInfo) {
   const drill = (
     node: ts.Node,
     containingNodeInfo: NodeInfo | undefined,
-    knownDocumentation: string | undefined = undefined
+    knownDocumentation: string | undefined = undefined,
+    knownName: string | undefined = undefined
   ): NodeInfo | undefined => {
     const nodeInfo = extract(node, containingNodeInfo, knownDocumentation);
     if (typeof nodeInfo !== 'undefined') {
       return nodeInfo;
     }
     for (const child of node.getChildren()) {
-      const result = drill(child, containingNodeInfo, knownDocumentation);
+      const result = drill(
+        child,
+        containingNodeInfo,
+        knownDocumentation,
+        knownName
+      );
       if (typeof result !== 'undefined') {
         return result;
       }
@@ -152,8 +155,15 @@ export function walkAST(sourceFileInfo: SourceFileInfo) {
       // So, this is crazy, but the token that is actually documented is some minor token, like a keyword or identifier, so we go one up to its parent, and generally speaking that should work to get something we can drill into to find a SIGNIFICANT node
       // We take the documentation we got and save it until we find something significant
       // Approach is not perfect but thats why I got
+
       // @todo: right now, all classes, interfaces, aliases, and properties are lifted up to be the direct children of the source file/top level. This is not correct. I need to implement feature that certain syntax kinds (i.e. class, interfaces, type alias, variable statement (because it may hold a function expression), need to change what the parent nodeInfo object is so we can retain hierarchy information. Basically, some documented items are children of other documented items instead of just the top level)
-      drill(node.parent, sourceFileInfo.root, getDocumentation(node));
+      // @todo: I could not find an uuid associated with a node, and just storing the names in a list is not enough due to scoping. As far as I can tell, using a getStart() and getEnd() pair can serve to dedupe, so I need to implement this next. I'm not sure what situation can lead to duplicates but I don't want to take any chances
+      drill(
+        node.parent,
+        sourceFileInfo.root,
+        getDocumentation(node),
+        getName(node)
+      );
     }
     ts.forEachChild(node, visitor);
   };
