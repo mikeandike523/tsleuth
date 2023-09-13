@@ -48,6 +48,14 @@ export function walkAST(sourceFileInfo: SourceFileInfo) {
     }
     return symbol.getName();
   };
+  const getUniqueId = (node: ts.Node): string => {
+    const start = node.getStart();
+    const end = node.getEnd();
+    return `${start}_${end}`;
+  };
+
+  // For Deduping
+  const coveredUniqueIds: Set<string> = new Set();
 
   const extract = (
     node: ts.Node,
@@ -61,6 +69,11 @@ export function walkAST(sourceFileInfo: SourceFileInfo) {
     ) {
       return;
     }
+    const uniqueId = getUniqueId(node);
+    if (coveredUniqueIds.has(uniqueId)) {
+      return;
+    }
+    coveredUniqueIds.add(uniqueId);
     let kind: NodeKind | undefined = undefined;
     switch (node.kind) {
       case ts.SyntaxKind.VariableStatement:
@@ -132,7 +145,12 @@ export function walkAST(sourceFileInfo: SourceFileInfo) {
     knownDocumentation: string | undefined = undefined,
     knownName: string | undefined = undefined
   ): NodeInfo | undefined => {
-    const nodeInfo = extract(node, containingNodeInfo, knownDocumentation);
+    const nodeInfo = extract(
+      node,
+      containingNodeInfo,
+      knownDocumentation,
+      knownName
+    );
     if (typeof nodeInfo !== 'undefined') {
       return nodeInfo;
     }
