@@ -5,8 +5,11 @@
 import fs from 'fs';
 import path from 'path';
 import childProcess from 'child_process';
+import { AddressInfo } from 'net';
 
 import { z } from 'zod';
+import express from 'express';
+import chalk from 'chalk';
 
 import { intermediatesToHTML } from '<^w^>/lib/site-generation/intermediates-to-html';
 import { ExitCode } from '<^w^>/lib/types/exit-code';
@@ -39,17 +42,17 @@ export const featureGenerateDocs: Feature = (
 Usage:
     tsleuth generateDocs - generate documentation for the cwd                 
   OR
-    tsleuth generateDocs open - open the documentation index.html in the default web browser    
+    tsleuth generateDocs serve - serve the generated documentation site using express.js 
     \n`);
     return ExitCode.InvalidArguments;
   }
-  if (_args._.length === 1 && _args._[0] !== 'open') {
+  if (_args._.length === 1 && _args._[0] !== 'serve') {
     process.stderr.write('Invalid arguments\n');
     process.stdout.write(`
     Usage:
         tsleuth generateDocs - generate documentation for the cwd                 
       OR
-        tsleuth generateDocs open - open the documentation index.html in the default web browser    
+        tsleuth generateDocs serve - serve the generated documentation site using express.js    
         \n`);
     return ExitCode.InvalidArguments;
   }
@@ -58,17 +61,40 @@ Usage:
     const cdRealpath = path.resolve(callingDirectory);
     const docsDir = path.resolve(cdRealpath, '.tsleuth', 'generated', 'docs');
     const docsIndex = path.resolve(docsDir, 'index.html');
-    if (!fs.existsSync(docsIndex)) {
-      process.stderr.write('Could not find docs index.html\n');
+
+    if (!fs.existsSync(docsDir)) {
+      process.stderr.write(
+        `Could not find docs directory at ${docsDir}\n Are you sure you generated it?`
+      );
       return ExitCode.MissingFile;
     }
-    if (process.platform === 'win32') {
-      const cmd = `start \"\" \"file://${docsIndex}\"`;
-      childProcess.spawnSync(cmd, { shell: true });
-    } else {
-      process.stderr.write('Linux not yet supported\n');
-      return ExitCode.IncompatibleOS;
-    }
+
+    const app = express();
+
+    app.use(express.static(docsDir));
+
+    const server = app.listen(0, () => {
+      const { address, port } = server.address() as AddressInfo;
+      const url = `http://${address}:${port}`;
+      process.stdout.write(`Listening on port ${port}.\n`);
+      process.stdout.write(`Go to the following URL: ${chalk.green(url)}\n`);
+    });
+
+    // Create a promise and a function to resolve it from outside
+    let resolvePromise: Function;
+    const serverPromise = new Promise<void>((resolve) => {
+      resolvePromise = resolve;
+    });
+
+    // Handle SIGINT (Ctrl+C) gracefully
+    process.on('SIGINT', () => {
+      process.stdout.write('Stopping the documentation server...\n');
+      server.close(() => {
+        process.stdout.write('Documentation server stopped.\n');
+        resolvePromise(); // Resolve the promise
+      });
+    });
+
     return ExitCode.Success;
   }
 
