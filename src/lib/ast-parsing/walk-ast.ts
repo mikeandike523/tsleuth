@@ -11,13 +11,66 @@ import {
 
 /**
  *
- * Walks the typescript AST extraction symbol and documentation info
+ * Computes a uuid for a node by simply combining its start and end characters
+ *
+ * @param node
+ */
+export function getId(node: ts.Node): string {
+  return `${node.getStart()}_${node.getEnd()}`;
+}
+
+/**
+ *
+ * If a particuilar AST node is of interest, return which `NodeKind` (a custom lightweight analog of ts.SyntaxKind) it is, or return `undefined`
+ *
+ * @param node
+ *
+ */
+export function getNodeKind(node: ts.Node): NodeKind | undefined {
+  switch (node.kind) {
+    case ts.SyntaxKind.VariableDeclaration:
+      return 'VariableDecl';
+    case ts.SyntaxKind.FunctionDeclaration:
+      return 'FunctionDecl';
+    case ts.SyntaxKind.ClassDeclaration:
+      return 'Class';
+    case ts.SyntaxKind.InterfaceDeclaration:
+      return 'Interface';
+    case ts.SyntaxKind.EnumDeclaration:
+      return 'Enum';
+    case ts.SyntaxKind.EnumMember:
+      return 'EnumMember';
+    case ts.SyntaxKind.PropertyDeclaration:
+      return 'Property';
+    case ts.SyntaxKind.MethodDeclaration:
+      return 'Method';
+    case ts.SyntaxKind.TypeAliasDeclaration:
+      return 'TypeAlias';
+    default:
+      return undefined;
+  }
+}
+
+/**
+ * A more lightweight version of the NodeInfo type, useful for retaining start, end, name, and comment information while drilling up and down
+ */
+export type TraversalEntity = {
+  tsNode?: ts.Node;
+  id: string;
+  kind?: NodeKind | undefined;
+  name?: string;
+  start: number;
+  end: number;
+  docstring?: string;
+};
+
+/**
+ *
+ * Going to have a 2 pass system. First pass find all the significant entiteis with their names and documentations, second pass goes through again to find out the semantic hierarchy (i.e., which methiods or properties belogn to which class, interface, or type alias, etc)
  *
  * @param sourceFileInfo
- * @returns
  */
 export function walkAST(sourceFileInfo: SourceFileInfo) {
-  // Setup the ast parsing api
   const program = ts.createProgram([sourceFileInfo.absolutePath], {});
   const checker = program.getTypeChecker();
   const sourceFile = program.getSourceFile(sourceFileInfo.absolutePath);
@@ -27,164 +80,91 @@ export function walkAST(sourceFileInfo: SourceFileInfo) {
     );
   }
 
-  const getDocumentation = (node: ts.Node): string | undefined => {
-    const symbol = checker.getSymbolAtLocation(node);
-    if (!symbol) {
-      return undefined;
-    }
-    const result = ts
-      .displayPartsToString(symbol.getDocumentationComment(checker))
-      .trim();
-    return result;
-  };
-  const isDocumented = (node: ts.Node) => {
-    const docs = getDocumentation(node);
-    return typeof docs !== 'undefined' && docs.length > 0;
-  };
+  const sourceFileId = getId(sourceFile);
+
+  const coverageMap = new Map<string, TraversalEntity>();
+
   const getName = (node: ts.Node): string | undefined => {
-    const symbol = checker.getSymbolAtLocation(node);
-    if (!symbol) {
+    const sym = checker.getSymbolAtLocation(node);
+    if (!sym) {
       return undefined;
     }
-    return symbol.getName();
-  };
-  const getUniqueId = (node: ts.Node): string => {
-    const start = node.getStart();
-    const end = node.getEnd();
-    return `${start}_${end}`;
+    return sym.getName();
   };
 
-  // For Deduping
-  const coveredUniqueIds: Set<string> = new Set();
+  const getDocumentation = (node: ts.Node): string | undefined => {
+    const withDocstring = node.getFullText().trim();
+    const withoutDocstring = node.getText().trim();
 
-  const extract = (
-    node: ts.Node,
-    containingNodeInfo: NodeInfo | undefined = undefined,
-    knownDocumentation: string | undefined = undefined,
-    knownName: string | undefined = undefined
-  ) => {
-    if (
-      path.resolve(node.getSourceFile().fileName) !==
-      path.resolve(sourceFileInfo.absolutePath)
-    ) {
-      return;
+    if (withoutDocstring === withDocstring) {
+      return undefined;
     }
-    const uniqueId = getUniqueId(node);
-    if (coveredUniqueIds.has(uniqueId)) {
-      return;
+
+    if (!withDocstring.endsWith(withoutDocstring)) {
+      return undefined;
     }
-    coveredUniqueIds.add(uniqueId);
-    let kind: NodeKind | undefined = undefined;
-    switch (node.kind) {
-      case ts.SyntaxKind.VariableStatement:
-      case ts.SyntaxKind.VariableDeclaration:
-        kind = 'Variable';
-        break;
-      case ts.SyntaxKind.FunctionDeclaration:
-      case ts.SyntaxKind.FunctionExpression:
-        kind = 'Function';
-        break;
-      case ts.SyntaxKind.ClassDeclaration:
-        kind = 'Class';
-        break;
-      case ts.SyntaxKind.InterfaceDeclaration:
-        kind = 'Interface';
-        break;
-      case ts.SyntaxKind.EnumDeclaration:
-        kind = 'Enum';
-        break;
-      case ts.SyntaxKind.EnumMember:
-        kind == 'EnumMember';
-        break;
-      case ts.SyntaxKind.PropertyDeclaration:
-        kind = 'Property';
-        break;
-      case ts.SyntaxKind.MethodDeclaration:
-        kind = 'Method';
-        break;
-      case ts.SyntaxKind.TypeAliasDeclaration:
-        kind = 'TypeAlias';
-        break;
-    }
-    if (kind !== undefined) {
-      const startChar = node.getStart();
-      const endChar = node.getEnd();
-      const start: SourceCodePosition = {
-        line: sourceFile.getLineAndCharacterOfPosition(startChar).line,
-        column: sourceFile.getLineAndCharacterOfPosition(startChar).character,
-      };
-      const end: SourceCodePosition = {
-        line: sourceFile.getLineAndCharacterOfPosition(endChar).line,
-        column: sourceFile.getLineAndCharacterOfPosition(endChar).character,
-      };
-      const nodeInfo: NodeInfo = {
-        name: knownName,
-        documentation: knownDocumentation,
-        tsKindString: ts.SyntaxKind[node.kind] + ' ' + `(${node.kind})`,
-        kind,
-        isMemberOfClass:
-          containingNodeInfo?.kind === 'Class' ||
-          (containingNodeInfo?.isMemberOfClass ?? false),
-        children: [],
-        start,
-        end,
-        sourceCode: sourceFile.text.substring(startChar, endChar),
-        link: `${sourceFileInfo.absolutePath}:${start.line + 1}:${
-          start.column + 1
-        }`,
-      };
-      containingNodeInfo?.children.push(nodeInfo);
-      return nodeInfo;
-    }
-    return undefined;
+
+    const docstring = withDocstring.slice(0, -withoutDocstring.length).trim();
+
+    return docstring || undefined;
   };
 
-  const drill = (
-    node: ts.Node,
-    containingNodeInfo: NodeInfo | undefined,
-    knownDocumentation: string | undefined = undefined,
-    knownName: string | undefined = undefined
-  ): NodeInfo | undefined => {
-    const nodeInfo = extract(
-      node,
-      containingNodeInfo,
-      knownDocumentation,
-      knownName
-    );
-    if (typeof nodeInfo !== 'undefined') {
-      return nodeInfo;
-    }
-    for (const child of node.getChildren()) {
-      const result = drill(
-        child,
-        containingNodeInfo,
-        knownDocumentation,
-        knownName
-      );
-      if (typeof result !== 'undefined') {
-        return result;
-      }
-    }
-    return undefined;
+  const isDocumented = (node: ts.Node): boolean => {
+    return (getDocumentation(node)?.length ?? 0) > 0;
+  };
+
+  const getLineColumn = (position: number): SourceCodePosition => {
+    return {
+      line: sourceFile.getLineAndCharacterOfPosition(position).line,
+      column: sourceFile.getLineAndCharacterOfPosition(position).character,
+    };
   };
 
   const visitor = (node: ts.Node) => {
-    if (isDocumented(node)) {
-      // So, this is crazy, but the token that is actually documented is some minor token, like a keyword or identifier, so we go one up to its parent, and generally speaking that should work to get something we can drill into to find a SIGNIFICANT node
-      // We take the documentation we got and save it until we find something significant
-      // Approach is not perfect but thats why I got
-
-      // @todo: right now, all classes, interfaces, aliases, and properties are lifted up to be the direct children of the source file/top level. This is not correct. I need to implement feature that certain syntax kinds (i.e. class, interfaces, type alias, variable statement (because it may hold a function expression), need to change what the parent nodeInfo object is so we can retain hierarchy information. Basically, some documented items are children of other documented items instead of just the top level)
-      // @todo: I could not find an uuid associated with a node, and just storing the names in a list is not enough due to scoping. As far as I can tell, using a getStart() and getEnd() pair can serve to dedupe, so I need to implement this next. I'm not sure what situation can lead to duplicates but I don't want to take any chances
-      drill(
-        node.parent,
-        sourceFileInfo.root,
-        getDocumentation(node),
-        getName(node)
-      );
+    const nodeId = getId(node);
+    if (coverageMap.has(nodeId)) {
+      return;
     }
+
+    const nodeKind = getNodeKind(node);
+
+    if (typeof nodeKind !== 'undefined') {
+      const name = getName(node);
+      const start = node.getStart();
+      const end = node.getEnd();
+      const docstring = getDocumentation(node);
+      coverageMap.set(nodeId, {
+        tsNode: node,
+        id: nodeId,
+        kind: nodeKind,
+        name,
+        start,
+        end,
+        docstring,
+      });
+      const link = `${sourceFileInfo.absolutePath}:${start + 1}:${end + 1}`;
+      const nodeInfo: NodeInfo = {
+        start: getLineColumn(start),
+        end: getLineColumn(end),
+        kind: nodeKind,
+        name,
+        documentation: docstring,
+        children: [],
+        tsKindString: `${ts.SyntaxKind[node.kind]} (${node.kind})`,
+        link,
+        sourceCode: sourceFile.text.substring(start, end),
+      };
+      if (isDocumented(node)) {
+        sourceFileInfo.root.children.push(nodeInfo);
+      }
+    }
+
     ts.forEachChild(node, visitor);
   };
 
-  visitor(sourceFile);
+  // First Pass
+  ts.forEachChild(sourceFile, visitor);
+
+  // Second pass:
+  // @todo
 }

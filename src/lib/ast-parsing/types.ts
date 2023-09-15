@@ -2,8 +2,8 @@
  * The kinds of symbols that are supported by the documentation generator
  */
 export type NodeKind =
-  | 'Variable'
-  | 'Function'
+  | 'VariableDecl'
+  | 'FunctionDecl'
   | 'Property'
   | 'Class'
   | 'Method'
