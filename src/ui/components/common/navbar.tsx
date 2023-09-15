@@ -26,7 +26,7 @@ export function Navbar({
             return items.length;
           };
           items.push(
-            <a key={getLength()} href={outDir + '/index.html'}>
+            <a key={getLength()} href={'/index.html'}>
               [/]
             </a>
           );
@@ -39,7 +39,6 @@ export function Navbar({
               <a
                 key={getLength()}
                 href={
-                  outDir +
                   '/' +
                   (crumbs.slice(0, i + 1).join('/') +
                     (i === crumbs.length - 1 ? '.html' : '/index.html'))

@@ -17,21 +17,17 @@ export function MainLayout({ crumbs, outDir, listing }: MainLayoutProps) {
   const dirnames = listing.filter((l) => !l.isLeaf).map((l) => l.name);
 
   const getFilenameUrl = (filename: string) => {
-    return (outDir + '/' + crumbs.join('/') + '/' + filename + '.html').replace(
+    return ('/' + crumbs.join('/') + '/' + filename + '.html').replace(
       /\/+/g,
       '/'
     );
   };
 
   const getDirnameUrl = (dirname: string) => {
-    return (
-      outDir +
-      '/' +
-      crumbs.join('/') +
-      '/' +
-      dirname +
-      '/index.html'
-    ).replace(/\/+/g, '/');
+    return ('/' + crumbs.join('/') + '/' + dirname + '/index.html').replace(
+      /\/+/g,
+      '/'
+    );
   };
 
   return (

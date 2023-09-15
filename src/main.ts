@@ -156,4 +156,8 @@ function main() {
   return result;
 }
 
-process.exit(main());
+const exitCode = main();
+
+if (exitCode !== ExitCode.Hang) {
+  process.exit(exitCode);
+}

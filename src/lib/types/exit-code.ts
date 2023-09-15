@@ -1,4 +1,5 @@
 export enum ExitCode {
+  Hang = -1,
   Success = 0,
   Failure = 1,
   BrokenInstallation = 2,

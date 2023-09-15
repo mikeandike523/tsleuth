@@ -75,27 +75,12 @@ Usage:
 
     const server = app.listen(0, () => {
       const { address, port } = server.address() as AddressInfo;
-      const url = `http://${address}:${port}`;
+      const url = `http://localhost:${port}`;
       process.stdout.write(`Listening on port ${port}.\n`);
       process.stdout.write(`Go to the following URL: ${chalk.green(url)}\n`);
     });
 
-    // Create a promise and a function to resolve it from outside
-    let resolvePromise: Function;
-    const serverPromise = new Promise<void>((resolve) => {
-      resolvePromise = resolve;
-    });
-
-    // Handle SIGINT (Ctrl+C) gracefully
-    process.on('SIGINT', () => {
-      process.stdout.write('Stopping the documentation server...\n');
-      server.close(() => {
-        process.stdout.write('Documentation server stopped.\n');
-        resolvePromise(); // Resolve the promise
-      });
-    });
-
-    return ExitCode.Success;
+    return ExitCode.Hang;
   }
 
   const cdRealpath = path.resolve(callingDirectory);
