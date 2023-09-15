@@ -57,7 +57,7 @@ Usage:
     return ExitCode.InvalidArguments;
   }
 
-  if (_args._[0] === 'open') {
+  if (_args._[0] === 'serve') {
     const cdRealpath = path.resolve(callingDirectory);
     const docsDir = path.resolve(cdRealpath, '.tsleuth', 'generated', 'docs');
     const docsIndex = path.resolve(docsDir, 'index.html');
