@@ -86,95 +86,88 @@ export function MainLayout({ crumbs, outDir, symbols }: MainLayoutProps) {
               </thead>
               <tbody>
                 <tr>
-                  <tr>
-                    <td colSpan={2}>
-                      <a href={symbol.link}>{symbol.link}</a>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>Qualifiers:</td>
-                    <td>
-                      {symbol.exportQualifier ? (
-                        <>
-                          {'export: ' + symbol.exportQualifier}
-                          <br />
-                        </>
-                      ) : (
-                        <></>
-                      )}
-                      {symbol.storageQualifier ? (
-                        <>
-                          {'storageQualifier: ' + symbol.storageQualifier}
-                          <br />
-                        </>
-                      ) : (
-                        <></>
-                      )}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td colSpan={2}>
+                  <td>Qualifiers:</td>
+                  <td>
+                    {symbol.exportQualifier ? (
+                      <>
+                        {'export: ' + symbol.exportQualifier}
+                        <br />
+                      </>
+                    ) : (
+                      <></>
+                    )}
+                    {symbol.storageQualifier ? (
+                      <>
+                        {'storageQualifier: ' + symbol.storageQualifier}
+                        <br />
+                      </>
+                    ) : (
+                      <></>
+                    )}
+                  </td>
+                </tr>
+                <tr>
+                  <td colSpan={2}>
+                    <pre
+                      style={{
+                        width: '100%',
+                        whiteSpace: 'pre-wrap',
+                        background: 'lightgray',
+                        color: 'darkgreen',
+                        fontWeight: 'bold',
+                      }}
+                    >
+                      {symbol.documentation}
+                    </pre>
+                  </td>
+                </tr>
+                <tr>
+                  <td colSpan={2}>
+                    {symbol.signatureSourceCode && (
+                      <div>
+                        <div
+                          style={{
+                            textDecoration: 'underline',
+                          }}
+                        >
+                          Function Signature
+                        </div>
+                        <div>
+                          <pre
+                            style={{
+                              width: '100%',
+                              whiteSpace: 'pre-wrap',
+                              background: 'lightgray',
+                              color: 'black',
+                              fontWeight: 'bold',
+                            }}
+                          >
+                            {symbol.signatureSourceCode}
+                          </pre>
+                        </div>
+                      </div>
+                    )}
+                    <details open={shouldStartExpanded}>
+                      <summary
+                        style={{
+                          textDecoration: 'underline',
+                        }}
+                      >
+                        Full Source Code
+                      </summary>
                       <pre
                         style={{
                           width: '100%',
                           whiteSpace: 'pre-wrap',
                           background: 'lightgray',
-                          color: 'darkgreen',
+                          color: 'black',
                           fontWeight: 'bold',
                         }}
                       >
-                        {symbol.documentation}
+                        {symbol.sourceCode}
                       </pre>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td colSpan={2}>
-                      {symbol.signatureSourceCode && (
-                        <div>
-                          <div
-                            style={{
-                              textDecoration: 'underline',
-                            }}
-                          >
-                            Function Signature
-                          </div>
-                          <div>
-                            <pre
-                              style={{
-                                width: '100%',
-                                whiteSpace: 'pre-wrap',
-                                background: 'lightgray',
-                                color: 'black',
-                                fontWeight: 'bold',
-                              }}
-                            >
-                              {symbol.signatureSourceCode}
-                            </pre>
-                          </div>
-                        </div>
-                      )}
-                      <details open={shouldStartExpanded}>
-                        <summary
-                          style={{
-                            textDecoration: 'underline',
-                          }}
-                        >
-                          Full Source Code
-                        </summary>
-                        <pre
-                          style={{
-                            width: '100%',
-                            whiteSpace: 'pre-wrap',
-                            background: 'lightgray',
-                            color: 'black',
-                            fontWeight: 'bold',
-                          }}
-                        >
-                          {symbol.sourceCode}
-                        </pre>
-                      </details>
-                    </td>
-                  </tr>
+                    </details>
+                  </td>
                 </tr>
               </tbody>
             </table>
