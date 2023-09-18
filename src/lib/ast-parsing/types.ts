@@ -78,6 +78,13 @@ export type NodeInfo = {
    * optional because it could be unknown
    */
   kind?: NodeKind;
+  /**
+   * Simply populated by `ts.SyntaxKind[node.kind]` (i.e. enum reverse mapping)
+   */
+  tsKindShort: string;
+  /**
+   * A full summary of the ts.Kind name and number of the node
+   */
   tsKindString: string;
   /**
    * The storage qualifier for the node if present and relevant
@@ -136,21 +143,23 @@ export type NodeInfo = {
    */
   signatureSourceCode?: string;
   /** The start of the symbol */
-  start: SourceCodePosition;
+  startChar: number;
   /** The end of the symbol */
-  end: SourceCodePosition;
+  endChar: number;
   /** The source code of the symbol, which is cached here since its faster then constantly getting a substring of the full source code */
   sourceCode: string;
   /**
-   * A string of format:
-   *
-   * <...source file absolute path...>:(line+1):(column+1)
-   *
-   * @remarks
-   * Its easy to just generate the url on the fly from the start position, but caching it here is a good optimization
-   * Windows doesn't typically understand these links too well, even with the file:// prefix. This is best used inside the VSCode terminal, which does understand these types of links
+   * A uuid when traversing the AST, although it will just be calculated form the start and end chars
    */
-  link: string;
+  uuid: string;
+  /**
+   * A chain of keys identifying parents of a node by name
+   */
+  nameChain: string[];
+  /**
+   * A chain of keys identifying parents of a node by uuid
+   */
+  uuidChain: string[];
 };
 
 /**
@@ -158,6 +167,7 @@ export type NodeInfo = {
  */
 export function createEmptyNodeInfo(): NodeInfo {
   return {
+    tsKindShort: '',
     tsKindString: '',
     name: '',
     kind: undefined,
@@ -167,10 +177,12 @@ export function createEmptyNodeInfo(): NodeInfo {
     isMemberOfClass: undefined,
     children: [],
     documentation: undefined,
-    start: { line: 0, column: 0 },
-    end: { line: 0, column: 0 },
+    startChar: -1,
+    endChar: -1,
     sourceCode: '',
-    link: '',
+    uuid: '',
+    nameChain: [],
+    uuidChain: [],
   };
 }
 

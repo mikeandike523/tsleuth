@@ -22,6 +22,13 @@ export function MainLayout({ crumbs, outDir, symbols }: MainLayoutProps) {
       <hr />
 
       {symbols.map((symbol, idx) => {
+        let displayName = symbol.name ?? '<no-name>';
+
+        if (symbol.nameChain.length > 0) {
+          displayName =
+            symbol.nameChain.join('\u2192') + '\u2192' + displayName;
+        }
+
         let shouldStartExpanded = false;
         if (symbol.kind) {
           if (!(symbol.signatureSourceCode ?? ''.trim() !== '')) {
@@ -70,7 +77,7 @@ export function MainLayout({ crumbs, outDir, symbols }: MainLayoutProps) {
                           color: 'gray',
                         }}
                       >
-                        ({symbol.kind})
+                        ({symbol.tsKindShort})
                       </div>
                       <div
                         style={{
@@ -78,7 +85,7 @@ export function MainLayout({ crumbs, outDir, symbols }: MainLayoutProps) {
                           fontSize: '1.5em',
                         }}
                       >
-                        {symbol.name}
+                        {displayName}
                       </div>
                     </div>
                   </td>

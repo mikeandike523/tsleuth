@@ -60,20 +60,6 @@ export function getNodeKind(node: ts.Node): NodeKind | undefined {
 }
 
 /**
- * A more lightweight version of the NodeInfo type, useful for retaining start, end, name, and comment information while drilling up and down
- */
-export type TraversalEntity = {
-  tsNode?: ts.Node;
-  id: string;
-  kind?: NodeKind | undefined;
-  name?: string;
-  start: number;
-  end: number;
-  docstring?: string;
-  signatureSourcecode?: string;
-};
-
-/**
  *
  * Going to have a 2 pass system. First pass find all the significant entiteis with their names and documentations, second pass goes through again to find out the semantic hierarchy (i.e., which methiods or properties belogn to which class, interface, or type alias, etc)
  *
@@ -89,13 +75,24 @@ export function walkAST(sourceFileInfo: SourceFileInfo) {
     );
   }
 
-  const sourceFileId = getId(sourceFile);
+  const coverageMap = new Map<string, NodeInfo>();
 
-  const coverageMap = new Map<string, TraversalEntity>();
+  const originatorMap = new Map<string, ts.Node>();
 
   const getName = (node: ts.Node): string | undefined => {
+    if (node.kind === ts.SyntaxKind.Constructor) {
+      return '[constructor]';
+    }
+
     const sym = checker.getSymbolAtLocation(node);
+
     if (!sym) {
+      const children = node.getChildren();
+      for (const child of children) {
+        if (child.kind === ts.SyntaxKind.Identifier) {
+          return child.getText();
+        }
+      }
       return undefined;
     }
     return sym.getName();
@@ -140,13 +137,6 @@ export function walkAST(sourceFileInfo: SourceFileInfo) {
     return (getDocumentation(node)?.length ?? 0) > 0;
   };
 
-  const getLineColumn = (position: number): SourceCodePosition => {
-    return {
-      line: sourceFile.getLineAndCharacterOfPosition(position).line,
-      column: sourceFile.getLineAndCharacterOfPosition(position).character,
-    };
-  };
-
   const visitor = (node: ts.Node) => {
     const nodeId = getId(node);
     if (coverageMap.has(nodeId)) {
@@ -160,27 +150,23 @@ export function walkAST(sourceFileInfo: SourceFileInfo) {
       const start = node.getStart();
       const end = node.getEnd();
       const docstring = getDocumentation(node);
-      coverageMap.set(nodeId, {
-        tsNode: node,
-        id: nodeId,
-        kind: nodeKind,
-        name,
-        start,
-        end,
-        docstring,
-      });
-      const link = `${sourceFileInfo.absolutePath}:${start + 1}:${end + 1}`;
+
       const nodeInfo: NodeInfo = {
-        start: getLineColumn(start),
-        end: getLineColumn(end),
+        tsKindShort: ts.SyntaxKind[node.kind],
+        uuid: nodeId,
+        startChar: start,
+        endChar: end,
         kind: nodeKind,
         name,
         documentation: docstring,
         children: [],
         tsKindString: `${ts.SyntaxKind[node.kind]} (${node.kind})`,
-        link,
         sourceCode: sourceFile.text.substring(start, end),
+        nameChain: [],
+        uuidChain: [],
       };
+      coverageMap.set(nodeId, nodeInfo);
+      originatorMap.set(nodeId, node);
       if (isDocumented(node)) {
         sourceFileInfo.root.children.push(nodeInfo);
       }
@@ -195,6 +181,49 @@ export function walkAST(sourceFileInfo: SourceFileInfo) {
   // First Pass
   ts.forEachChild(sourceFile, visitor);
 
-  // Second pass:
-  // @todo
+  // Function to associate parenthood
+  const drillUp = (nodeInfo: NodeInfo, originator: ts.Node) => {
+    let parent: ts.Node = originator.parent;
+    while (getId(parent) !== getId(sourceFile)) {
+      if (coverageMap.has(getId(parent))) {
+        const parentInfo = coverageMap.get(getId(parent))!;
+        const existingChildrenIds = parentInfo.children.map((nI) => {
+          return nI.uuid;
+        });
+        if (!existingChildrenIds.includes(nodeInfo.uuid)) {
+          parentInfo.children.push(nodeInfo);
+        }
+      }
+      parent = parent.parent;
+    }
+  };
+
+  // Second pass
+  const uuids = Array.from(coverageMap.keys());
+  for (const uuid of uuids) {
+    const nodeInfo = coverageMap.get(uuid)!;
+    const originator = originatorMap.get(uuid)!;
+    drillUp(nodeInfo, originator);
+  }
+
+  // Third pass
+  // propogate prefixes
+  const propogatePrefixes = (nodeInfo: NodeInfo) => {
+    for (const childInfo of nodeInfo.children) {
+      const nameString = nodeInfo.name ?? '<no-name>';
+      if (
+        childInfo.uuidChain.length === 0 ||
+        childInfo.uuidChain[childInfo.uuidChain.length - 1] !== nameString
+      ) {
+        childInfo.nameChain.push(nameString);
+        childInfo.uuidChain.push(nodeInfo.uuid);
+      }
+
+      propogatePrefixes(childInfo);
+    }
+  };
+
+  for (const topLevelNodeInfo of sourceFileInfo.root.children) {
+    propogatePrefixes(topLevelNodeInfo);
+  }
 }
