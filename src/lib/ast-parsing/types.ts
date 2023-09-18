@@ -1,16 +1,35 @@
+export type FunctionLikeNodeKind =
+  | 'FunctionDecl'
+  | 'Method'
+  | 'Constructor'
+  | 'GetAccessor'
+  | 'SetAccessor';
+
+export function isFunctionLikeNodeKind(
+  kind: NodeKind
+): kind is FunctionLikeNodeKind {
+  return (
+    kind === 'FunctionDecl' ||
+    kind === 'Method' ||
+    kind === 'Constructor' ||
+    kind === 'GetAccessor' ||
+    kind === 'SetAccessor'
+  );
+}
+
 /**
  * The kinds of symbols that are supported by the documentation generator
  */
 export type NodeKind =
   | 'VariableDecl'
-  | 'FunctionDecl'
   | 'Property'
   | 'Class'
   | 'Method'
   | 'Interface'
   | 'Enum'
   | 'EnumMember'
-  | 'TypeAlias';
+  | 'TypeAlias'
+  | FunctionLikeNodeKind;
 
 /**
  * Storage Qualifier for entities outside a class
@@ -112,6 +131,10 @@ export type NodeInfo = {
    * Generally, it should be present as this library is being designed to skip nondocumented symbols. Its good for optimization
    */
   documentation?: string;
+  /**
+   * The source code representing the signature of a function type
+   */
+  signatureSourceCode?: string;
   /** The start of the symbol */
   start: SourceCodePosition;
   /** The end of the symbol */

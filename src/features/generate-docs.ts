@@ -23,6 +23,7 @@ import {
 } from '<^w^>/lib/ast-parsing/types';
 import { deepCopyWithoutUndefined } from '<^w^>/lib/utils/objects';
 import { walkAST } from '<^w^>/lib/ast-parsing/walk-ast';
+import { openUrlInWebBrowser } from '<^w^>/lib/utils/os';
 
 export interface GenerateDocsArgs extends FeatureArgumentsObject {
   _: string[];
@@ -78,6 +79,7 @@ Usage:
       const url = `http://localhost:${port}`;
       process.stdout.write(`Listening on port ${port}.\n`);
       process.stdout.write(`Go to the following URL: ${chalk.green(url)}\n`);
+      openUrlInWebBrowser(url);
     });
 
     return ExitCode.Hang;

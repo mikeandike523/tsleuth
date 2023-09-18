@@ -22,6 +22,22 @@ export function MainLayout({ crumbs, outDir, symbols }: MainLayoutProps) {
       <hr />
 
       {symbols.map((symbol, idx) => {
+        let shouldStartExpanded = false;
+        if (symbol.kind) {
+          if (!(symbol.signatureSourceCode ?? ''.trim() !== '')) {
+            if (
+              symbol.kind === 'Property' ||
+              symbol.kind === 'Enum' ||
+              symbol.kind === 'EnumMember' ||
+              symbol.kind === 'Interface' ||
+              symbol.kind === 'TypeAlias' ||
+              symbol.kind === 'VariableDecl'
+            ) {
+              shouldStartExpanded = true;
+            }
+          }
+        }
+
         return (
           <div
             key={idx}
@@ -72,9 +88,7 @@ export function MainLayout({ crumbs, outDir, symbols }: MainLayoutProps) {
                 <tr>
                   <tr>
                     <td colSpan={2}>
-                      <a href={'file://' + symbol.link}>
-                        {'file://' + symbol.link}
-                      </a>
+                      <a href={symbol.link}>{symbol.link}</a>
                     </td>
                   </tr>
                   <tr>
@@ -115,17 +129,50 @@ export function MainLayout({ crumbs, outDir, symbols }: MainLayoutProps) {
                   </tr>
                   <tr>
                     <td colSpan={2}>
-                      <pre
-                        style={{
-                          width: '100%',
-                          whiteSpace: 'pre-wrap',
-                          background: 'lightgray',
-                          color: 'black',
-                          fontWeight: 'bold',
-                        }}
-                      >
-                        {symbol.sourceCode}
-                      </pre>
+                      {symbol.signatureSourceCode && (
+                        <div>
+                          <div
+                            style={{
+                              textDecoration: 'underline',
+                            }}
+                          >
+                            Function Signature
+                          </div>
+                          <div>
+                            <pre
+                              style={{
+                                width: '100%',
+                                whiteSpace: 'pre-wrap',
+                                background: 'lightgray',
+                                color: 'black',
+                                fontWeight: 'bold',
+                              }}
+                            >
+                              {symbol.signatureSourceCode}
+                            </pre>
+                          </div>
+                        </div>
+                      )}
+                      <details open={shouldStartExpanded}>
+                        <summary
+                          style={{
+                            textDecoration: 'underline',
+                          }}
+                        >
+                          Full Source Code
+                        </summary>
+                        <pre
+                          style={{
+                            width: '100%',
+                            whiteSpace: 'pre-wrap',
+                            background: 'lightgray',
+                            color: 'black',
+                            fontWeight: 'bold',
+                          }}
+                        >
+                          {symbol.sourceCode}
+                        </pre>
+                      </details>
                     </td>
                   </tr>
                 </tr>

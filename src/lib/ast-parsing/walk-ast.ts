@@ -7,6 +7,7 @@ import {
   NodeInfo,
   NodeKind,
   SourceCodePosition,
+  isFunctionLikeNodeKind,
 } from '<^w^>/lib/ast-parsing/types';
 
 /**
@@ -31,6 +32,7 @@ export function getNodeKind(node: ts.Node): NodeKind | undefined {
     case ts.SyntaxKind.VariableDeclaration:
       return 'VariableDecl';
     case ts.SyntaxKind.FunctionDeclaration:
+    case ts.SyntaxKind.FunctionExpression:
       return 'FunctionDecl';
     case ts.SyntaxKind.ClassDeclaration:
       return 'Class';
@@ -46,6 +48,12 @@ export function getNodeKind(node: ts.Node): NodeKind | undefined {
       return 'Method';
     case ts.SyntaxKind.TypeAliasDeclaration:
       return 'TypeAlias';
+    case ts.SyntaxKind.Constructor:
+      return 'Constructor';
+    case ts.SyntaxKind.GetAccessor:
+      return 'GetAccessor';
+    case ts.SyntaxKind.SetAccessor:
+      return 'SetAccessor';
     default:
       return undefined;
   }
@@ -62,6 +70,7 @@ export type TraversalEntity = {
   start: number;
   end: number;
   docstring?: string;
+  signatureSourcecode?: string;
 };
 
 /**
@@ -90,6 +99,24 @@ export function walkAST(sourceFileInfo: SourceFileInfo) {
       return undefined;
     }
     return sym.getName();
+  };
+
+  const getSignatureSourceCode = (node: ts.Node): string | undefined => {
+    if (
+      ts.isFunctionDeclaration(node) ||
+      ts.isFunctionExpression(node) ||
+      ts.isArrowFunction(node) ||
+      ts.isMethodDeclaration(node) ||
+      ts.isGetAccessorDeclaration(node) ||
+      ts.isSetAccessorDeclaration(node)
+    ) {
+      const signature = checker.getSignatureFromDeclaration(node);
+      if (!signature) {
+        return undefined;
+      }
+      return checker.signatureToString(signature);
+    }
+    return undefined;
   };
 
   const getDocumentation = (node: ts.Node): string | undefined => {
@@ -156,6 +183,9 @@ export function walkAST(sourceFileInfo: SourceFileInfo) {
       };
       if (isDocumented(node)) {
         sourceFileInfo.root.children.push(nodeInfo);
+      }
+      if (isFunctionLikeNodeKind(nodeKind)) {
+        nodeInfo.signatureSourceCode = getSignatureSourceCode(node);
       }
     }
 
