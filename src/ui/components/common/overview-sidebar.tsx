@@ -130,7 +130,7 @@ export function OverviewSidebar({ overview }: OverviewSidebarProps) {
       {Array.from(subOverviews.keys()).map((key, i) => {
         const reactKey = key + '_' + i;
         return (
-          <div
+          <details
             style={{
               border: '1px solid black',
               marginTop: '0.25em',
@@ -140,7 +140,7 @@ export function OverviewSidebar({ overview }: OverviewSidebarProps) {
             }}
             key={reactKey}
           >
-            <div
+            <summary
               style={{
                 width: '100',
                 background: 'khaki',
@@ -148,7 +148,7 @@ export function OverviewSidebar({ overview }: OverviewSidebarProps) {
               }}
             >
               {key}
-            </div>
+            </summary>
             {(() => {
               const covered = new Set<string>();
 
@@ -170,7 +170,7 @@ export function OverviewSidebar({ overview }: OverviewSidebarProps) {
 
               return items;
             })()}
-          </div>
+          </details>
         );
       })}
       <script
