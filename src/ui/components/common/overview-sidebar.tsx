@@ -55,12 +55,7 @@ export function OverviewSidebarItem({ entry }: { entry: OverviewEntry }) {
           const currentUrlWithoutTrailingSlash =
             currentUrlWithoutLeadingSlash.replace(/\/$/, '');
           if (hrefWithoutTrailingSlash === currentUrlWithoutTrailingSlash) {
-            document.getElementById(entry.uuidInSourceFile)?.scrollIntoView({
-              behavior: 'auto',
-            });
-            document.getElementById(hrefId)?.scrollIntoView({
-              behavior: 'auto',
-            });
+            window.location.reload();
           }
         }}
         css={aCss}
@@ -88,30 +83,57 @@ export function OverviewSidebar({ overview }: OverviewSidebarProps) {
     window.scrollToListenerEstablished = true;
     document.addEventListener('DOMContentLoaded', () => {
       // Check if there is a hash in the url
-      const hash = window.location.hash;
+      let hash = window.location.hash;
       if(hash){
+        hash = hash.substring(1);
         const uuid = hash
         const href =
         '/' +
-        window.location.pathname.replace(/^\\/+/g,'').replace(/\\/+$/g,'') +
-        '.html' +
-        '#' +
-        uuid;
+        window.location.pathname.replace(/^\\/+/g,'').replace(/\\/+$/g,'')
+        + '#' + uuid;
     
         const hrefWithoutLeadingSlash = href.replace(/^\\//, '');
         const hrefWithoutTrailingSlash = hrefWithoutLeadingSlash.replace(/\\$/,'');
     
         const hrefId = 'navto_' + hrefWithoutTrailingSlash.replace(/\\//g, '_fslash_').replace(/:/g, '_colon_').replace(/#/g, '_pound_');
+
+        console.log(hrefId);
         
         const elem1 = document.getElementById(uuid)
         const elem2 = document.getElementById(hrefId)
 
+        
         if(elem1){
+        
+
+
           elem1.scrollIntoView({
             behavior: 'auto',
           })
         }
         if(elem2){
+
+          let parent = elem2.parentNode;
+
+          while (parent!==null&&parent.tagName.toLowerCase()!=='details') {
+            parent = parent.parentNode;
+          }
+
+          console.log(parent);
+
+
+          if(parent){
+            if(parent.tagName.toLowerCase() === 'details'){
+              parent.open=true;
+            }else{
+              for(const child of parent.childNodes){
+                if(child.tagName.toLowerCase()==='details'){
+                  child.open = true
+                }
+              }
+            }
+            
+          }
           elem2.scrollIntoView({
             behavior: 'auto',
           })
