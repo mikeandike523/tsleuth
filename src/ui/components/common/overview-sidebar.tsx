@@ -149,14 +149,27 @@ export function OverviewSidebar({ overview }: OverviewSidebarProps) {
             >
               {key}
             </div>
-            {subOverviews
-              .get(key)
-              ?.map((entry, i) => (
-                <OverviewSidebarItem
-                  entry={entry}
-                  key={reactKey + entry.symbolPathSegments + '_' + i}
-                />
-              ))}
+            {(() => {
+              const covered = new Set<string>();
+
+              const items = [];
+
+              let counter = 0;
+
+              for (const entry of subOverviews.get(key)!) {
+                if (!covered.has(entry.uuidInSourceFile)) {
+                  covered.add(entry.uuidInSourceFile);
+                  items.push(
+                    <OverviewSidebarItem
+                      key={reactKey + '_entry' + counter++}
+                      entry={entry}
+                    />
+                  );
+                }
+              }
+
+              return items;
+            })()}
           </div>
         );
       })}
