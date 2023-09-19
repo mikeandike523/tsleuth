@@ -5,6 +5,7 @@
     "@babel/preset-react"
   ],
   "plugins": [
+    "@emotion",
     "@babel/proposal-class-properties",
     [
       "module-resolver",

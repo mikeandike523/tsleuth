@@ -33,7 +33,7 @@ export const featureGenerateDocsArgsSchema = z.object({
   _: z.array(z.string()),
 });
 
-export const featureGenerateDocs: Feature = (
+export const featureGenerateDocs: Feature = async (
   callingDirectory: string,
   _args: GenerateDocsArgs
 ) => {
@@ -164,7 +164,7 @@ Usage:
 
   process.stdout.write(`Generating documentation website...\n`);
 
-  intermediatesToHTML(cacheDir, docsDir);
+  await intermediatesToHTML(cacheDir, docsDir);
 
   process.stdout.write('Done.\n');
 

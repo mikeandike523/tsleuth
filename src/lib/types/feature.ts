@@ -35,4 +35,4 @@ export interface FeatureArgumentsObject {
 export type Feature = (
   callingDirectory: string,
   args: FeatureArgumentsObject
-) => ExitCode;
+) => ExitCode | Promise<ExitCode>;

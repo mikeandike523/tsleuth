@@ -2,7 +2,7 @@
  * The main entry point and command/feature router for tsleuth
  */
 
-import { createServer } from 'net';
+import express from 'express';
 
 import yargs from 'yargs';
 import { z } from 'zod';
@@ -27,6 +27,7 @@ import {
 import { ExitCode } from '<^w^>/lib/types/exit-code';
 import { FeatureArgumentsObject } from '<^w^>/lib/types/feature';
 import { formatZodErrorForFeature } from '<^w^>/lib/validation/format-zod-error-for-feature';
+import { AddressInfo } from 'net';
 
 const features = {
   cd: featureCD,
@@ -47,7 +48,7 @@ const featureSchemas = {
 /**
  * The main entry point for the program
  * */
-function main() {
+async function main() {
   const argv = yargs(process.argv.slice(2)).argv as unknown as {
     callingDirectory: string;
     _: Array<string>;
@@ -153,11 +154,25 @@ function main() {
 
   const result = feature(argv.callingDirectory, parsedArgs);
 
+  if (result instanceof Promise) {
+    return await result;
+  }
+
   return result;
 }
 
-const exitCode = main();
+(async () => {
+  const exitCode = await main();
 
-if (exitCode !== ExitCode.Hang) {
-  process.exit(exitCode);
-}
+  if (exitCode !== ExitCode.Hang) {
+    process.exit(exitCode);
+  }
+})();
+
+const app = express();
+const server = app.listen(0, () => {
+  const { address, port } = server.address() as AddressInfo;
+  process.stdout.write(
+    `Listening on port ${port} while waiting for async operations to finish...\n`
+  );
+});

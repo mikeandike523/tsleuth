@@ -6,6 +6,7 @@ import prettier from 'prettier';
 import { SymbolDetails } from '<^w^>/lib/utils/ast';
 import { Container } from '<^w^>/ui/components/common/container';
 import { MainLayout as IndexPageMainLayout } from '<^w^>/ui/components/index-page/main-layout';
+import { componentToHTML } from './component-to-html';
 
 import { mainCss } from '<^w^>/ui/components/main-css';
 
@@ -35,22 +36,5 @@ export function listingToHTML(
       />
     </Container>
   );
-
-  const finalRenderedString = ReactDOMServer.renderToString(page);
-
-  return `
-  <!DOCTYPE html>
-  <html lang="en">
-  
-
-
-  <body style="margin:0;padding:0;overflow:auto">
-  <style>
-  ${mainCss}
-  </style>
-  ${finalRenderedString}
-  </body>
-  </html>
-  
-  `;
+  return componentToHTML(page);
 }

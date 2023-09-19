@@ -17,7 +17,7 @@ export function MainLayout({ crumbs, outDir, symbols }: MainLayoutProps) {
         width: '100%',
       }}
     >
-      <Navbar crumbs={crumbs} outDir={outDir} />
+      <Navbar crumbs={crumbs} outDir={outDir} isIndexPage={false} />
 
       <hr />
 

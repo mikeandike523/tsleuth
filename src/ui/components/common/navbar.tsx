@@ -1,12 +1,28 @@
 import React, { ReactNode } from 'react';
+import { css } from '@emotion/react';
+
+import { Anchor } from '<^w^>/ui/components/common/styled/anchor';
 
 export function Navbar({
   outDir,
   crumbs,
+  isIndexPage,
 }: {
   outDir: string;
   crumbs: string[];
+  isIndexPage: boolean;
 }) {
+  const aCss = css`
+    text-decoration: none;
+    color: black;
+    &:hover {
+      text-decoration: underline;
+    }
+    &:visited {
+      color: black;
+    }
+  `;
+
   return (
     <>
       {/* navbar */}
@@ -18,6 +34,8 @@ export function Navbar({
           alignItems: 'center',
           fontSize: '2em',
           fontWeight: 'bold',
+          borderBottom: '2px dashed black',
+          background: 'khaki',
         }}
       >
         {(() => {
@@ -26,9 +44,9 @@ export function Navbar({
             return items.length;
           };
           items.push(
-            <a key={getLength()} href={'/index.html'}>
+            <Anchor css={aCss} key={getLength()} href={'/index.html'}>
               [/]
-            </a>
+            </Anchor>
           );
           if (crumbs.length > 0) {
             items.push(<div key={getLength()}>&gt;&gt;</div>);
@@ -36,16 +54,21 @@ export function Navbar({
 
           for (let i = 0; i < crumbs.length; i++) {
             items.push(
-              <a
+              <Anchor
+                css={aCss}
                 key={getLength()}
                 href={
                   '/' +
                   (crumbs.slice(0, i + 1).join('/') +
-                    (i === crumbs.length - 1 ? '.html' : '/index.html'))
+                    (i === crumbs.length - 1
+                      ? isIndexPage
+                        ? '/index.html'
+                        : '.html'
+                      : '/index.html'))
                 }
               >
                 {crumbs[i]}
-              </a>
+              </Anchor>
             );
             if (i < crumbs.length - 1) {
               items.push(<div key={i}>&gt;&gt;</div>);

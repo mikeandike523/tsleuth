@@ -1,0 +1,16 @@
+const emojis = {
+  document: '🗎',
+  emptyDocument: '🗋',
+  documentWithText: '🖹',
+  documentWithPicture: '🖻',
+  documentWithPictureAndText: '🖺',
+  pageFacingUp: '📄',
+  pageWithCurl: '📃',
+  printer: '🖨️',
+  fileFolder: '📁',
+  openFileFolder: '📂',
+  folder: '🗀',
+  openFolder: '🗁',
+  blackFolder: '🖿',
+  cardIndexDividers: '🗂️',
+};

@@ -1,6 +1,8 @@
 import fs from 'fs';
 import path from 'path';
 
+import prettier from 'prettier';
+
 import { astToHTML } from '<^w^>/lib/site-generation/ast-to-html';
 import { listingToHTML } from '<^w^>/lib/site-generation/listing-to-html';
 import { SymbolDetails } from '<^w^>/lib/utils/ast';
@@ -25,7 +27,7 @@ export type AstIntermediateJson = SourceFileInfo & {
  * @param intermediatesDirectory - The directory containing the json-based ASTs
  * @param outputDirectory - The directory to write the documentation website to
  */
-export function intermediatesToHTML(
+export async function intermediatesToHTML(
   intermediatesDirectory: string,
   outputDirectory: string
 ) {
@@ -197,7 +199,16 @@ export function intermediatesToHTML(
     });
   }
 
-  fs.writeFileSync(`${combinedOutDir}/index.html`, html);
+  process.stdout.write('Formatting HTML...\n');
+
+  const prettyHtml = await prettier.format(html, {
+    parser: 'html',
+    tabWidth: 2,
+  });
+
+  process.stdout.write('Done formatting.\n');
+
+  fs.writeFileSync(`${combinedOutDir}/index.html`, prettyHtml);
 
   recursion([], analysis);
 }

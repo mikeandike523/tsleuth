@@ -211,13 +211,10 @@ export function walkAST(sourceFileInfo: SourceFileInfo) {
   const propogatePrefixes = (nodeInfo: NodeInfo) => {
     for (const childInfo of nodeInfo.children) {
       const nameString = nodeInfo.name ?? '<no-name>';
-      if (
-        childInfo.uuidChain.length === 0 ||
-        childInfo.uuidChain[childInfo.uuidChain.length - 1] !== nameString
-      ) {
-        childInfo.nameChain.push(nameString);
-        childInfo.uuidChain.push(nodeInfo.uuid);
-      }
+      const nameChain = [...nodeInfo.nameChain, nameString];
+      const uuidChain = [...nodeInfo.uuidChain, nodeInfo.uuid];
+      childInfo.nameChain = nameChain;
+      childInfo.uuidChain = uuidChain;
 
       propogatePrefixes(childInfo);
     }

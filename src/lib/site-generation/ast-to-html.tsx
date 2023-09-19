@@ -2,10 +2,12 @@ import React from 'react';
 
 import ReactDOMServer from 'react-dom/server';
 import prettier from 'prettier';
+import { extractCritical } from '@emotion/server';
 
 import { SymbolDetails } from '<^w^>/lib/utils/ast';
 import { Container } from '<^w^>/ui/components/common/container';
 import { MainLayout as ChildPageMainLayout } from '<^w^>/ui/components/child-page/main-layout';
+import { componentToHTML } from './component-to-html';
 
 import { mainCss } from '<^w^>/ui/components/main-css';
 import { NodeInfo } from '../ast-parsing/types';
@@ -34,21 +36,5 @@ export function astToHTML(
     </Container>
   );
 
-  const finalRenderedString = ReactDOMServer.renderToString(page);
-
-  return `
-  <!DOCTYPE html>
-  <html lang="en">
-  
-
-
-  <body style="margin:0;padding:0;overflow:auto">
-  <style>
-  ${mainCss}
-  </style>
-  ${finalRenderedString}
-  </body>
-  </html>
-  
-  `;
+  return componentToHTML(page);
 }

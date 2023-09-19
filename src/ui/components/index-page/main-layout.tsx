@@ -36,28 +36,45 @@ export function MainLayout({ crumbs, outDir, listing }: MainLayoutProps) {
         width: '100%',
       }}
     >
-      <Navbar crumbs={crumbs} outDir={outDir} />
-      <hr />
+      <Navbar crumbs={crumbs} outDir={outDir} isIndexPage={true} />
       <div>
         <h1>Index of {crumbs.length > 0 ? crumbs.join('/') : <>[/]</>}</h1>
         <table
           style={{
+            tableLayout: 'fixed',
+            width: '100%',
             borderCollapse: 'collapse',
           }}
         >
           <thead>
             <tr>
-              <td>
+              <td
+                style={{
+                  textAlign: 'center',
+                  fontSize: '1.5em',
+                  fontWeight: 'bold',
+                }}
+              >
                 <h2>Files</h2>
               </td>
-              <td>
+              <td
+                style={{
+                  textAlign: 'center',
+                  fontSize: '1.5em',
+                  fontWeight: 'bold',
+                }}
+              >
                 <h2>Folders</h2>
               </td>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td>
+              <td
+                style={{
+                  fontSize: '1.25em',
+                }}
+              >
                 <ul>
                   {filenames.map((filename) => (
                     <li key={filename}>
@@ -66,7 +83,11 @@ export function MainLayout({ crumbs, outDir, listing }: MainLayoutProps) {
                   ))}
                 </ul>
               </td>
-              <td>
+              <td
+                style={{
+                  fontSize: '1.25em',
+                }}
+              >
                 <ul>
                   {dirnames.map((dirname) => (
                     <li key={dirname}>
