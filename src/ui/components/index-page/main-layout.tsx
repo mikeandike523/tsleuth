@@ -2,6 +2,8 @@ import React, { ReactNode } from 'react';
 
 import { SymbolDetails } from '<^w^>/lib/utils/ast';
 import { Navbar } from '../common/navbar';
+import { Overview } from '<^w^>/lib/site-generation/overview';
+import { Page } from '../common/page';
 
 export interface MainLayoutProps {
   crumbs: string[];
@@ -10,9 +12,15 @@ export interface MainLayoutProps {
     isLeaf: boolean;
   }[];
   outDir: string;
+  overview: Overview;
 }
 
-export function MainLayout({ crumbs, outDir, listing }: MainLayoutProps) {
+export function MainLayout({
+  overview,
+  crumbs,
+  outDir,
+  listing,
+}: MainLayoutProps) {
   const filenames = listing.filter((l) => l.isLeaf).map((l) => l.name);
   const dirnames = listing.filter((l) => !l.isLeaf).map((l) => l.name);
 
@@ -30,7 +38,7 @@ export function MainLayout({ crumbs, outDir, listing }: MainLayoutProps) {
     );
   };
 
-  return (
+  const content = (
     <div
       style={{
         width: '100%',
@@ -100,4 +108,6 @@ export function MainLayout({ crumbs, outDir, listing }: MainLayoutProps) {
       </div>
     </div>
   );
+
+  return <Page overview={overview}>{content}</Page>;
 }

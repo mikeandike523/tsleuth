@@ -3,15 +3,23 @@ import React, { ReactNode } from 'react';
 import { SymbolDetails } from '<^w^>/lib/utils/ast';
 import { Navbar } from '../common/navbar';
 import { NodeInfo } from '<^w^>/lib/ast-parsing/types';
+import { Overview } from '<^w^>/lib/site-generation/overview';
+import { Page } from '../common/page';
 
 export interface MainLayoutProps {
   crumbs: string[];
   symbols: NodeInfo[];
   outDir: string;
+  overview: Overview;
 }
 
-export function MainLayout({ crumbs, outDir, symbols }: MainLayoutProps) {
-  return (
+export function MainLayout({
+  crumbs,
+  outDir,
+  symbols,
+  overview,
+}: MainLayoutProps) {
+  const content = (
     <div
       style={{
         width: '100%',
@@ -47,6 +55,7 @@ export function MainLayout({ crumbs, outDir, symbols }: MainLayoutProps) {
 
         return (
           <div
+            id={symbol.uuid}
             key={idx}
             style={{
               width: '100%',
@@ -183,4 +192,6 @@ export function MainLayout({ crumbs, outDir, symbols }: MainLayoutProps) {
       })}
     </div>
   );
+
+  return <Page overview={overview}>{content}</Page>;
 }

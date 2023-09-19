@@ -12,6 +12,7 @@ import {
   calculateDirectoryStructureFromFiles,
 } from '<^w^>/lib/utils/filepath';
 import { NodeInfo, SourceFileInfo } from '../ast-parsing/types';
+import { Overview, OverviewEntry } from './overview';
 
 /**
  * Represents the structure of the AST intermediate json files
@@ -47,6 +48,45 @@ export async function intermediatesToHTML(
       'The source files listed in the intermediate ast files do not have a common parent directory'
     );
   }
+
+  process.stdout.write('Assembling overview intermediate files...\n');
+
+  const cacheDir = path.resolve(path.dirname(intermediatesDirectory));
+
+  const miscDir = path.resolve(cacheDir, 'misc');
+
+  if (fs.existsSync(miscDir)) {
+    fs.rmdirSync(miscDir, { recursive: true });
+  }
+  fs.mkdirSync(miscDir, { recursive: true });
+
+  const overview: Overview = [];
+
+  for (const intermediate of intermediates) {
+    const relativePath = path.relative(result.root, intermediate.absolutePath);
+    const normalized = path
+      .normalize(relativePath)
+      .replace(/\\/g, '/')
+      .replace(/\/+/g, '/');
+    const filesystemPathSegments = normalized.split('/');
+    const symbolCollection = (node: NodeInfo, pathSofar: string[] = []) => {
+      for (const child of node.children) {
+        const entry = {
+          filesystemPathSegments: filesystemPathSegments,
+          symbolPathSegments: [...pathSofar, child.name ?? '<no-name>'],
+          uuidInSourceFile: child.uuid,
+        };
+        overview.push(entry);
+        symbolCollection(child, [...pathSofar, child.name ?? '<no-name>']);
+      }
+    };
+    symbolCollection(intermediate.root, []);
+  }
+
+  const overviewFile = path.resolve(miscDir, 'overview.json');
+
+  fs.writeFileSync(overviewFile, JSON.stringify(overview, null, 2));
+
   process.stdout.write('Assembling hierarchical data structure...\n');
   const { root, relativePaths } = result;
   const analysis = calculateDirectoryStructureFromFiles<SymbolDetails[]>(
@@ -59,13 +99,9 @@ export async function intermediatesToHTML(
     root,
     analysis,
   };
-  const miscCacheDir = path.resolve(intermediatesDirectory, '..', 'misc');
-  if (fs.existsSync(miscCacheDir)) {
-    fs.rmdirSync(miscCacheDir, { recursive: true });
-  }
-  fs.mkdirSync(miscCacheDir, { recursive: true });
+
   fs.writeFileSync(
-    path.join(miscCacheDir, 'full-project-analysis.json'),
+    path.join(miscDir, 'full-project-analysis.json'),
     JSON.stringify(
       fullProjectAnalysis,
       (key: string, value: unknown) => {
@@ -204,6 +240,7 @@ export async function intermediatesToHTML(
   const prettyHtml = await prettier.format(html, {
     parser: 'html',
     tabWidth: 2,
+    printWidth: 80,
   });
 
   process.stdout.write('Done formatting.\n');

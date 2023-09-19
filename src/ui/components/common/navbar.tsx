@@ -3,6 +3,17 @@ import { css } from '@emotion/react';
 
 import { Anchor } from '<^w^>/ui/components/common/styled/anchor';
 
+const aCss = css`
+  text-decoration: none;
+  color: black;
+  &:hover {
+    text-decoration: underline;
+  }
+  &:visited {
+    color: black;
+  }
+`;
+
 export function Navbar({
   outDir,
   crumbs,
@@ -12,17 +23,6 @@ export function Navbar({
   crumbs: string[];
   isIndexPage: boolean;
 }) {
-  const aCss = css`
-    text-decoration: none;
-    color: black;
-    &:hover {
-      text-decoration: underline;
-    }
-    &:visited {
-      color: black;
-    }
-  `;
-
   return (
     <>
       {/* navbar */}

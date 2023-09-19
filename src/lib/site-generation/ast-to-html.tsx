@@ -1,5 +1,7 @@
 import React from 'react';
 
+import path from 'path';
+
 import ReactDOMServer from 'react-dom/server';
 import prettier from 'prettier';
 import { extractCritical } from '@emotion/server';
@@ -11,6 +13,7 @@ import { componentToHTML } from './component-to-html';
 
 import { mainCss } from '<^w^>/ui/components/main-css';
 import { NodeInfo } from '../ast-parsing/types';
+import { getOverviewFromCacheDir } from './overview';
 
 /**
  *
@@ -26,9 +29,18 @@ export function astToHTML(
   ast: NodeInfo[],
   outputDir: string
 ) {
+  const docsCacheDir = path.resolve(
+    outputDir,
+    '..',
+    '..',
+    'cache',
+    'generate-docs'
+  );
+  const overview = getOverviewFromCacheDir(docsCacheDir);
   const page = (
     <Container>
       <ChildPageMainLayout
+        overview={overview}
         outDir={outputDir.replace(/\\/g, '/')}
         crumbs={crumbs}
         symbols={ast}
