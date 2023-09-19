@@ -14,8 +14,9 @@ export interface PageProps extends BoxProps {
 
 export function Page({ children, overview }: PageProps) {
   const pageStyle = css`
-    width: 100vw;
+    width: 100%;
     height: 100vh;
+    overflow: none;
     margin: 0;
     padding: 0;
     display: flex;
@@ -29,7 +30,6 @@ export function Page({ children, overview }: PageProps) {
       <Box
         css={css`
           width: 25vw
-          flex: 0;
           overflow-y: auto;
           border-right: 2px dashed black
         `}
@@ -38,9 +38,9 @@ export function Page({ children, overview }: PageProps) {
       </Box>
       <Box
         css={css`
-          flex: 1;
+          height: 100vh;
+          width: 75vw
           overflow-y: auto;
-          padding: 0.5em;
         `}
       >
         {children}

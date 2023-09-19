@@ -42,10 +42,16 @@ export function MainLayout({
     <div
       style={{
         width: '100%',
+        height: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
       }}
     >
-      <Navbar crumbs={crumbs} outDir={outDir} isIndexPage={true} />
-      <div>
+      <div style={{ flex: 0 }}>
+        <Navbar crumbs={crumbs} outDir={outDir} isIndexPage={true} />
+      </div>
+
+      <div style={{ flex: 1, overflowY: 'auto' }}>
         <h1>Index of {crumbs.length > 0 ? crumbs.join('/') : <>[/]</>}</h1>
         <table
           style={{

@@ -31,13 +31,21 @@ export function OverviewSidebarItem({ entry }: { entry: OverviewEntry }) {
     '#' +
     entry.uuidInSourceFile;
 
+  const hrefWithoutLeadingSlash = href.replace(/^\//, '');
+  const hrefWithoutTrailingSlash = hrefWithoutLeadingSlash.replace(/\/$/, '');
+
+  const hrefId =
+    'navto_' +
+    hrefWithoutTrailingSlash
+      .replace(/\//g, '_fslash_')
+      .replace(/:/g, '_colon_')
+      .replace(/#/g, '_pound_');
   return (
     <div
       style={{
         marginTop: '0.25em',
         marginBottom: '0.25em',
         border: '2px solid black',
-        height: '100%',
         overflowY: 'auto',
         width: '100%',
       }}
@@ -52,14 +60,10 @@ export function OverviewSidebarItem({ entry }: { entry: OverviewEntry }) {
         {entry.filesystemPathSegments.join('/')}
       </div>
       <Anchor
+        id={hrefId}
         onClick={() => {
           // If the current url in the history is the same as the href, then try to scroll into view with no easing
 
-          const hrefWithoutLeadingSlash = href.replace(/^\//, '');
-          const hrefWithoutTrailingSlash = hrefWithoutLeadingSlash.replace(
-            /\/$/,
-            ''
-          );
           const currentUrlRoute = window.location.pathname;
           const currentUrlWithoutLeadingSlash = currentUrlRoute.replace(
             /^\//,
@@ -69,6 +73,9 @@ export function OverviewSidebarItem({ entry }: { entry: OverviewEntry }) {
             currentUrlWithoutLeadingSlash.replace(/\/$/, '');
           if (hrefWithoutTrailingSlash === currentUrlWithoutTrailingSlash) {
             document.getElementById(entry.uuidInSourceFile)?.scrollIntoView({
+              behavior: 'auto',
+            });
+            document.getElementById(hrefId)?.scrollIntoView({
               behavior: 'auto',
             });
           }
@@ -83,15 +90,58 @@ export function OverviewSidebarItem({ entry }: { entry: OverviewEntry }) {
 }
 
 export function OverviewSidebar({ overview }: OverviewSidebarProps) {
+  const js = `
+  if(!window.scrollToListenerEstablished){
+    window.scrollToListenerEstablished = true;
+    document.addEventListener('DOMContentLoaded', () => {
+      // Check if there is a hash in the url
+      const hash = window.location.hash;
+      if(hash){
+        const uuid = hash
+        const href =
+        '/' +
+        window.location.pathname.replace(/^\\/+/g,'').replace(/\\/+$/g,'') +
+        '.html' +
+        '#' +
+        uuid;
+    
+        const hrefWithoutLeadingSlash = href.replace(/^\\//, '');
+        const hrefWithoutTrailingSlash = hrefWithoutLeadingSlash.replace(/\\$/,'');
+    
+        const hrefId = 'navto_' + hrefWithoutTrailingSlash.replace(/\\//g, '_fslash_').replace(/:/g, '_colon_').replace(/#/g, '_pound_');
+        
+        const elem1 = document.getElementById(uuid)
+        const elem2 = document.getElementById(hrefId)
+
+        if(elem1){
+          elem1.scrollIntoView({
+            behavior: 'auto',
+          })
+        }
+        if(elem2){
+          elem2.scrollIntoView({
+            behavior: 'auto',
+          })
+        }
+      }
+    })
+  }
+  `;
   return (
     <Box
       css={css`
-        height: 100%;
+        height: 100vh;
+        overflow-y: auto;
       `}
     >
       {overview.map((entry, i) => {
         return <OverviewSidebarItem key={i} entry={entry} />;
       })}
+      <script
+        dangerouslySetInnerHTML={{
+          __html: js,
+        }}
+      ></script>
     </Box>
   );
 }

@@ -165,13 +165,13 @@ export function walkAST(sourceFileInfo: SourceFileInfo) {
         nameChain: [],
         uuidChain: [],
       };
-      coverageMap.set(nodeId, nodeInfo);
-      originatorMap.set(nodeId, node);
-      if (isDocumented(node)) {
-        sourceFileInfo.root.children.push(nodeInfo);
-      }
       if (isFunctionLikeNodeKind(nodeKind)) {
         nodeInfo.signatureSourceCode = getSignatureSourceCode(node);
+      }
+      if (typeof docstring !== 'undefined' && docstring.trim().length > 0) {
+        sourceFileInfo.root.children.push(nodeInfo);
+        coverageMap.set(nodeId, nodeInfo);
+        originatorMap.set(nodeId, node);
       }
     }
 
