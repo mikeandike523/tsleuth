@@ -41,24 +41,7 @@ export function OverviewSidebarItem({ entry }: { entry: OverviewEntry }) {
       .replace(/:/g, '_colon_')
       .replace(/#/g, '_pound_');
   return (
-    <div
-      style={{
-        marginTop: '0.25em',
-        marginBottom: '0.25em',
-        border: '2px solid black',
-        overflowY: 'auto',
-        width: '100%',
-      }}
-    >
-      <div
-        style={{
-          width: '100%',
-          background: 'khaki',
-          textOverflow: 'ellipsis',
-        }}
-      >
-        {entry.filesystemPathSegments.join('/')}
-      </div>
+    <div style={{}}>
       <Anchor
         id={hrefId}
         onClick={() => {
@@ -90,6 +73,16 @@ export function OverviewSidebarItem({ entry }: { entry: OverviewEntry }) {
 }
 
 export function OverviewSidebar({ overview }: OverviewSidebarProps) {
+  const subOverviews = new Map<string, Overview>();
+  for (const entry of overview) {
+    const filesystemPathSegments = entry.filesystemPathSegments;
+    const key = filesystemPathSegments.join('/');
+    if (!subOverviews.has(key)) {
+      subOverviews.set(key, []);
+    }
+    subOverviews.get(key)?.push(entry);
+  }
+
   const js = `
   if(!window.scrollToListenerEstablished){
     window.scrollToListenerEstablished = true;
@@ -134,8 +127,38 @@ export function OverviewSidebar({ overview }: OverviewSidebarProps) {
         overflow-y: auto;
       `}
     >
-      {overview.map((entry, i) => {
-        return <OverviewSidebarItem key={i} entry={entry} />;
+      {Array.from(subOverviews.keys()).map((key, i) => {
+        const reactKey = key + '_' + i;
+        return (
+          <div
+            style={{
+              border: '1px solid black',
+              marginTop: '0.25em',
+              marginBottom: '0.25em',
+              marginLeft: '6px',
+              marginRight: '6px',
+            }}
+            key={reactKey}
+          >
+            <div
+              style={{
+                width: '100',
+                background: 'khaki',
+                textOverflow: 'ellipsis',
+              }}
+            >
+              {key}
+            </div>
+            {subOverviews
+              .get(key)
+              ?.map((entry, i) => (
+                <OverviewSidebarItem
+                  entry={entry}
+                  key={reactKey + entry.symbolPathSegments + '_' + i}
+                />
+              ))}
+          </div>
+        );
       })}
       <script
         dangerouslySetInnerHTML={{

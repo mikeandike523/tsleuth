@@ -29,8 +29,8 @@ export function Page({ children, overview }: PageProps) {
     <Box css={pageStyle}>
       <Box
         css={css`
-          width: 25vw
-          overflow-y: auto;
+        flex: 0
+        overflow-y: auto;
           border-right: 2px dashed black
         `}
       >
@@ -38,8 +38,8 @@ export function Page({ children, overview }: PageProps) {
       </Box>
       <Box
         css={css`
+          flex: 1
           height: 100vh;
-          width: 75vw
           overflow-y: auto;
         `}
       >

@@ -22,7 +22,7 @@ export function MainLayout({
   const content = (
     <div
       style={{
-        width: '75vw',
+        width: '100%',
         height: '100vh',
         display: 'flex',
         flexDirection: 'column',
