@@ -51,7 +51,6 @@ export function MainLayout({ crumbs, outDir, listing }: MainLayoutProps) {
               <td
                 style={{
                   textAlign: 'center',
-                  fontSize: '1.5em',
                   fontWeight: 'bold',
                 }}
               >
@@ -60,7 +59,6 @@ export function MainLayout({ crumbs, outDir, listing }: MainLayoutProps) {
               <td
                 style={{
                   textAlign: 'center',
-                  fontSize: '1.5em',
                   fontWeight: 'bold',
                 }}
               >
