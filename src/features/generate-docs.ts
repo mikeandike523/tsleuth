@@ -168,5 +168,31 @@ Usage:
 
   process.stdout.write('Done.\n');
 
+  process.stdout.write(
+    'Copying hydrate.js to the static directory in the generated site...\n'
+  );
+
+  const docsDirStaticDir = path.resolve(docsDir, 'static');
+
+  if (!fs.existsSync(docsDirStaticDir)) {
+    fs.mkdirSync(docsDirStaticDir);
+  }
+
+  const targetFile = path.resolve(docsDirStaticDir, 'hydrate.js');
+
+  const sourceDir = path.resolve(
+    __dirname,
+    '..',
+    '..',
+    'documentation-generator-dom',
+    'dist'
+  );
+
+  const sourceFile = path.resolve(sourceDir, 'hydrate.js');
+
+  fs.copyFileSync(sourceFile, targetFile);
+
+  process.stdout.write('Done.\n');
+
   return ExitCode.Success;
 };

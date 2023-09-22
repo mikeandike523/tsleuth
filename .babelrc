@@ -5,7 +5,7 @@
     "@babel/preset-react"
   ],
   "plugins": [
-    "@emotion",
+    "@emotion/babel-plugin",
     "@babel/proposal-class-properties",
     [
       "module-resolver",
@@ -15,6 +15,7 @@
           "<^w^>": "./src"
         }
       }
-    ]
+    ],
+    "./prepend-react-import.cjs"
   ]
 }

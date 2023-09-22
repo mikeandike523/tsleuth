@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "esnext", // You can set this to a lower ECMAScript version if you want
+    "module": "esnext",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "jsx": "preserve", // set to "react" if you're using React
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "strict": true, // Enables a wide range of type checking behavior
+    "baseUrl": "./",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "strictNullChecks": true
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "exclude": ["node_modules", "dist"]
+}

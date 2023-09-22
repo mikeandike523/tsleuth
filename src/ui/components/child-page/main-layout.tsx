@@ -5,6 +5,7 @@ import { Navbar } from '../common/navbar';
 import { NodeInfo } from '<^w^>/lib/ast-parsing/types';
 import { Overview } from '<^w^>/lib/site-generation/overview';
 import { Page } from '../common/page';
+import { UUIDContext } from '<^w^>/lib/utils/uuid-context';
 
 export interface MainLayoutProps {
   crumbs: string[];
@@ -19,6 +20,8 @@ export function MainLayout({
   symbols,
   overview,
 }: MainLayoutProps) {
+  const uuidContext = new UUIDContext();
+
   const content = (
     <div
       style={{
@@ -67,6 +70,8 @@ export function MainLayout({
 
           return (
             <div
+              data-uuid-domain="symbol-list-item"
+              data-uuid={uuidContext.next()}
               id={symbol.uuid}
               key={idx}
               style={{

@@ -5,6 +5,7 @@ import { css } from '@emotion/react';
 import { Overview, OverviewEntry } from '<^w^>/lib/site-generation/overview';
 import { Box } from './styled/box';
 import { Anchor } from './styled/anchor';
+import { UUIDContext } from '<^w^>/lib/utils/uuid-context';
 
 export type OverviewSidebarProps = {
   overview: Overview;
@@ -31,36 +32,9 @@ export function OverviewSidebarItem({ entry }: { entry: OverviewEntry }) {
     '#' +
     entry.uuidInSourceFile;
 
-  const hrefWithoutLeadingSlash = href.replace(/^\//, '');
-  const hrefWithoutTrailingSlash = hrefWithoutLeadingSlash.replace(/\/$/, '');
-
-  const hrefId =
-    'navto_' +
-    hrefWithoutTrailingSlash
-      .replace(/\//g, '_fslash_')
-      .replace(/:/g, '_colon_')
-      .replace(/#/g, '_pound_');
   return (
     <div style={{}}>
-      <Anchor
-        id={hrefId}
-        onClick={() => {
-          // If the current url in the history is the same as the href, then try to scroll into view with no easing
-
-          const currentUrlRoute = window.location.pathname;
-          const currentUrlWithoutLeadingSlash = currentUrlRoute.replace(
-            /^\//,
-            ''
-          );
-          const currentUrlWithoutTrailingSlash =
-            currentUrlWithoutLeadingSlash.replace(/\/$/, '');
-          if (hrefWithoutTrailingSlash === currentUrlWithoutTrailingSlash) {
-            window.location.reload();
-          }
-        }}
-        css={aCss}
-        href={href}
-      >
+      <Anchor css={aCss} href={href}>
         {entry.symbolPathSegments.join('\u2192')}
       </Anchor>
     </div>
@@ -78,70 +52,8 @@ export function OverviewSidebar({ overview }: OverviewSidebarProps) {
     subOverviews.get(key)?.push(entry);
   }
 
-  const js = `
-  if(!window.scrollToListenerEstablished){
-    window.scrollToListenerEstablished = true;
-    document.addEventListener('DOMContentLoaded', () => {
-      // Check if there is a hash in the url
-      let hash = window.location.hash;
-      if(hash){
-        hash = hash.substring(1);
-        const uuid = hash
-        const href =
-        '/' +
-        window.location.pathname.replace(/^\\/+/g,'').replace(/\\/+$/g,'')
-        + '#' + uuid;
-    
-        const hrefWithoutLeadingSlash = href.replace(/^\\//, '');
-        const hrefWithoutTrailingSlash = hrefWithoutLeadingSlash.replace(/\\$/,'');
-    
-        const hrefId = 'navto_' + hrefWithoutTrailingSlash.replace(/\\//g, '_fslash_').replace(/:/g, '_colon_').replace(/#/g, '_pound_');
+  const uuidContext = new UUIDContext();
 
-        console.log(hrefId);
-        
-        const elem1 = document.getElementById(uuid)
-        const elem2 = document.getElementById(hrefId)
-
-        
-        if(elem1){
-        
-
-
-          elem1.scrollIntoView({
-            behavior: 'auto',
-          })
-        }
-        if(elem2){
-
-          let parent = elem2.parentNode;
-
-          while (parent!==null&&parent.tagName.toLowerCase()!=='details') {
-            parent = parent.parentNode;
-          }
-
-          console.log(parent);
-
-
-          if(parent){
-            if(parent.tagName.toLowerCase() === 'details'){
-              parent.open=true;
-            }else{
-              for(const child of parent.childNodes){
-                if(child.tagName.toLowerCase()==='details'){
-                  child.open = true
-                }
-              }
-            }
-            
-          }
-          elem2.scrollIntoView({
-            behavior: 'auto',
-          })
-        }
-      }
-    })
-  }
-  `;
   return (
     <Box
       css={css`
@@ -153,6 +65,8 @@ export function OverviewSidebar({ overview }: OverviewSidebarProps) {
         const reactKey = key + '_' + i;
         return (
           <details
+            data-uuid-domain="overview-sidebar-details"
+            data-uuid={uuidContext.next()}
             style={{
               border: '1px solid black',
               marginTop: '0.25em',
@@ -195,11 +109,6 @@ export function OverviewSidebar({ overview }: OverviewSidebarProps) {
           </details>
         );
       })}
-      <script
-        dangerouslySetInnerHTML={{
-          __html: js,
-        }}
-      ></script>
     </Box>
   );
 }
