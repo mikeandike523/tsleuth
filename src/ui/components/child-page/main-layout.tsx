@@ -20,8 +20,6 @@ export function MainLayout({
   symbols,
   overview,
 }: MainLayoutProps) {
-  const uuidContext = new UUIDContext();
-
   const content = (
     <div
       style={{
@@ -70,8 +68,6 @@ export function MainLayout({
 
           return (
             <div
-              data-uuid-domain="symbol-list-item"
-              data-uuid={uuidContext.next()}
               id={symbol.uuid}
               key={idx}
               style={{

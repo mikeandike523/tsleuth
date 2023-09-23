@@ -6,6 +6,7 @@ import { Overview, OverviewEntry } from '<^w^>/lib/site-generation/overview';
 import { Box } from './styled/box';
 import { Anchor } from './styled/anchor';
 import { UUIDContext } from '<^w^>/lib/utils/uuid-context';
+import { getGlobalUUIDMapper } from '<^w^>/lib/utils/global-uuid-mapper';
 
 export type OverviewSidebarProps = {
   overview: Overview;
@@ -52,7 +53,7 @@ export function OverviewSidebar({ overview }: OverviewSidebarProps) {
     subOverviews.get(key)?.push(entry);
   }
 
-  const uuidContext = new UUIDContext();
+  const globalUUIDMapper = getGlobalUUIDMapper();
 
   return (
     <Box
@@ -66,7 +67,7 @@ export function OverviewSidebar({ overview }: OverviewSidebarProps) {
         return (
           <details
             data-uuid-domain="overview-sidebar-details"
-            data-uuid={uuidContext.next()}
+            data-uuid={globalUUIDMapper.getFor('overview-sidebar-details', key)}
             style={{
               border: '1px solid black',
               marginTop: '0.25em',

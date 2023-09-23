@@ -47,13 +47,18 @@ Usage:
     \n`);
     return ExitCode.InvalidArguments;
   }
-  if (_args._.length === 1 && _args._[0] !== 'serve') {
+  if (
+    _args._.length === 1 &&
+    _args._[0] !== 'serve' &&
+    _args._[0] !== 'htmlOnly'
+  ) {
     process.stderr.write('Invalid arguments\n');
     process.stdout.write(`
     Usage:
         tsleuth generateDocs - generate documentation for the cwd                 
       OR
-        tsleuth generateDocs serve - serve the generated documentation site using express.js    
+        tsleuth generateDocs serve - serve the generated documentation site using express.js
+        tsleuth generateDocs htmlOnly - regenerate the documentation site, but don't regenerate AST intermediates
         \n`);
     return ExitCode.InvalidArguments;
   }
@@ -61,7 +66,6 @@ Usage:
   if (_args._[0] === 'serve') {
     const cdRealpath = path.resolve(callingDirectory);
     const docsDir = path.resolve(cdRealpath, '.tsleuth', 'generated', 'docs');
-    const docsIndex = path.resolve(docsDir, 'index.html');
 
     if (!fs.existsSync(docsDir)) {
       process.stderr.write(
@@ -75,7 +79,7 @@ Usage:
     app.use(express.static(docsDir));
 
     const server = app.listen(0, () => {
-      const { address, port } = server.address() as AddressInfo;
+      const { port } = server.address() as AddressInfo;
       const url = `http://localhost:${port}`;
       process.stdout.write(`Listening on port ${port}.\n`);
       process.stdout.write(`Go to the following URL: ${chalk.green(url)}\n`);
@@ -83,6 +87,64 @@ Usage:
     });
 
     return ExitCode.Hang;
+  }
+
+  if (_args._[0] === 'htmlOnly') {
+    const cdRealpath = path.resolve(callingDirectory);
+    const cacheDir = path.resolve(
+      cdRealpath,
+      '.tsleuth',
+      'cache',
+      'generate-docs',
+      'intermediates'
+    );
+
+    const docsDir = path.resolve(cdRealpath, '.tsleuth', 'generated', 'docs');
+
+    if (fs.existsSync(docsDir)) {
+      fs.rmdirSync(docsDir, { recursive: true });
+    }
+
+    fs.mkdirSync(docsDir, {
+      recursive: true,
+    });
+
+    process.stdout.write(`Generating documentation website...\n`);
+
+    await intermediatesToHTML(cacheDir, docsDir);
+
+    process.stdout.write('Done.\n');
+
+    process.stdout.write(
+      'Copying hydrate.js to the static directory in the generated site...\n'
+    );
+
+    const docsDirStaticDir = path.resolve(docsDir, 'static');
+
+    if (fs.existsSync(docsDirStaticDir)) {
+      fs.rmdirSync(docsDirStaticDir, { recursive: true });
+    }
+
+    if (!fs.existsSync(docsDirStaticDir)) {
+      fs.mkdirSync(docsDirStaticDir);
+    }
+
+    const targetFile = path.resolve(docsDirStaticDir, 'hydrate.js');
+
+    const sourceDir = path.resolve(
+      __dirname,
+      '..',
+      '..',
+      'documentation-generator-dom',
+      'dist'
+    );
+
+    const sourceFile = path.resolve(sourceDir, 'hydrate.js');
+
+    fs.copyFileSync(sourceFile, targetFile);
+
+    process.stdout.write('Done.\n');
+    return ExitCode.Success;
   }
 
   const cdRealpath = path.resolve(callingDirectory);

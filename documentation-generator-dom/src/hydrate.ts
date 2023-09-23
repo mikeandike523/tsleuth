@@ -1,7 +1,8 @@
-import { Agent } from '@/framework/agent';
+import { SpecialAgentHTMLElementDetails } from '@/framework/special-agents/html-element-details';
 
-const overviewSidebarDetailsAgents = Agent.findAllAndPossess(
-  'overview-sidebar-details'
-);
+const detailsAgents =
+  SpecialAgentHTMLElementDetails.specialAgentfindAllAndPossess(
+    'overview-sidebar-details'
+  );
 
-console.log(overviewSidebarDetailsAgents);
+console.log(detailsAgents);
