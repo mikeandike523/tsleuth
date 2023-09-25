@@ -17,11 +17,18 @@ const scrollableAgents2 =
     'symbol-list-scrollable'
   );
 
+const scrollableAgents3 =
+  SpecialAgentScrollableHTMLElement.specialAgentFindAllAndPossess(
+    'directory-index-scrollable'
+  );
+
 console.log(detailsAgents);
 
 console.log(scrollableAgents);
 
 console.log(scrollableAgents2);
+
+console.log(scrollableAgents3);
 
 (
   globalThis as {

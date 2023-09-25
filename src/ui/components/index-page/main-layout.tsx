@@ -4,6 +4,7 @@ import { SymbolDetails } from '<^w^>/lib/utils/ast';
 import { Navbar } from '../common/navbar';
 import { Overview } from '<^w^>/lib/site-generation/overview';
 import { Page } from '../common/page';
+import { getGlobalUUIDMapper } from '<^w^>/lib/utils/global-uuid-mapper';
 
 export interface MainLayoutProps {
   crumbs: string[];
@@ -21,6 +22,8 @@ export function MainLayout({
   outDir,
   listing,
 }: MainLayoutProps) {
+  const globalUUIDMapper = getGlobalUUIDMapper();
+
   const filenames = listing.filter((l) => l.isLeaf).map((l) => l.name);
   const dirnames = listing.filter((l) => !l.isLeaf).map((l) => l.name);
 
@@ -51,7 +54,14 @@ export function MainLayout({
         <Navbar crumbs={crumbs} outDir={outDir} isIndexPage={true} />
       </div>
 
-      <div style={{ flex: 1, overflowY: 'auto' }}>
+      <div
+        data-uuid-domain="directory-index-scrollable"
+        data-uuid={globalUUIDMapper.getFor(
+          'directory-index-scrollable',
+          'root'
+        )}
+        style={{ flex: 1, overflowY: 'auto' }}
+      >
         <h1>Index of {crumbs.length > 0 ? crumbs.join('/') : <>[/]</>}</h1>
         <table
           style={{
