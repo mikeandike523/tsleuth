@@ -18,13 +18,21 @@ export class Agent<
 
   name: string;
 
-  constructor() {
+  domStateInitializer: (element: TElement) => TDomState;
+  customStateInitializer: () => TCustomState;
+
+  constructor(
+    domStateInitializer: (element: TElement) => TDomState,
+    customStateInitializer: () => TCustomState
+  ) {
     this.controlledElement = null;
     this.uuidDomain = null;
     this.uuid = null;
     this.domState = {} as TDomState;
     this.customState = {} as TCustomState;
     this.name = 'Agent';
+    this.domStateInitializer = domStateInitializer;
+    this.customStateInitializer = customStateInitializer;
   }
   restoreFromSaved(
     savedDOMState: SerializableRecord,
@@ -45,6 +53,14 @@ export class Agent<
   }
   possess(element: TElement) {
     this.controlledElement = element;
+    AgentStateStorageManager.ensureAgentStorageExists(
+      this.uuidDomain as string,
+      this.uuid as string,
+      {
+        customState: this.customStateInitializer(),
+        domState: this.domStateInitializer(this.controlledElement as TElement),
+      }
+    );
     this.onPossess();
   }
   findAndPossess(uuidDomain: string, uuid: string) {
@@ -58,19 +74,25 @@ export class Agent<
       this.possess(element as TElement);
     }
   }
-  static findAllAndPossess<TAgent extends Agent = Agent>(
-    uuidDomain: string,
-    ctor: () => TAgent
-  ): TAgent[] {
+  static findAllAndPossess<
+    TDomState extends SerializableRecord = SerializableRecord,
+    TCustomState extends SerializableRecord = SerializableRecord,
+    TElement extends Element = Element,
+    TAgent extends Agent<TDomState, TCustomState, TElement> = Agent<
+      TDomState,
+      TCustomState,
+      TElement
+    >,
+  >(uuidDomain: string, ctor: () => TAgent): TAgent[] {
     const elements = document.querySelectorAll(
       `[data-uuid-domain="${uuidDomain}"]`
     );
     const agents = [];
     for (let i = 0; i < elements.length; i++) {
-      const agent = ctor();
+      const agent = ctor() as TAgent;
       agent.uuidDomain = uuidDomain;
       agent.uuid = elements[i].getAttribute('data-uuid');
-      agent.possess(elements[i]);
+      agent.possess(elements[i] as TElement);
       agents.push(agent);
     }
     return agents as TAgent[];
@@ -142,7 +164,17 @@ export class AgentStateStorageManager {
     AgentStateStorageManager.initStorage();
     sessionStorage.setItem(sessionStorageKey, JSON.stringify(storage));
   }
-  static ensureAgentStorageExists(uuidDomain: string, uuid: string): void {
+  static ensureAgentStorageExists(
+    uuidDomain: string,
+    uuid: string,
+    initialValue: {
+      domState: SerializableRecord;
+      customState: SerializableRecord;
+    } = {
+      domState: {},
+      customState: {},
+    }
+  ): void {
     const storage = AgentStateStorageManager.getStorage();
     let domainStorage = storage[uuidDomain];
     if (!domainStorage) {
@@ -151,10 +183,7 @@ export class AgentStateStorageManager {
     }
     const uuidStorage = domainStorage[uuid];
     if (!uuidStorage) {
-      domainStorage[uuid] = {
-        domState: {},
-        customState: {},
-      };
+      domainStorage[uuid] = initialValue;
     }
     AgentStateStorageManager.setStorage(storage);
   }

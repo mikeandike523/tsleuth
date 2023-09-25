@@ -16,8 +16,17 @@ export class SpecialAgentHTMLElementDetails extends Agent<
   HTMLDetailsElement
 > {
   constructor() {
-    super();
-    this.name = 'specialAgentHTMLElementDetails';
+    super(
+      (elem) => {
+        return {
+          open: elem.open,
+        };
+      },
+      () => {
+        return {};
+      }
+    );
+    this.name = 'SpecialAgentHTMLElementDetails';
   }
   prepareForSaving(
     currentDOMState: DomState,
@@ -38,10 +47,12 @@ export class SpecialAgentHTMLElementDetails extends Agent<
   static specialAgentfindAllAndPossess(
     uuidDomain: string
   ): SpecialAgentHTMLElementDetails[] {
-    return super.findAllAndPossess<SpecialAgentHTMLElementDetails>(
-      uuidDomain,
-      () => new SpecialAgentHTMLElementDetails()
-    );
+    return super.findAllAndPossess<
+      DomState,
+      CustomState,
+      HTMLDetailsElement,
+      SpecialAgentHTMLElementDetails
+    >(uuidDomain, () => new SpecialAgentHTMLElementDetails());
   }
 
   onPossess(): void {

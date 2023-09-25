@@ -6,6 +6,7 @@ import { NodeInfo } from '<^w^>/lib/ast-parsing/types';
 import { Overview } from '<^w^>/lib/site-generation/overview';
 import { Page } from '../common/page';
 import { UUIDContext } from '<^w^>/lib/utils/uuid-context';
+import { getGlobalUUIDMapper } from '<^w^>/lib/utils/global-uuid-mapper';
 
 export interface MainLayoutProps {
   crumbs: string[];
@@ -20,6 +21,7 @@ export function MainLayout({
   symbols,
   overview,
 }: MainLayoutProps) {
+  const globalUUIDMapper = getGlobalUUIDMapper();
   const content = (
     <div
       style={{
@@ -37,6 +39,8 @@ export function MainLayout({
         <Navbar crumbs={crumbs} outDir={outDir} isIndexPage={false} />
       </div>
       <div
+        data-uuid-domain="symbol-list-scrollable"
+        data-uuid={globalUUIDMapper.getFor('symbol-list-scrollable', 'root')}
         style={{
           flex: 1,
           overflowY: 'auto',

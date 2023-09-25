@@ -13,7 +13,8 @@ export type OverviewSidebarProps = {
 };
 
 const aCss = css`
-  width: 100%;
+  width: 20vw;
+  max-width: 20vw;
   text-overflow: ellipsis;
   text-decoration: none;
   color: black;
@@ -23,6 +24,9 @@ const aCss = css`
   &:visited {
     color: black;
   }
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
 `;
 
 export function OverviewSidebarItem({ entry }: { entry: OverviewEntry }) {
@@ -34,11 +38,9 @@ export function OverviewSidebarItem({ entry }: { entry: OverviewEntry }) {
     entry.uuidInSourceFile;
 
   return (
-    <div style={{}}>
-      <Anchor css={aCss} href={href}>
-        {entry.symbolPathSegments.join('\u2192')}
-      </Anchor>
-    </div>
+    <Anchor css={aCss} href={href}>
+      {entry.symbolPathSegments.join('\u2192')}
+    </Anchor>
   );
 }
 
@@ -57,6 +59,8 @@ export function OverviewSidebar({ overview }: OverviewSidebarProps) {
 
   return (
     <Box
+      data-uuid-domain="overview-sidebar-scrollable"
+      data-uuid={globalUUIDMapper.getFor('overview-sidebar-scrollable', 'root')}
       css={css`
         height: 100vh;
         overflow-y: auto;
@@ -74,17 +78,52 @@ export function OverviewSidebar({ overview }: OverviewSidebarProps) {
               marginBottom: '0.25em',
               marginLeft: '6px',
               marginRight: '6px',
+              whiteSpace: 'nowrap',
+              textOverflow: 'ellipsis',
+              display: 'block',
+              overflow: 'hidden',
             }}
             key={reactKey}
           >
             <summary
               style={{
-                width: '100',
+                width: '20vw',
+                maxWidth: '20vw',
+                whiteSpace: 'nowrap',
                 background: 'khaki',
                 textOverflow: 'ellipsis',
+                display: 'block',
+                overflow: 'hidden',
               }}
             >
-              {key}
+              <div
+                style={{
+                  width: '20vw',
+                  maxWidth: '20vw',
+                  whiteSpace: 'nowrap',
+                  background: 'khaki',
+                  textOverflow: 'ellipsis',
+                  display: 'block',
+                  overflow: 'hidden',
+                  fontStyle: 'italic',
+                }}
+              >
+                {key.split('/').slice(0, -1).join('/')}
+              </div>
+              <div
+                style={{
+                  width: '20vw',
+                  maxWidth: '20vw',
+                  whiteSpace: 'nowrap',
+                  background: 'khaki',
+                  textOverflow: 'ellipsis',
+                  display: 'block',
+                  overflow: 'hidden',
+                  fontWeight: 'bold',
+                }}
+              >
+                {key.split('/').slice(-1)[0]}
+              </div>
             </summary>
             {(() => {
               const covered = new Set<string>();
