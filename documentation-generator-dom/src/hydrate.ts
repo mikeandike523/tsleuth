@@ -1,5 +1,6 @@
 import { SpecialAgentHTMLElementDetails } from '@/framework/special-agents/html-element-details';
 import { SpecialAgentScrollableHTMLElement } from './framework/special-agents/html-element-scrollable';
+import { SpecialAgentTruncatableHTMLElement } from './framework/special-agents/html-element-truncatable';
 import { sessionStorageKey } from './framework/agent';
 
 const detailsAgents =
@@ -22,6 +23,11 @@ const scrollableAgents3 =
     'directory-index-scrollable'
   );
 
+const truncatableAgents =
+  SpecialAgentTruncatableHTMLElement.specialAgentFindAllAndPossess(
+    'text-truncatable'
+  );
+
 console.log(detailsAgents);
 
 console.log(scrollableAgents);
@@ -29,6 +35,8 @@ console.log(scrollableAgents);
 console.log(scrollableAgents2);
 
 console.log(scrollableAgents3);
+
+console.log(truncatableAgents);
 
 (
   globalThis as {

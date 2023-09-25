@@ -30,6 +30,8 @@ const aCss = css`
 `;
 
 export function OverviewSidebarItem({ entry }: { entry: OverviewEntry }) {
+  const globalUUIDMapper = getGlobalUUIDMapper();
+
   const href =
     '/' +
     entry.filesystemPathSegments.join('/') +
@@ -38,7 +40,16 @@ export function OverviewSidebarItem({ entry }: { entry: OverviewEntry }) {
     entry.uuidInSourceFile;
 
   return (
-    <Anchor css={aCss} href={href}>
+    <Anchor
+      data-uuid-domain="text-truncatable"
+      data-uuid={globalUUIDMapper.getFor(
+        'text-truncatable',
+        '_module_link_' + href
+      )}
+      css={aCss}
+      href={href}
+      title={entry.symbolPathSegments.join('\u2192')}
+    >
       {entry.symbolPathSegments.join('\u2192')}
     </Anchor>
   );
@@ -78,8 +89,6 @@ export function OverviewSidebar({ overview }: OverviewSidebarProps) {
               marginBottom: '0.25em',
               marginLeft: '6px',
               marginRight: '6px',
-              whiteSpace: 'nowrap',
-              textOverflow: 'ellipsis',
               display: 'block',
               overflow: 'hidden',
             }}
@@ -89,14 +98,17 @@ export function OverviewSidebar({ overview }: OverviewSidebarProps) {
               style={{
                 width: '20vw',
                 maxWidth: '20vw',
-                whiteSpace: 'nowrap',
                 background: 'khaki',
-                textOverflow: 'ellipsis',
                 display: 'block',
                 overflow: 'hidden',
               }}
             >
               <div
+                data-uuid-domain="text-truncatable"
+                data-uuid={globalUUIDMapper.getFor(
+                  'text-truncatable',
+                  key + '_filepath_parent_dirs'
+                )}
                 style={{
                   width: '20vw',
                   maxWidth: '20vw',
@@ -107,10 +119,16 @@ export function OverviewSidebar({ overview }: OverviewSidebarProps) {
                   overflow: 'hidden',
                   fontStyle: 'italic',
                 }}
+                title={key.split('/').slice(0, -1).join('/')}
               >
                 {key.split('/').slice(0, -1).join('/')}
               </div>
               <div
+                data-uuid-domain="text-truncatable"
+                data-uuid={globalUUIDMapper.getFor(
+                  'text-truncatable',
+                  key + '_filepath_basename'
+                )}
                 style={{
                   width: '20vw',
                   maxWidth: '20vw',
@@ -121,6 +139,7 @@ export function OverviewSidebar({ overview }: OverviewSidebarProps) {
                   overflow: 'hidden',
                   fontWeight: 'bold',
                 }}
+                title={key.split('/').slice(-1)[0]}
               >
                 {key.split('/').slice(-1)[0]}
               </div>
