@@ -40,7 +40,10 @@ export function MainLayout({
       </div>
       <div
         data-uuid-domain="symbol-list-scrollable"
-        data-uuid={globalUUIDMapper.getFor('symbol-list-scrollable', 'root')}
+        data-uuid={globalUUIDMapper.getFor(
+          'symbol-list-scrollable',
+          crumbs.join('/')
+        )}
         style={{
           flex: 1,
           overflowY: 'auto',

@@ -58,7 +58,7 @@ export function MainLayout({
         data-uuid-domain="directory-index-scrollable"
         data-uuid={globalUUIDMapper.getFor(
           'directory-index-scrollable',
-          'root'
+          crumbs.join('/')
         )}
         style={{ flex: 1, overflowY: 'auto' }}
       >
