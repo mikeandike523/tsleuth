@@ -48,3 +48,5 @@ console.log(truncatableAgents);
     console.log(JSON.stringify(JSON.parse(data), null, 2));
   }
 };
+
+document.getElementById('loading-spinner')?.remove();

@@ -144,6 +144,22 @@ Usage:
     fs.copyFileSync(sourceFile, targetFile);
 
     process.stdout.write('Done.\n');
+
+    process.stdout.write('Copying all other static files...');
+    const staticDir = path.resolve(sourceDir, '..', 'static');
+
+    const items = fs.readdirSync(staticDir);
+    for (const item of items) {
+      if (fs.statSync(path.resolve(staticDir, item)).isFile()) {
+        const sourceFile = path.resolve(staticDir, item);
+        const targetFile = path.resolve(docsDirStaticDir, item);
+        process.stdout.write(`Copying file ${sourceFile} to ${targetFile}...`);
+        fs.copyFileSync(sourceFile, targetFile);
+      }
+    }
+
+    process.stdout.write('Done.\n');
+
     return ExitCode.Success;
   }
 
@@ -253,6 +269,21 @@ Usage:
   const sourceFile = path.resolve(sourceDir, 'hydrate.js');
 
   fs.copyFileSync(sourceFile, targetFile);
+
+  process.stdout.write('Done.\n');
+
+  process.stdout.write('Copying all other static files...');
+  const staticDir = path.resolve(sourceDir, '..', 'static');
+
+  const items = fs.readdirSync(staticDir);
+  for (const item of items) {
+    if (fs.statSync(path.resolve(staticDir, item)).isFile()) {
+      const sourceFile = path.resolve(staticDir, item);
+      const targetFile = path.resolve(docsDirStaticDir, item);
+      process.stdout.write(`Copying file ${sourceFile} to ${targetFile}...`);
+      fs.copyFileSync(sourceFile, targetFile);
+    }
+  }
 
   process.stdout.write('Done.\n');
 

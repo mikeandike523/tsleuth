@@ -20,6 +20,9 @@ export function componentToHTML(component: ReactNode) {
     ${mainCss}
   </style>
     ${markup}
+    <div id="loading-spinner" style="display:flex;flex-direction:column;align-items:center;justify-content:center;background:white;position:fixed;width:100vw;height:100vh;margin:0:padding:0;">
+      <img src="/static/spinner.gif" alt="loading..." />
+    </div>
   </body>
   </html>
   `;
