@@ -8,6 +8,9 @@ import { Anchor } from './styled/anchor';
 import { UUIDContext } from '<^w^>/lib/utils/uuid-context';
 import { getGlobalUUIDMapper } from '<^w^>/lib/utils/global-uuid-mapper';
 
+const plusEmoji = '\u2795';
+const minusEmoji = '\u2796';
+
 export type OverviewSidebarProps = {
   overview: Overview;
 };
@@ -27,6 +30,7 @@ const aCss = css`
   display: block;
   white-space: nowrap;
   overflow: hidden;
+  margin-left: 2em;
 `;
 
 export function OverviewSidebarItem({ entry }: { entry: OverviewEntry }) {
@@ -68,6 +72,8 @@ export function OverviewSidebar({ overview }: OverviewSidebarProps) {
 
   const globalUUIDMapper = getGlobalUUIDMapper();
 
+  let parentString = '';
+
   return (
     <Box
       data-uuid-domain="overview-sidebar-scrollable"
@@ -79,30 +85,12 @@ export function OverviewSidebar({ overview }: OverviewSidebarProps) {
     >
       {Array.from(subOverviews.keys()).map((key, i) => {
         const reactKey = key + '_' + i;
-        return (
-          <details
-            data-uuid-domain="overview-sidebar-details"
-            data-uuid={globalUUIDMapper.getFor('overview-sidebar-details', key)}
-            style={{
-              border: '1px solid black',
-              marginTop: '0.25em',
-              marginBottom: '0.25em',
-              marginLeft: '6px',
-              marginRight: '6px',
-              display: 'block',
-              overflow: 'hidden',
-            }}
-            key={reactKey}
-          >
-            <summary
-              style={{
-                width: '20vw',
-                maxWidth: '20vw',
-                background: 'khaki',
-                display: 'block',
-                overflow: 'hidden',
-              }}
-            >
+
+        const newParentString = key.split('/').slice(0, -1).join('/');
+
+        const retval = (
+          <>
+            {newParentString !== parentString && (
               <div
                 data-uuid-domain="text-truncatable"
                 data-uuid={globalUUIDMapper.getFor(
@@ -113,60 +101,83 @@ export function OverviewSidebar({ overview }: OverviewSidebarProps) {
                   width: '20vw',
                   maxWidth: '20vw',
                   whiteSpace: 'nowrap',
-                  background: 'khaki',
                   textOverflow: 'ellipsis',
                   display: 'block',
                   overflow: 'hidden',
-                  fontStyle: 'italic',
+                  background: 'khaki',
                 }}
                 title={key.split('/').slice(0, -1).join('/')}
               >
                 {key.split('/').slice(0, -1).join('/')}
               </div>
-              <div
+            )}
+
+            <details
+              data-uuid-domain="overview-sidebar-details"
+              data-uuid={globalUUIDMapper.getFor(
+                'overview-sidebar-details',
+                key
+              )}
+              style={{
+                display: 'block',
+                overflow: 'hidden',
+              }}
+              key={reactKey}
+            >
+              <summary
+                data-toggle="toggle"
                 data-uuid-domain="text-truncatable"
                 data-uuid={globalUUIDMapper.getFor(
                   'text-truncatable',
                   key + '_filepath_basename'
                 )}
                 style={{
+                  userSelect: 'none',
+                  marginLeft: '2em',
                   width: '20vw',
                   maxWidth: '20vw',
                   whiteSpace: 'nowrap',
-                  background: 'khaki',
+                  background: 'cyan',
                   textOverflow: 'ellipsis',
                   display: 'block',
                   overflow: 'hidden',
-                  fontWeight: 'bold',
                 }}
                 title={key.split('/').slice(-1)[0]}
               >
-                {key.split('/').slice(-1)[0]}
-              </div>
-            </summary>
-            {(() => {
-              const covered = new Set<string>();
+                <span data-role="icon">{plusEmoji}</span>
+                &nbsp;
+                <span data-role="label">{key.split('/').slice(-1)[0]}</span>
+              </summary>
+              {(() => {
+                const covered = new Set<string>();
 
-              const items = [];
+                const items = [];
 
-              let counter = 0;
+                let counter = 0;
 
-              for (const entry of subOverviews.get(key)!) {
-                if (!covered.has(entry.uuidInSourceFile)) {
-                  covered.add(entry.uuidInSourceFile);
-                  items.push(
-                    <OverviewSidebarItem
-                      key={reactKey + '_entry' + counter++}
-                      entry={entry}
-                    />
-                  );
+                for (const entry of subOverviews.get(key)!) {
+                  if (!covered.has(entry.uuidInSourceFile)) {
+                    covered.add(entry.uuidInSourceFile);
+                    items.push(
+                      <OverviewSidebarItem
+                        key={reactKey + '_entry' + counter++}
+                        entry={entry}
+                      />
+                    );
+                  }
                 }
-              }
 
-              return items;
-            })()}
-          </details>
+                return items;
+              })()}
+            </details>
+          </>
         );
+
+        if (newParentString !== parentString) {
+          parentString = newParentString;
+        }
+
+        return retval;
       })}
     </Box>
   );

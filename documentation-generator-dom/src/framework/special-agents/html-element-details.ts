@@ -1,6 +1,9 @@
 import { Agent } from '@/framework/agent';
 import { SerializableRecord } from '../serialization';
 
+const plusEmoji = '\u2795';
+const minusEmoji = '\u2796';
+
 export type DomState = {
   open: boolean;
 };
@@ -15,6 +18,7 @@ export class SpecialAgentHTMLElementDetails extends Agent<
   CustomState,
   HTMLDetailsElement
 > {
+  iconSpan: HTMLSpanElement | null;
   constructor() {
     super(
       (elem) => {
@@ -26,6 +30,7 @@ export class SpecialAgentHTMLElementDetails extends Agent<
         return {};
       }
     );
+    this.iconSpan = null;
     this.name = 'SpecialAgentHTMLElementDetails';
   }
   prepareForSaving(
@@ -34,6 +39,10 @@ export class SpecialAgentHTMLElementDetails extends Agent<
   ): void {
     if (this.controlledElement) {
       currentDOMState.open = this.controlledElement.open;
+      this.domState.open = this.controlledElement.open;
+    }
+    if (this.iconSpan) {
+      this.iconSpan.textContent = this.domState.open ? minusEmoji : plusEmoji;
     }
   }
   restoreFromSaved(
@@ -42,6 +51,9 @@ export class SpecialAgentHTMLElementDetails extends Agent<
   ): void {
     if (this.controlledElement) {
       this.controlledElement.open = savedDOMState.open;
+    }
+    if (this.iconSpan) {
+      this.iconSpan.textContent = this.domState.open ? minusEmoji : plusEmoji;
     }
   }
   static specialAgentfindAllAndPossess(
@@ -59,6 +71,21 @@ export class SpecialAgentHTMLElementDetails extends Agent<
     console.log('SpecialAgentHTMLElementDetails onPossess');
     this.load();
     const element = this.controlledElement as HTMLDetailsElement;
+    const summaryElement = element.querySelector('summary');
+    if (summaryElement) {
+      const children = Array.from(summaryElement.children);
+      let foundSpan: HTMLSpanElement | null = null;
+      for (const child of children) {
+        if (
+          child instanceof HTMLSpanElement &&
+          child.getAttribute('data-role') === 'icon'
+        ) {
+          foundSpan = child;
+          break;
+        }
+      }
+      this.iconSpan = foundSpan;
+    }
     element.addEventListener('toggle', () => {
       this.save();
     });
