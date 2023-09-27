@@ -60,8 +60,14 @@ export function OverviewSidebarItem({ entry }: { entry: OverviewEntry }) {
 }
 
 export function OverviewSidebar({ overview }: OverviewSidebarProps) {
+  const sortedOverview = overview.sort((a, b) => {
+    const key1 = a.filesystemPathSegments.join('/');
+    const key2 = b.filesystemPathSegments.join('/');
+    return key1.localeCompare(key2);
+  });
+
   const subOverviews = new Map<string, Overview>();
-  for (const entry of overview) {
+  for (const entry of sortedOverview) {
     const filesystemPathSegments = entry.filesystemPathSegments;
     const key = filesystemPathSegments.join('/');
     if (!subOverviews.has(key)) {
