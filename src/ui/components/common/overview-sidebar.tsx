@@ -61,8 +61,10 @@ export function OverviewSidebarItem({ entry }: { entry: OverviewEntry }) {
 
 export function OverviewSidebar({ overview }: OverviewSidebarProps) {
   const sortedOverview = overview.sort((a, b) => {
-    const key1 = a.filesystemPathSegments.join('/');
-    const key2 = b.filesystemPathSegments.join('/');
+    // const key1 = a.filesystemPathSegments.join('/');
+    // const key2 = b.filesystemPathSegments.join('/');
+    const key1 = a.filesystemPathSegments.slice(0, -1).join('/');
+    const key2 = b.filesystemPathSegments.slice(0, -1).join('/');
     return key1.localeCompare(key2);
   });
 
