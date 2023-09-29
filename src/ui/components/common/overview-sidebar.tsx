@@ -84,144 +84,159 @@ export function OverviewSidebar({ overview }: OverviewSidebarProps) {
 
   let parentString = '';
 
+  const anchorSimulationJS = `
+document.addEventListener('DOMContentLoaded', function() {
+    const simulatedAnchors = document.querySelectorAll('[data-simulated-anchor]');
+
+    simulatedAnchors.forEach(anchor => {
+        anchor.addEventListener('click', () => {
+            const href = anchor.getAttribute('data-href');
+            if (href) {
+                window.location.href = href;
+            }
+        });
+    });
+});
+  `;
+
   return (
-    <Box
-      data-uuid-domain="overview-sidebar-scrollable"
-      data-uuid={globalUUIDMapper.getFor('overview-sidebar-scrollable', 'root')}
-      css={css`
-        height: 100vh;
-        overflow-y: auto;
-      `}
-    >
-      {Array.from(subOverviews.keys()).map((key, i) => {
-        const reactKey = key + '_' + i;
+    <>
+      <Box
+        data-uuid-domain="overview-sidebar-scrollable"
+        data-uuid={globalUUIDMapper.getFor(
+          'overview-sidebar-scrollable',
+          'root'
+        )}
+        css={css`
+          height: 100vh;
+          overflow-y: auto;
+        `}
+      >
+        {Array.from(subOverviews.keys()).map((key, i) => {
+          const reactKey = key + '_' + i;
 
-        const newParentString = key.split('/').slice(0, -1).join('/');
+          const newParentString = key.split('/').slice(0, -1).join('/');
 
-        const fullSourceCodeHref = '/' + key + '.html' + '#full_source_code';
+          const fullSourceCodeHref = '/' + key + '.html' + '#full_source_code';
 
-        const retval = (
-          <>
-            {newParentString !== parentString && (
-              <div
-                data-uuid-domain="text-truncatable"
-                data-uuid={globalUUIDMapper.getFor(
-                  'text-truncatable',
-                  key + '_filepath_parent_dirs'
-                )}
-                style={{
-                  width: '20vw',
-                  maxWidth: '20vw',
-                  whiteSpace: 'nowrap',
-                  textOverflow: 'ellipsis',
-                  display: 'block',
-                  overflow: 'hidden',
-                  background: 'khaki',
-                }}
-                title={key.split('/').slice(0, -1).join('/')}
-              >
-                {key.split('/').slice(0, -1).join('/')}
-              </div>
-            )}
-
-            <div
-              style={{
-                position: 'relative',
-              }}
-            >
-              <button
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                }}
-                title="View Full Source Code"
-              >
-                <a
-                  href={fullSourceCodeHref}
-                  style={{
-                    textDecoration: 'none',
-                    color: 'black',
-                  }}
-                >
-                  {pageFacingUpWithCurlEmoji}
-                </a>
-              </button>
-
-              <details
-                data-uuid-domain="overview-sidebar-details"
-                data-uuid={globalUUIDMapper.getFor(
-                  'overview-sidebar-details',
-                  key
-                )}
-                style={{
-                  display: 'block',
-                  overflow: 'hidden',
-                }}
-                key={reactKey}
-              >
-                <summary
-                  data-toggle="toggle"
+          const retval = (
+            <>
+              {newParentString !== parentString && (
+                <div
                   data-uuid-domain="text-truncatable"
                   data-uuid={globalUUIDMapper.getFor(
                     'text-truncatable',
-                    key + '_filepath_basename'
+                    key + '_filepath_parent_dirs'
                   )}
                   style={{
-                    userSelect: 'none',
-                    marginLeft: '2em',
                     width: '20vw',
                     maxWidth: '20vw',
                     whiteSpace: 'nowrap',
-                    background: 'cyan',
                     textOverflow: 'ellipsis',
                     display: 'block',
                     overflow: 'hidden',
-                    position: 'relative',
+                    background: 'khaki',
                   }}
-                  title={key.split('/').slice(-1)[0]}
+                  title={key.split('/').slice(0, -1).join('/')}
                 >
-                  <span data-role="icon">{plusEmoji}</span>
-                  &nbsp;
-                  <span data-role="label">{key.split('/').slice(-1)[0]}</span>
-                </summary>
-                <div
+                  {key.split('/').slice(0, -1).join('/')}
+                </div>
+              )}
+
+              <div
+                style={{
+                  position: 'relative',
+                }}
+              >
+                <button
                   style={{
-                    position: 'relative',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
                   }}
-                ></div>
-                {(() => {
-                  const covered = new Set<string>();
+                  title="View Full Source Code"
+                  data-href={fullSourceCodeHref}
+                  data-simulated-anchor
+                >
+                  {pageFacingUpWithCurlEmoji}
+                </button>
 
-                  const items = [];
+                <details
+                  data-uuid-domain="overview-sidebar-details"
+                  data-uuid={globalUUIDMapper.getFor(
+                    'overview-sidebar-details',
+                    key
+                  )}
+                  style={{
+                    display: 'block',
+                    overflow: 'hidden',
+                  }}
+                  key={reactKey}
+                >
+                  <summary
+                    data-toggle="toggle"
+                    data-uuid-domain="text-truncatable"
+                    data-uuid={globalUUIDMapper.getFor(
+                      'text-truncatable',
+                      key + '_filepath_basename'
+                    )}
+                    style={{
+                      userSelect: 'none',
+                      marginLeft: '2em',
+                      width: '20vw',
+                      maxWidth: '20vw',
+                      whiteSpace: 'nowrap',
+                      background: 'cyan',
+                      textOverflow: 'ellipsis',
+                      display: 'block',
+                      overflow: 'hidden',
+                      position: 'relative',
+                    }}
+                    title={key.split('/').slice(-1)[0]}
+                  >
+                    <span data-role="icon">{plusEmoji}</span>
+                    &nbsp;
+                    <span data-role="label">{key.split('/').slice(-1)[0]}</span>
+                  </summary>
+                  <div
+                    style={{
+                      position: 'relative',
+                    }}
+                  ></div>
+                  {(() => {
+                    const covered = new Set<string>();
 
-                  let counter = 0;
+                    const items = [];
 
-                  for (const entry of subOverviews.get(key)!) {
-                    if (!covered.has(entry.uuidInSourceFile)) {
-                      covered.add(entry.uuidInSourceFile);
-                      items.push(
-                        <OverviewSidebarItem
-                          key={reactKey + '_entry' + counter++}
-                          entry={entry}
-                        />
-                      );
+                    let counter = 0;
+
+                    for (const entry of subOverviews.get(key)!) {
+                      if (!covered.has(entry.uuidInSourceFile)) {
+                        covered.add(entry.uuidInSourceFile);
+                        items.push(
+                          <OverviewSidebarItem
+                            key={reactKey + '_entry' + counter++}
+                            entry={entry}
+                          />
+                        );
+                      }
                     }
-                  }
 
-                  return items;
-                })()}
-              </details>
-            </div>
-          </>
-        );
+                    return items;
+                  })()}
+                </details>
+              </div>
+            </>
+          );
 
-        if (newParentString !== parentString) {
-          parentString = newParentString;
-        }
+          if (newParentString !== parentString) {
+            parentString = newParentString;
+          }
 
-        return retval;
-      })}
-    </Box>
+          return retval;
+        })}
+      </Box>
+      <script dangerouslySetInnerHTML={{ __html: anchorSimulationJS }}></script>
+    </>
   );
 }
