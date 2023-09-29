@@ -27,7 +27,8 @@ export function astToHTML(
   root: string,
   crumbs: string[],
   ast: NodeInfo[],
-  outputDir: string
+  outputDir: string,
+  fullSourceCode: string
 ) {
   const docsCacheDir = path.resolve(
     outputDir,
@@ -44,6 +45,7 @@ export function astToHTML(
         outDir={outputDir.replace(/\\/g, '/')}
         crumbs={crumbs}
         symbols={ast}
+        fullSourceCode={fullSourceCode}
       />
     </Container>
   );

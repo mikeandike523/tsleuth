@@ -13,6 +13,7 @@ export interface MainLayoutProps {
   symbols: NodeInfo[];
   outDir: string;
   overview: Overview;
+  fullSourceCode: string;
 }
 
 export function MainLayout({
@@ -20,6 +21,7 @@ export function MainLayout({
   outDir,
   symbols,
   overview,
+  fullSourceCode,
 }: MainLayoutProps) {
   const globalUUIDMapper = getGlobalUUIDMapper();
   const content = (
@@ -153,7 +155,9 @@ export function MainLayout({
                           fontWeight: 'bold',
                         }}
                       >
-                        {symbol.documentation}
+                        <code className="typescript">
+                          {symbol.documentation}
+                        </code>
                       </pre>
                     </td>
                   </tr>
@@ -178,7 +182,9 @@ export function MainLayout({
                                 fontWeight: 'bold',
                               }}
                             >
-                              {symbol.signatureSourceCode}
+                              <code className="typescript">
+                                {symbol.signatureSourceCode}
+                              </code>
                             </pre>
                           </div>
                         </div>
@@ -200,7 +206,9 @@ export function MainLayout({
                             fontWeight: 'bold',
                           }}
                         >
-                          {symbol.sourceCode}
+                          <code className="typescript">
+                            {symbol.sourceCode}
+                          </code>
                         </pre>
                       </details>
                     </td>
@@ -210,6 +218,17 @@ export function MainLayout({
             </div>
           );
         })}
+        <hr />
+        <h2 id="full_source_code">Full Source Code</h2>
+        <div>
+          <pre
+            style={{
+              background: 'lightgray',
+            }}
+          >
+            <code className="typescript">{fullSourceCode}</code>
+          </pre>
+        </div>
       </div>
     </div>
   );

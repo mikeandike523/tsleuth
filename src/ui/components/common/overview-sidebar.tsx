@@ -11,6 +11,8 @@ import { getGlobalUUIDMapper } from '<^w^>/lib/utils/global-uuid-mapper';
 const plusEmoji = '\u2795';
 const minusEmoji = '\u2796';
 
+const pageFacingUpWithCurlEmoji = '\u{1F4C3}';
+
 export type OverviewSidebarProps = {
   overview: Overview;
 };
@@ -96,6 +98,8 @@ export function OverviewSidebar({ overview }: OverviewSidebarProps) {
 
         const newParentString = key.split('/').slice(0, -1).join('/');
 
+        const fullSourceCodeHref = '/' + key + '.html' + '#full_source_code';
+
         const retval = (
           <>
             {newParentString !== parentString && (
@@ -120,64 +124,95 @@ export function OverviewSidebar({ overview }: OverviewSidebarProps) {
               </div>
             )}
 
-            <details
-              data-uuid-domain="overview-sidebar-details"
-              data-uuid={globalUUIDMapper.getFor(
-                'overview-sidebar-details',
-                key
-              )}
+            <div
               style={{
-                display: 'block',
-                overflow: 'hidden',
+                position: 'relative',
               }}
-              key={reactKey}
             >
-              <summary
-                data-toggle="toggle"
-                data-uuid-domain="text-truncatable"
+              <button
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                }}
+                title="View Full Source Code"
+              >
+                <a
+                  href={fullSourceCodeHref}
+                  style={{
+                    textDecoration: 'none',
+                    color: 'black',
+                  }}
+                >
+                  {pageFacingUpWithCurlEmoji}
+                </a>
+              </button>
+
+              <details
+                data-uuid-domain="overview-sidebar-details"
                 data-uuid={globalUUIDMapper.getFor(
-                  'text-truncatable',
-                  key + '_filepath_basename'
+                  'overview-sidebar-details',
+                  key
                 )}
                 style={{
-                  userSelect: 'none',
-                  marginLeft: '2em',
-                  width: '20vw',
-                  maxWidth: '20vw',
-                  whiteSpace: 'nowrap',
-                  background: 'cyan',
-                  textOverflow: 'ellipsis',
                   display: 'block',
                   overflow: 'hidden',
                 }}
-                title={key.split('/').slice(-1)[0]}
+                key={reactKey}
               >
-                <span data-role="icon">{plusEmoji}</span>
-                &nbsp;
-                <span data-role="label">{key.split('/').slice(-1)[0]}</span>
-              </summary>
-              {(() => {
-                const covered = new Set<string>();
+                <summary
+                  data-toggle="toggle"
+                  data-uuid-domain="text-truncatable"
+                  data-uuid={globalUUIDMapper.getFor(
+                    'text-truncatable',
+                    key + '_filepath_basename'
+                  )}
+                  style={{
+                    userSelect: 'none',
+                    marginLeft: '2em',
+                    width: '20vw',
+                    maxWidth: '20vw',
+                    whiteSpace: 'nowrap',
+                    background: 'cyan',
+                    textOverflow: 'ellipsis',
+                    display: 'block',
+                    overflow: 'hidden',
+                    position: 'relative',
+                  }}
+                  title={key.split('/').slice(-1)[0]}
+                >
+                  <span data-role="icon">{plusEmoji}</span>
+                  &nbsp;
+                  <span data-role="label">{key.split('/').slice(-1)[0]}</span>
+                </summary>
+                <div
+                  style={{
+                    position: 'relative',
+                  }}
+                ></div>
+                {(() => {
+                  const covered = new Set<string>();
 
-                const items = [];
+                  const items = [];
 
-                let counter = 0;
+                  let counter = 0;
 
-                for (const entry of subOverviews.get(key)!) {
-                  if (!covered.has(entry.uuidInSourceFile)) {
-                    covered.add(entry.uuidInSourceFile);
-                    items.push(
-                      <OverviewSidebarItem
-                        key={reactKey + '_entry' + counter++}
-                        entry={entry}
-                      />
-                    );
+                  for (const entry of subOverviews.get(key)!) {
+                    if (!covered.has(entry.uuidInSourceFile)) {
+                      covered.add(entry.uuidInSourceFile);
+                      items.push(
+                        <OverviewSidebarItem
+                          key={reactKey + '_entry' + counter++}
+                          entry={entry}
+                        />
+                      );
+                    }
                   }
-                }
 
-                return items;
-              })()}
-            </details>
+                  return items;
+                })()}
+              </details>
+            </div>
           </>
         );
 

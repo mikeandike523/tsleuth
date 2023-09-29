@@ -147,11 +147,17 @@ export async function intermediatesToHTML(
         );
         const symbolDetails = cacheObject?.root.children ?? ([] as NodeInfo[]);
         const fullCrumbs = crumbs.concat([key]);
+        const sourceCodeFile = cacheObject?.absolutePath;
+        const sourceCode =
+          typeof sourceCodeFile !== 'undefined'
+            ? fs.readFileSync(sourceCodeFile, 'utf8')
+            : '/** Source Code Unavailable */';
         const renderedHTML = astToHTML(
           root,
           fullCrumbs,
           symbolDetails,
-          outputDirectory
+          outputDirectory,
+          sourceCode
         );
         if (!fs.existsSync(path.join(outputDirectory, ...crumbs))) {
           fs.mkdirSync(path.join(outputDirectory, ...crumbs), {
