@@ -18,6 +18,12 @@
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "terminal.integrated.defaultProfile.windows": "Command Prompt",
     "editor.formatOnSave": true,
-    "editor.formatOnPaste": false
+    "editor.formatOnPaste": false,
+    "search.exclude": {
+      "**/node_modules": true,
+      "**/bower_components": true,
+      "**/*.code-search": true,
+      "archive": true
+    }
   }
 }
