@@ -28,9 +28,9 @@ export function MainLayout({
   const dirnames = listing.filter((l) => !l.isLeaf).map((l) => l.name);
 
   const getFilenameUrl = (filename: string) => {
-    return ('/' + crumbs.join('/') + '/' + filename + '.html').replace(
-      /\/+/g,
-      '/'
+    return (
+      ('/' + crumbs.join('/') + '/' + filename + '.html').replace(/\/+/g, '/') +
+      '#full_source_code'
     );
   };
 

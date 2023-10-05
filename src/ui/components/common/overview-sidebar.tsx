@@ -7,19 +7,20 @@ import { Box } from './styled/box';
 import { Anchor } from './styled/anchor';
 import { UUIDContext } from '<^w^>/lib/utils/uuid-context';
 import { getGlobalUUIDMapper } from '<^w^>/lib/utils/global-uuid-mapper';
+import { Button } from './styled/button';
 
 const plusEmoji = '\u2795';
 const minusEmoji = '\u2796';
 
 const pageFacingUpWithCurlEmoji = '\u{1F4C3}';
+const openFolderEmoji = '\u{1F4C2}';
 
 export type OverviewSidebarProps = {
   overview: Overview;
 };
 
 const aCss = css`
-  width: 20vw;
-  max-width: 20vw;
+  width: 100%;
   text-overflow: ellipsis;
   text-decoration: none;
   color: black;
@@ -33,6 +34,19 @@ const aCss = css`
   white-space: nowrap;
   overflow: hidden;
   margin-left: 2em;
+`;
+
+const buttonCss = css`
+  background: none;
+  cursor: pointer;
+  color: black;
+  text-decoration: none;
+  width: 2em;
+  text-align: center;
+
+  &:hover {
+    text-decoration: underline;
+  }
 `;
 
 export function OverviewSidebarItem({ entry }: { entry: OverviewEntry }) {
@@ -123,23 +137,53 @@ document.addEventListener('DOMContentLoaded', function() {
             <>
               {newParentString !== parentString && (
                 <div
-                  data-uuid-domain="text-truncatable"
-                  data-uuid={globalUUIDMapper.getFor(
-                    'text-truncatable',
-                    key + '_filepath_parent_dirs'
-                  )}
                   style={{
-                    width: '20vw',
-                    maxWidth: '20vw',
-                    whiteSpace: 'nowrap',
-                    textOverflow: 'ellipsis',
-                    display: 'block',
-                    overflow: 'hidden',
-                    background: 'khaki',
+                    width: '100%',
+                    position: 'relative',
                   }}
-                  title={key.split('/').slice(0, -1).join('/')}
                 >
-                  {key.split('/').slice(0, -1).join('/')}
+                  <div
+                    data-uuid-domain="text-truncatable"
+                    data-uuid={globalUUIDMapper.getFor(
+                      'text-truncatable',
+                      key + '_filepath_parent_dirs'
+                    )}
+                    style={{
+                      width: '100%',
+                      whiteSpace: 'nowrap',
+                      textOverflow: 'ellipsis',
+                      display: 'block',
+                      overflow: 'hidden',
+                      background: 'khaki',
+                      marginLeft: '2em',
+                    }}
+                    title={key.split('/').slice(0, -1).join('/')}
+                  >
+                    {key.split('/').slice(0, -1).join('/')}
+                  </div>
+                  <Button
+                    css={buttonCss}
+                    style={{
+                      position: 'absolute',
+                      top: '-0.20em',
+                      left: 0,
+                    }}
+                    title={`Open Folder "${newParentString}"`}
+                    data-href={('/' + newParentString + '/index.html').replace(
+                      /\/+/g,
+                      '/'
+                    )}
+                    data-simulated-anchor
+                  >
+                    {openFolderEmoji}
+                    <span
+                      style={{
+                        visibility: 'hidden',
+                      }}
+                    >
+                      M
+                    </span>
+                  </Button>
                 </div>
               )}
 
@@ -148,10 +192,12 @@ document.addEventListener('DOMContentLoaded', function() {
                   position: 'relative',
                 }}
               >
-                <button
+                <Button
+                  css={buttonCss}
+                  className={buttonCss.name}
                   style={{
                     position: 'absolute',
-                    top: 0,
+                    top: '-0.0625em',
                     left: 0,
                   }}
                   title="View Full Source Code"
@@ -159,7 +205,7 @@ document.addEventListener('DOMContentLoaded', function() {
                   data-simulated-anchor
                 >
                   {pageFacingUpWithCurlEmoji}
-                </button>
+                </Button>
 
                 <details
                   data-uuid-domain="overview-sidebar-details"
@@ -183,8 +229,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     style={{
                       userSelect: 'none',
                       marginLeft: '2em',
-                      width: '20vw',
-                      maxWidth: '20vw',
+                      width: '100%',
                       whiteSpace: 'nowrap',
                       background: 'cyan',
                       textOverflow: 'ellipsis',

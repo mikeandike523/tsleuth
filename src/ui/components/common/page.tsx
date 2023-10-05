@@ -29,16 +29,16 @@ export function Page({ children, overview }: PageProps) {
     <Box css={pageStyle}>
       <Box
         css={css`
-        flex: 0
-        overflow-y: auto;
-          border-right: 2px dashed black
+          width: 20vw;
+          overflow-y: auto;
+          border-right: 2px dashed black;
         `}
       >
         <OverviewSidebar overview={overview} />
       </Box>
       <Box
         css={css`
-          flex: 1
+          width: 80vw;
           height: 100vh;
           overflow-y: auto;
         `}
