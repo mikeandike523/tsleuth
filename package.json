@@ -5,9 +5,9 @@
   "main": "cli/dist/main.js",
   "scripts": {
     "build-cli": "yarn run webpack --config=./cli/webpack.config.js",
-    "lint": "yarn run eslint . --ignore-path=.gitignore",
-    "lint:fix": "yarn run eslint --fix . --ignore-path=.gitignore",
-    "format": "prettier --write . --ignore-path=.gitignore"
+    "lint": "yarn run eslint .",
+    "lint:fix": "yarn run eslint --fix .",
+    "format": "prettier --write ."
   },
   "keywords": [
     "typescript",
