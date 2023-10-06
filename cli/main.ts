@@ -13,6 +13,19 @@ import { feature as generateDocsFeature } from '@/features/generate-docs';
 // Shave off "node" and the filename from argv
 process.argv = process.argv.slice(2);
 
+// The following batch file code is used so that tsleuth can be put in PATH environment variable and easily used:
+
+// @echo OFF
+// node %~dp0cli/dist/main.js "%CD%" %*
+// @echo ON
+
+// This reason this is done is since it may be a bit tricky to ensure process.cd() is going to be predictable
+
+const desiredCWD = process.argv[0];
+process.chdir(desiredCWD);
+
+process.argv = process.argv.slice(1);
+
 /**
  *
  * The list of features available in "tsleuth"
@@ -39,7 +52,7 @@ const availableFeaturesShortDescriptions = {
 async function main(): Promise<ExitCode> {
   // Very basic manual routing of process.argv, easier than doubling up on using commander library, when each feature already uses commander
 
-  if (process.argv.length < 2) {
+  if (process.argv.length < 1) {
     console.log(
       `No command specified.
       Use --help or -h for more information and to list available commands.
@@ -94,8 +107,8 @@ Usage:
     `);
   };
 
-  if (process.argv.length >= 2) {
-    const commandHelpOrVersion = process.argv[1];
+  if (process.argv.length >= 1) {
+    const commandHelpOrVersion = process.argv[0];
     if (
       isHelpFlag(commandHelpOrVersion) ||
       isVersionFlag(commandHelpOrVersion)
@@ -108,7 +121,7 @@ Usage:
         console.log(getVersion());
       }
     } else {
-      const commandName = process.argv[1];
+      const commandName = process.argv[0];
       if (!isValidCommand(commandName)) {
         console.log(`
 Invalid command: ${commandName}

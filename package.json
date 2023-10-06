@@ -4,7 +4,10 @@
   "description": "A collection of utilities for the transformation and documentation of typescript 5 code",
   "main": "cli/dist/main.js",
   "scripts": {
-    "build-cli": "yarn run webpack --config=./cli/webpack.config.js"
+    "build-cli": "yarn run webpack --config=./cli/webpack.config.js",
+    "lint": "yarn run eslint . --ignore-path=.gitignore",
+    "lint:fix": "yarn run eslint --fix . --ignore-path=.gitignore",
+    "format": "prettier --write . --ignore-path=.gitignore"
   },
   "keywords": [
     "typescript",
@@ -14,6 +17,14 @@
   "author": "Michael Sohnen",
   "license": "ISC",
   "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^6.7.4",
+    "@typescript-eslint/parser": "^6.7.4",
+    "eslint": "^8.50.0",
+    "eslint-config-react": "^1.1.7",
+    "eslint-plugin-prettier": "^5.0.0",
+    "eslint-plugin-react": "^7.33.2",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-tsdoc": "^0.2.17",
     "prettier": "^3.0.3",
     "typescript": "^5.2.2"
   },
@@ -23,5 +34,6 @@
     "ts-loader": "^9.4.4",
     "webpack": "^5.88.2",
     "webpack-cli": "^5.1.4"
-  }
+  },
+  "type": "commonjs"
 }

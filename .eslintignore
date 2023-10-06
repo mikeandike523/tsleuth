@@ -1,0 +1,9 @@
+node_modules
+dist
+.tsleuth
+archive
+archive\node_modules
+archive\dist
+archive\.tsleuth
+archive\documentation-generator-dom\dist
+cli\dist

@@ -2,6 +2,7 @@ import { Command } from 'commander';
 
 import { Feature } from '@/types/feature';
 import { ExitCode } from '@/types/exit-code';
+import { TsleuthDirectory } from '@/utils/system-paths';
 
 export type FeatureArgs = {
   serve?: boolean;
@@ -50,7 +51,24 @@ export const feature: Feature<FeatureArgs> = {
     const serve = args.serve ?? false;
     const useCached = args.useCached ?? false;
 
-    // The main procedure for the "generate-docs" feature will be here
+    // The convention is to use process.stdout.write to inform user, since console.log has a "debugging" connotation
+    process.stdout.write('Initializing...');
+
+    const tsleuthDir = new TsleuthDirectory();
+
+    if (!tsleuthDir.isInGitignore()) {
+      process.stdout.write(
+        'WARNING! .tsleuth directory is not in the gitignore at you project root, or the gitignore does not exist. Please ensure that .tsleuth directory is ignored by git.',
+      );
+    }
+
+    const featureDir = tsleuthDir.featureDir('generate-docs');
+
+    const docsOutputDir = featureDir.subDir('dist');
+
+    const docsOutputStaticDir = docsOutputDir.subDir('static');
+
+    const featureCacheDir = featureDir.subDir('cache');
 
     return ExitCode.SUCCESS;
   },
