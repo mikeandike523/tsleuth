@@ -27,16 +27,17 @@ export const feature: Feature<FeatureArgs> = {
       `
         )
         .option(
-          '-s',
-          '--serve',
-          'Serve the documentation on localhost on a dynamically assigned port. Opens the documentation in the default browser.'
+          '-s --serve',
+          'Serve the documentation on localhost on a dynamically assigned port. Opens the documentation in the default browser.',
+          false
         )
         .option(
-          '-c',
-          '--use-cached',
-          'Use cached data from the ".tsleuth" folder in the current working directory. Do not re-analyze the project source code.'
+          '-c --use-cached',
+          'Use cached data from the ".tsleuth" folder in the current working directory. Do not re-analyze the project source code.',
+          false
         )
         .action((parsedArgs) => {
+          console.log(parsedArgs);
           const procedureResult = feature.procedure({
             serve: parsedArgs.serve,
             useCached: parsedArgs.useCached,
@@ -47,10 +48,12 @@ export const feature: Feature<FeatureArgs> = {
             resolve(procedureResult);
           }
         });
-      program.parse(process.argv);
+      program.parse(['node', '__placeholder.js'].concat(process.argv));
     });
   },
   procedure: async (args) => {
+    console.log('procedure');
+    console.log(args);
     const projectRoot = normalizePath(process.cwd());
     const projectName =
       normalizePath(process.cwd(), '/').split('/').pop() ?? 'Untitled Project';
@@ -78,6 +81,7 @@ export const feature: Feature<FeatureArgs> = {
     const featureCacheDir = featureDir.subDir('cache');
 
     if (serve) {
+      console.log('serving...');
       serveDocumentation(projectName, projectRoot, docsOutputDir.root, true);
       return ExitCode.HANG;
     }

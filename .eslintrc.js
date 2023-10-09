@@ -12,6 +12,7 @@ module.exports = {
     },
   },
   rules: {
+    'no-empty-pattern': 'off',
     'react/react-in-jsx-scope': 'off',
     'react-hooks/rules-of-hooks': 'error',
     'react-hooks/exhaustive-deps': 'warn',
@@ -27,5 +28,6 @@ module.exports = {
       },
     ],
     'tsdoc/syntax': 'warn',
+    '@typescript-eslint/ban-types': ['warn', { types: { object: false } }],
   },
 };

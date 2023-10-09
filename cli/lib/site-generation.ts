@@ -27,25 +27,39 @@ export function generateSiteAndCopyFiles(
   if (typeof placeholderMarkup === 'undefined') {
     placeholderMarkup = `
     <style>
-    @keyframes anim-pre-hydration-spinner {
-      from {
+    @keyframes spinner {
+      0% {
         transform: rotate(0deg);
       }
-      to {
+      100% {
         transform: rotate(360deg);
       }
     }
     .pre-hydration-spinner {
       width: 10vh;
       height: 10vh;
-      border-radius: 50%;  // Makes it circular
-      border: 4px solid transparent;
-      border-top-color: #3498db;  // Color for the top border
-      animation-name: anim-pre-hydration-spinner 1s linear infinite;
+      border-radius: 50%;
+      border: 0.25em solid #00FFFF80;
+      border-top: 0.25em solid #3498db;
+      animation-name: spinner;
+      animation-duration: 1s;
+      animation-timing-function: linear;
+      animation-iteration-count: infinite;
+    }
+    .placeholder-container {
+      width: 100vw;
+      height: 100vh;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
     }
     </style>
-    
-    
+    <div class="placeholder-container">
+      <div class="pre-hydration-spinner"></div>
+    </div>
     `;
   }
 
@@ -62,11 +76,11 @@ export function generateSiteAndCopyFiles(
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>${projectName} Documentation</title>
   </head>
-  <body>
+  <body style="margin: 0; padding: 0;">
   <div id="root" style="width: 100vw; height:100vh; margin:0; padding:0">
-  ${placeholderMarkup}
+    ${placeholderMarkup}
   </div>
-  <script src="${outDir}/bundle.js"></script>
+  <script src="/bundle.js"></script>
   </body>
   
   `;
