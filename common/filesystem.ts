@@ -46,7 +46,7 @@ export class SymbolicLinkLoopError extends Error {
  */
 export function filesystemNodeExists(
   filepath: string,
-  followSymlinks = false,
+  followSymlinks = false
 ): boolean {
   // The convention throughout the entire project is to call any closure used to hide recursion state from the caller, `inner`
   const inner = (__path: string, pathsSoFar: string[]): boolean => {
@@ -150,7 +150,7 @@ export function followAllSymlinks(filepath: string): string {
     visitedPaths.add(currentPath);
     currentPath = path.resolve(
       path.dirname(currentPath),
-      fs.readlinkSync(currentPath),
+      fs.readlinkSync(currentPath)
     );
   }
 
@@ -214,7 +214,7 @@ export function analyzePath(filepath: string): PathAnalysis {
 
 export function directoryIsEmpty(
   directoryPath: string,
-  followSymlinks = true,
+  followSymlinks = true
 ): boolean {
   const analysis = analyzePath(directoryPath);
   if (!analysis.exists || (followSymlinks && !analysis.afterSymlinksExists)) {
@@ -237,7 +237,7 @@ export class DirectoryNotEmptyError extends Error {
 
 export function removeDirectoryNonRecursive(
   path: string,
-  followSymlinks = true,
+  followSymlinks = true
 ) {
   // The error conditions are the same as directoryIsEmpty, so just call it
   const isEmpty = directoryIsEmpty(path, followSymlinks);
@@ -287,7 +287,7 @@ export function removeFileOrSymlink(path: string, followSymlinks = true) {
 
 export function removeDirectoryRecursive(
   directoryPath: string,
-  followSymlinks = true,
+  followSymlinks = true
 ) {
   const analysis = analyzePath(directoryPath);
   if (!analysis.exists || (followSymlinks && !analysis.afterSymlinksExists)) {
@@ -408,7 +408,7 @@ export class WorkingDirectory {
 
 export function readUtf8OrNull(
   filepath: string,
-  followSymlinks = true,
+  followSymlinks = true
 ): string | null {
   const analysis = analyzePath(filepath);
   if (!analysis.exists || (followSymlinks && !analysis.afterSymlinksExists)) {
@@ -437,4 +437,53 @@ export function normalizePath(filepath: string, sep = '/'): string {
 
 export function pathsStringsAreEquivalent(a: string, b: string): boolean {
   return normalizePath(a) === normalizePath(b);
+}
+
+export function copyDirectoryContentsRecursive(
+  a: string,
+  b: string,
+  followSymlinks = true
+) {
+  const analysisA = analyzePath(a);
+  const analysisB = analyzePath(b);
+  if (!analysisA.exists || (followSymlinks && !analysisA.afterSymlinksExists)) {
+    throw new FilesystemNodeNonexistentError(a);
+  }
+  const kindA = followSymlinks ? analysisA.afterSymlinksKind : analysisA.kind;
+  const kindB = followSymlinks ? analysisB.afterSymlinksKind : analysisB.kind;
+  if (kindA !== 'directory') {
+    throw new KindUnsupportedError(kindA);
+  }
+  if (kindB !== 'directory') {
+    throw new KindUnsupportedError(kindB);
+  }
+  const targetA = followSymlinks ? analysisA.afterSymlinks : analysisA.resolved;
+  const targetB = followSymlinks ? analysisB.afterSymlinks : analysisB.resolved;
+  const filesA = fs.readdirSync(targetA);
+  for (const file of filesA) {
+    const fullPath = path.resolve(targetA, file);
+    const fileAnalysis = analyzePath(fullPath);
+    const kind = followSymlinks
+      ? fileAnalysis.afterSymlinksKind
+      : fileAnalysis.kind;
+    const targetDir = path.resolve(targetB, file);
+    const targetDirAnalysis = analyzePath(targetDir);
+    const doesNotExist =
+      !targetDirAnalysis.exists ||
+      (followSymlinks && !targetDirAnalysis.afterSymlinksExists);
+    switch (kind) {
+      case 'file':
+      case 'file-symbolic-link':
+      case 'directory-symbolic-link':
+      case 'generic-symbolic-link':
+        fs.copyFileSync(fullPath, path.resolve(targetB, file));
+        break;
+      case 'directory':
+        if (doesNotExist) {
+          fs.mkdirSync(targetDir, { recursive: true });
+        }
+        copyDirectoryContentsRecursive(fullPath, targetDir, followSymlinks);
+        break;
+    }
+  }
 }

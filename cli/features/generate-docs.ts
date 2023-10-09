@@ -3,6 +3,9 @@ import { Command } from 'commander';
 import { Feature } from '@/types/feature';
 import { ExitCode } from '@/types/exit-code';
 import { TsleuthDirectory } from '@/utils/system-paths';
+import { generateSiteAndCopyFiles } from '@/lib/site-generation';
+import { normalizePath } from '@common/filesystem';
+import { serveDocumentation } from '@/utils/serve-documentation';
 
 export type FeatureArgs = {
   serve?: boolean;
@@ -48,6 +51,10 @@ export const feature: Feature<FeatureArgs> = {
     });
   },
   procedure: async (args) => {
+    const projectRoot = normalizePath(process.cwd());
+    const projectName =
+      normalizePath(process.cwd(), '/').split('/').pop() ?? 'Untitled Project';
+
     const serve = args.serve ?? false;
     const useCached = args.useCached ?? false;
 
@@ -66,9 +73,20 @@ export const feature: Feature<FeatureArgs> = {
 
     const docsOutputDir = featureDir.subDir('dist');
 
-    const docsOutputStaticDir = docsOutputDir.subDir('static');
+    const docsOutputContentDir = docsOutputDir.subDir('content');
 
     const featureCacheDir = featureDir.subDir('cache');
+
+    if (serve) {
+      serveDocumentation(projectName, projectRoot, docsOutputDir.root, true);
+      return ExitCode.HANG;
+    }
+
+    generateSiteAndCopyFiles(
+      projectName,
+      docsOutputDir.root,
+      docsOutputContentDir.root
+    );
 
     return ExitCode.SUCCESS;
   },

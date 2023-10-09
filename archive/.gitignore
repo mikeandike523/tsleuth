@@ -1,8 +1,0 @@
-# Node Modules
-node_modules
-
-# Build Directory
-dist
-
-#tsleuth cache (if running tsleuth on itslef)
-.tsleuth
