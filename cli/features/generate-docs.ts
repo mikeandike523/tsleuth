@@ -38,7 +38,6 @@ export const feature: Feature<FeatureArgs> = {
           false
         )
         .action((parsedArgs) => {
-          console.log(parsedArgs);
           const procedureResult = feature.procedure({
             serve: parsedArgs.serve,
             useCached: parsedArgs.useCached,
@@ -53,8 +52,6 @@ export const feature: Feature<FeatureArgs> = {
     });
   },
   procedure: async (args) => {
-    console.log('procedure');
-    console.log(args);
     const projectRoot = normalizePath(process.cwd());
     const projectName =
       normalizePath(process.cwd(), '/').split('/').pop() ?? 'Untitled Project';
@@ -62,7 +59,6 @@ export const feature: Feature<FeatureArgs> = {
     const serve = args.serve ?? false;
     const useCached = args.useCached ?? false;
 
-    // The convention is to use process.stdout.write to inform user, since console.log has a "debugging" connotation
     process.stdout.write('Initializing...\n');
 
     const tsleuthDir = new TsleuthDirectory();
