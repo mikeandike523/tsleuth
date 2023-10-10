@@ -6,6 +6,7 @@ import { TsleuthDirectory } from '@/utils/system-paths';
 import { generateSiteAndCopyFiles } from '@/lib/site-generation';
 import { normalizePath } from '@common/filesystem';
 import { serveDocumentation } from '@/utils/serve-documentation';
+import { generateAstIntermediates } from '@/lib/ast-intermediate-generation';
 
 export type FeatureArgs = {
   serve?: boolean;
@@ -85,6 +86,11 @@ export const feature: Feature<FeatureArgs> = {
       serveDocumentation(projectName, projectRoot, docsOutputDir.root, true);
       return ExitCode.HANG;
     }
+
+    generateAstIntermediates(
+      projectRoot,
+      featureCacheDir.subDir('ast-intermediates').root
+    );
 
     generateSiteAndCopyFiles(
       projectName,

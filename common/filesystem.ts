@@ -435,6 +435,19 @@ export function normalizePath(filepath: string, sep = '/'): string {
     .replace(/\\$/g, '');
 }
 
+export function removeExtension(filepath: string): string {
+  if (!filepath.includes('.')) {
+    return filepath;
+  }
+  if (
+    filepath.startsWith('.') &&
+    Array.from(filepath.matchAll(/\./g)).length > 1
+  ) {
+    return filepath;
+  }
+  return filepath.substring(0, filepath.lastIndexOf('.'));
+}
+
 export function pathsStringsAreEquivalent(a: string, b: string): boolean {
   return normalizePath(a) === normalizePath(b);
 }
