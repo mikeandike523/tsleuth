@@ -1,6 +1,8 @@
 import path from 'path';
 import fs from 'fs';
 
+import { v4 as uuidv4 } from 'uuid';
+
 /**
  * Thrown when a folder is expected, but another filesystem node type was found.
  */
@@ -403,6 +405,19 @@ export class WorkingDirectory {
       this.createSelfIfNotExists();
     }
     return this;
+  }
+
+  getUuid(ext?: string): string {
+    ext = ext ?? '';
+    ext = ext.replace(/^\./, '');
+    let uuid = uuidv4();
+    while (fs.existsSync(this.resolve(uuid + ext))) {
+      uuid = uuidv4();
+    }
+    if (ext.length > 0) {
+      ext = `.${ext}`;
+    }
+    return uuid + ext;
   }
 }
 
