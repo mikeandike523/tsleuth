@@ -83,13 +83,16 @@ export const feature: Feature<FeatureArgs> = {
       return ExitCode.HANG;
     }
 
-    generateAstIntermediates(
-      projectRoot,
-      featureCacheDir.subDir('ast-intermediates').root
-    );
+    if (!useCached) {
+      generateAstIntermediates(
+        projectRoot,
+        featureCacheDir.subDir('ast-intermediates').root
+      );
+    }
 
     generateSiteAndCopyFiles(
       projectName,
+      featureCacheDir.subDir('ast-intermediates').root,
       docsOutputDir.root,
       docsOutputContentDir.root
     );

@@ -20,6 +20,7 @@ import {
  */
 export function generateSiteAndCopyFiles(
   projectName: string,
+  intermediateDirectory: string,
   outDir: string,
   contentDir: string,
   placeholderMarkup?: string
