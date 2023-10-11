@@ -24,7 +24,10 @@ export function generateAstIntermediates(
   for (const sourceFile of sourceFiles) {
     process.stdout.write(`Generating intermediate for ${sourceFile}...`);
     const outputFilename = intermediatesWD.getUuid('.json');
-    const ast = walkAST(sourceFile) as SerializableObject;
+    const ast = walkAST(sourceFile);
+    if (Object.keys(ast.nodes).length === 0) {
+      continue;
+    }
     fs.writeFileSync(
       intermediatesWD.resolve(outputFilename),
       JSON.stringify(ast, null, 2)
