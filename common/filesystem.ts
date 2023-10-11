@@ -2,6 +2,100 @@ import path from 'path';
 import fs from 'fs';
 
 import { v4 as uuidv4 } from 'uuid';
+import commonPathPrefix from 'common-path-prefix';
+import { StringLiteral } from 'typescript';
+import { SerializableObject } from './serialization';
+
+export function convertToPrefixAndRelativePaths(absolutePaths: string[]) {
+  const cleanedAbsolutePaths = absolutePaths.map((absolutePath) => {
+    return normalizePath(absolutePath, '/');
+  });
+  const commonPrefix = commonPathPrefix(cleanedAbsolutePaths, '/').replace(
+    /\/+$/g,
+    ''
+  );
+  if (commonPrefix.length === 0) {
+    // see docs for common-path-prefix
+    return null;
+  }
+  const relativePaths = cleanedAbsolutePaths.map((absolutePath) => {
+    return absolutePath.slice(commonPrefix.length).replace(/^\/+/g, '');
+  });
+  return {
+    prefix: commonPrefix,
+    relativePaths,
+  };
+}
+
+export type PathHierarchyNode<
+  T extends SerializableObject = SerializableObject,
+> = {
+  segment: string;
+  children: {
+    [key: string]: PathHierarchyNode;
+  };
+  data?: T;
+};
+
+export function assembleHierarchyFromRelativePathsAndAssociatedData<
+  T extends SerializableObject = SerializableObject,
+>(
+  entries: {
+    relativePath: string;
+    data?: T;
+  }[]
+): PathHierarchyNode<T> {
+  // Just in case
+  const cleanedEntries = entries.map((entry) => {
+    return {
+      ...entry,
+      relativePath: normalizePath(entry.relativePath, '/').replace(/^\/+/g, ''),
+    };
+  });
+
+  // Slow but clear
+
+  const root: PathHierarchyNode<T> = {
+    segment: '',
+    children: {},
+  };
+
+  const upsertIntoTreeCreatingParentsIfNeeded = (entry: {
+    relativePath: string;
+    data?: T;
+  }) => {
+    const segments = entry.relativePath.split('/');
+    let currentLevel: PathHierarchyNode<T> = root;
+
+    for (let i = 0; i < segments.length; i++) {
+      const segment = segments[i];
+
+      // If the segment doesn't exist in the current level, create it.
+      if (!currentLevel.children[segment]) {
+        currentLevel.children[segment] = {
+          segment,
+          children: {},
+        };
+      }
+
+      // If this is the last segment in the path, set the data.
+      if (i === segments.length - 1) {
+        if (currentLevel.children[segment]) {
+          currentLevel.children[segment].data = entry.data;
+        }
+      } else {
+        // Otherwise, continue navigating down.
+        currentLevel = currentLevel.children[segment] as PathHierarchyNode<T>;
+      }
+    }
+  };
+
+  for (const entry of cleanedEntries) {
+    upsertIntoTreeCreatingParentsIfNeeded(entry);
+  }
+
+  return root;
+}
 
 /**
  * Thrown when a folder is expected, but another filesystem node type was found.
@@ -439,15 +533,17 @@ export function readUtf8OrNull(
 }
 
 export function normalizePath(filepath: string, sep = '/'): string {
-  return filepath
-    .replace(/\\/g, sep)
-    .replace(/\/\//g, sep)
-    .replace(/\/+/g, sep)
-    .replace(/\\+/g, sep)
-    .replace(/^\//g, '')
-    .replace(/\/$/g, '')
-    .replace(/^\\/g, '')
-    .replace(/\\$/g, '');
+  return (
+    filepath
+      .replace(/\\/g, sep)
+      .replace(/\/\//g, sep)
+      .replace(/\/+/g, sep)
+      .replace(/\\+/g, sep)
+      .replace(/^\//g, '')
+      .replace(/\/$/g, '')
+      // .replace(/^\\/g, '') // Note: should NOT remove leading, especially for unix and linux systems
+      .replace(/\\$/g, '')
+  );
 }
 
 export function removeExtension(filepath: string): string {

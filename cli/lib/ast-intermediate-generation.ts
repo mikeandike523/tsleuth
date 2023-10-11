@@ -5,7 +5,6 @@ import chalk from 'chalk';
 import { collectTSSourceFiles } from '@common/git';
 import { WorkingDirectory } from '@common/filesystem';
 import { walkAST } from '@/lib/ast-traversal';
-import { SerializableObject } from '@common/serialization';
 
 export function generateAstIntermediates(
   projectRoot: string,
@@ -25,7 +24,7 @@ export function generateAstIntermediates(
     process.stdout.write(`Generating intermediate for ${sourceFile}...`);
     const outputFilename = intermediatesWD.getUuid('.json');
     const ast = walkAST(sourceFile);
-    if (Object.keys(ast.nodes).length === 0) {
+    if (ast.root === null) {
       continue;
     }
     fs.writeFileSync(

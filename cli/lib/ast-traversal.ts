@@ -1,6 +1,7 @@
 import fs from 'fs';
 
 import ts from 'typescript';
+import lodash from 'lodash';
 
 export type ImportantSyntaxKind =
   | ts.SyntaxKind.ClassDeclaration
@@ -14,7 +15,8 @@ export type ImportantSyntaxKind =
   | ts.SyntaxKind.ArrowFunction
   | ts.SyntaxKind.EnumDeclaration
   | ts.SyntaxKind.EnumMember
-  | ts.SyntaxKind.VariableDeclaration;
+  | ts.SyntaxKind.VariableDeclaration
+  | ts.SyntaxKind.SourceFile;
 
 export function isImportantSyntaxKind(
   kind: ts.SyntaxKind
@@ -32,6 +34,7 @@ export function isImportantSyntaxKind(
     case ts.SyntaxKind.EnumDeclaration:
     case ts.SyntaxKind.EnumMember:
     case ts.SyntaxKind.VariableDeclaration:
+    case ts.SyntaxKind.SourceFile:
       return true;
     default:
       return false;
@@ -74,7 +77,12 @@ export type ASTNode = {
   signatureCode: string | null;
   exported: ExportMode | null;
   id: string;
+  tsNode?: ts.Node;
+  children: ASTNode[];
+  parent: ASTNode | null;
 };
+
+export type SerializableASTNode = Omit<ASTNode, 'parent' | 'tsNode'>;
 
 export function walkAST(sourceFilePath: string) {
   const fullSourceCode = fs.readFileSync(sourceFilePath, { encoding: 'utf8' });
@@ -245,10 +253,12 @@ export function walkAST(sourceFilePath: string) {
 
   const visitor = (node: ts.Node) => {
     if (isImportantSyntaxKind(node.kind)) {
-      if (!isDocumented(node)) {
-        return;
-      }
+      // In the future, may want this to be a commad line option
+      // if (!isDocumented(node)) {
+      //   return;
+      // }
       const nodeToAdd: ASTNode = {
+        tsNode: node,
         kind: node.kind,
         kindName: ts.SyntaxKind[node.kind],
         narrowKind: null,
@@ -265,11 +275,14 @@ export function walkAST(sourceFilePath: string) {
         exported: drillDirectExport(node),
         classElementModifiers: getClassElementModifiers(node),
         id: getId(node),
+        children: [],
+        parent: null,
       };
 
       if (node.kind === ts.SyntaxKind.VariableDeclaration) {
         const potentialFunction = drillForPotentialFunction(node);
         if (potentialFunction !== null) {
+          nodeToAdd.tsNode = potentialFunction;
           nodeToAdd.narrowKind = potentialFunction.kind;
           nodeToAdd.narrowKindName = ts.SyntaxKind[potentialFunction.kind];
           nodeToAdd.signatureCode =
@@ -284,17 +297,91 @@ export function walkAST(sourceFilePath: string) {
 
   visitor(sourceFile);
 
+  const isChildOf = (
+    potentialChild: ASTNode,
+    potentialParent: ASTNode
+  ): boolean => {
+    const childTsNode = potentialChild.tsNode;
+    const parentTsNode = potentialParent.tsNode;
+    if (
+      typeof childTsNode === 'undefined' ||
+      typeof parentTsNode === 'undefined'
+    ) {
+      return false;
+    }
+
+    const sourceFileId = getId(sourceFile);
+
+    if (getId(parentTsNode) === sourceFileId) {
+      return true;
+    }
+
+    let toCheck = childTsNode.parent;
+    if (toCheck && getId(toCheck) === getId(parentTsNode)) {
+      return true;
+    }
+    while (toCheck && getId(toCheck) !== sourceFileId) {
+      if (getId(toCheck) === getId(parentTsNode)) {
+        return true;
+      }
+      toCheck = toCheck.parent;
+    }
+    return false;
+  };
+
+  const hasChildById = (node: ASTNode, potentialChild: ASTNode): boolean => {
+    return node.children.some((child) => {
+      child.id === potentialChild.id;
+    });
+  };
+
   // Second pass to detect indirect exports
   // Very difficult since parsing export declarations/statements (even by ast traversal) is very complex
   // @todo
 
+  let root: ASTNode | null = null;
+
+  for (const node of Array.from(nodes.values())) {
+    if (node.kind === ts.SyntaxKind.SourceFile) {
+      root = node;
+      break;
+    }
+  }
+
+  if (root !== null) {
+    for (const key of Array.from(nodes.keys())) {
+      const node = nodes.get(key)!;
+      if (node.kind === ts.SyntaxKind.SourceFile) {
+        continue;
+      }
+      for (const compareKey of Array.from(nodes.keys())) {
+        if (compareKey === key) {
+          continue;
+        }
+        const compareNode = nodes.get(compareKey)!;
+        if (isChildOf(node, compareNode)) {
+          node.parent = compareNode;
+          if (!hasChildById(compareNode, node)) {
+            compareNode.children.push(node);
+          }
+        }
+      }
+    }
+  }
+
+  const cleanNode = (node: ASTNode): SerializableASTNode => {
+    const clean = lodash.omit(node, ['tsNode', 'parent', 'children']);
+    Object.assign(clean, {
+      children: node.children.map((child) => cleanNode(child)),
+    });
+    return clean as SerializableASTNode;
+  };
+
   return {
     path: sourceFilePath,
     fullSourceCode,
-    nodes: Object.fromEntries(
-      Array.from(nodes.keys()).map((key) => {
-        return [key, nodes.get(key)!];
-      })
-    ),
+    root: root !== null ? cleanNode(root) : null,
   };
 }
+
+export type ASTIntermediate = ReturnType<typeof walkAST>;
