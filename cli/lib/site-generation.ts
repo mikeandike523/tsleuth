@@ -1,9 +1,18 @@
+import path from 'path';
+
 import fs from 'fs';
+import chalk from 'chalk';
 
 import {
   WorkingDirectory,
   copyDirectoryContentsRecursive,
 } from '@common/filesystem';
+import { ASTIntermediate } from '@/lib/ast-traversal';
+import {
+  convertToPrefixAndRelativePaths,
+  assembleHierarchyFromRelativePathsAndAssociatedData,
+} from '@common/filesystem';
+import { normalizePath } from '@common/filesystem';
 
 /**
  *
@@ -64,9 +73,97 @@ export function generateSiteAndCopyFiles(
     `;
   }
 
+  // Collect all the intermediate files
+  const intermediates: Map<string, ASTIntermediate> = new Map();
+
+  const intermediatesWD = new WorkingDirectory(intermediateDirectory);
+
+  const intermediateFiles = fs
+    .readdirSync(intermediateDirectory)
+    .filter((file) => {
+      return file.endsWith('.json');
+    });
+
+  process.stdout.write(
+    chalk.magenta(
+      `Loading ${intermediateFiles.length} AST intermediate files...\n`
+    )
+  );
+
+  for (const file of intermediateFiles) {
+    const fullPath = intermediatesWD.resolve(file);
+    const ast = JSON.parse(
+      fs.readFileSync(fullPath, 'utf8')
+    ) as ASTIntermediate;
+    intermediates.set(file, ast);
+  }
+
+  process.stdout.write(chalk.green(`Done.\n`));
+
+  // The source files from which the AST intermediates were generated
+  const sourceFiles = Array.from(intermediates.values()).map((item) => {
+    return item.path;
+  });
+
+  // Determine what the user's project root was, and get a list of relative paths
+
+  const projectPathConfig = convertToPrefixAndRelativePaths(sourceFiles);
+
+  if (projectPathConfig === null) {
+    throw new Error(
+      `Could not determine project path configuration. Perhaps there is an issue with symbolic links?`
+    );
+  }
+
+  const projectRoot = projectPathConfig.prefix;
+  const relpaths = projectPathConfig.relativePaths;
+
+  // Arrange the AST intermediates in a hierarchy according to the relative paths, an attach metadata regarding the name of the intermediate file
+  // Do not need to attach the intermediate itself since this needs to be fetched async at runtime in the React app
+
+  // Step 1: Reverse map from relpath back to intermediate filename
+  const reverseMap: Map<string, string> = new Map();
+  for (const [key, value] of intermediates.entries()) {
+    reverseMap.set(normalizePath(path.relative(projectRoot, value.path)), key);
+  }
+
+  // Step 2: Prepare the data for the tree transform
+  const treeTransformInput: {
+    relativePath: string;
+    data: string;
+  }[] = relpaths.map((relpath) => {
+    return {
+      relativePath: relpath,
+      data: reverseMap.get(relpath)!,
+    };
+  });
+
+  // Step 3: Calculate the tree/hierarchy
+  const hierarchy =
+    assembleHierarchyFromRelativePathsAndAssociatedData(treeTransformInput);
+
+  const contentIndex = {
+    projectName,
+    projectRoot,
+    hierarchy,
+  };
+
   const outDirWD = new WorkingDirectory(outDir);
 
   const outContentDir = outDirWD.subDir('content').createSelfIfNotExists().root;
+
+  new WorkingDirectory(outContentDir).clear();
+
+  fs.writeFileSync(
+    path.resolve(outContentDir, 'content-index.json'),
+    JSON.stringify(contentIndex, null, 2)
+  );
+
+  for (const file of intermediateFiles) {
+    const sourcePath = path.resolve(intermediateDirectory, file);
+    const destPath = path.resolve(outContentDir, file);
+    fs.copyFileSync(sourcePath, destPath);
+  }
 
   const indexHtml = `
   <!DOCTYPE html>

@@ -3,7 +3,6 @@ import fs from 'fs';
 
 import { v4 as uuidv4 } from 'uuid';
 import commonPathPrefix from 'common-path-prefix';
-import { StringLiteral } from 'typescript';
 import { SerializableObject } from './serialization';
 
 export function convertToPrefixAndRelativePaths(absolutePaths: string[]) {
