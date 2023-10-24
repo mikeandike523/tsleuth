@@ -13,6 +13,7 @@ import {
   assembleHierarchyFromRelativePathsAndAssociatedData,
 } from '@common/filesystem';
 import { normalizePath } from '@common/filesystem';
+import { findReadmeInFolder } from './find-readme';
 
 /**
  *
@@ -142,15 +143,22 @@ export function generateSiteAndCopyFiles(
   const hierarchy =
     assembleHierarchyFromRelativePathsAndAssociatedData(treeTransformInput);
 
+  process.stdout.write(chalk.magenta(`Searching for top-level README...\n`));
+
+  const readmePath = findReadmeInFolder(projectRoot);
+
   const contentIndex = {
     projectName,
     projectRoot,
     hierarchy,
+    topLevelReadme: readmePath ? path.basename(readmePath) : null,
   };
 
   const outDirWD = new WorkingDirectory(outDir);
 
   const outContentDir = outDirWD.subDir('content').createSelfIfNotExists().root;
+
+  process.stdout.write(chalk.green(`Done.\n`));
 
   new WorkingDirectory(outContentDir).clear();
 
@@ -193,6 +201,13 @@ export function generateSiteAndCopyFiles(
     .resolve('bundle.js');
 
   fs.copyFileSync(bundleFile, outDirWD.resolve('bundle.js'));
+
+  if (readmePath) {
+    fs.copyFileSync(
+      readmePath,
+      path.resolve(outContentDir, path.basename(readmePath))
+    );
+  }
 
   // Copy all contents (recursively) of directory contentDir to directory outContentDir
   copyDirectoryContentsRecursive(contentDir, outContentDir, true);

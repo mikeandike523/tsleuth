@@ -1,18 +1,25 @@
-import React from 'react';
-function doNothing(_: unknown) {}
-doNothing(React);
-
-import { MyTestComponent } from '@/components/my-test-component';
+import EnsureReactInScope from './EnsureReactInScope';
 
 import { createRoot } from 'react-dom/client';
 
+import { HashRouter, Routes, Route } from 'react-router-dom';
+
+import { ChakraProvider } from '@chakra-ui/react';
+
+import Home from '@/pages/index';
+
+EnsureReactInScope();
+
 export default function App() {
   return (
-    <div>
-      Lorem ipsum dolor sit amet
-      <br />
-      <MyTestComponent />
-    </div>
+    <ChakraProvider>
+      <HashRouter>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          {/* More routes tbd */}
+        </Routes>
+      </HashRouter>
+    </ChakraProvider>
   );
 }
 

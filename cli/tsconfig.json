@@ -13,6 +13,10 @@
     "outDir": "./compiled",
     "strictNullChecks": true
   },
-  "include": ["./**/*.ts", "../common/**/*.ts"],
+  "include": [
+    "./**/*.ts",
+    "../common/**/*.ts",
+    "../client/src/lib/error-types.ts"
+  ],
   "exclude": ["node_modules", "**/node_modules"]
 }
