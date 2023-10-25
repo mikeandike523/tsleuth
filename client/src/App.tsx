@@ -5,6 +5,7 @@ import { createRoot } from 'react-dom/client';
 import { HashRouter, Routes, Route } from 'react-router-dom';
 
 import { ChakraProvider } from '@chakra-ui/react';
+import { RecoilRoot } from 'recoil';
 
 import Home from '@/pages/index';
 
@@ -12,14 +13,16 @@ EnsureReactInScope();
 
 export default function App() {
   return (
-    <ChakraProvider>
-      <HashRouter>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          {/* More routes tbd */}
-        </Routes>
-      </HashRouter>
-    </ChakraProvider>
+    <RecoilRoot>
+      <ChakraProvider>
+        <HashRouter>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            {/* More routes tbd */}
+          </Routes>
+        </HashRouter>
+      </ChakraProvider>
+    </RecoilRoot>
   );
 }
 

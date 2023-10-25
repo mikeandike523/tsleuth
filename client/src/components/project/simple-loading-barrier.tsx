@@ -116,7 +116,11 @@ function LoadingSpinner() {
   return <Box css={spinnerCss} flex={0}></Box>;
 }
 
-export function LoadingBarrierNoUnmount(explicitZIndex?: number) {
+export function LoadingBarrierNoUnmount({
+  explicitZIndex,
+}: {
+  explicitZIndex?: number;
+}) {
   const { loadingTasks, hasActiveTasks } = useLoadingTaskManager();
 
   const blocker = (

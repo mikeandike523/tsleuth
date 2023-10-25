@@ -5,5 +5,9 @@ import { Box } from '@chakra-ui/react';
 
 export interface SidebarProps {}
 export function Sidebar({}: SidebarProps) {
-  return <Box height="100%">Sidebar</Box>;
+  return (
+    <Box height="100%" borderRight="2px solid black">
+      Sidebar
+    </Box>
+  );
 }

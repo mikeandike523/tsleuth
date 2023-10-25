@@ -7,13 +7,16 @@ import { Box } from '@chakra-ui/react';
 
 import { Navbar } from './navbar';
 import { Sidebar } from './sidebar';
+import { LoadingBarrierNoUnmount } from './simple-loading-barrier';
+import { usePopulateProjectName } from '@/hooks/usePopulateProjectName';
 
 export interface PageProps {
-  projectName?: string;
   children?: ReactNode;
 }
 
-export function Page({ projectName, children }: PageProps) {
+export function Page({ children }: PageProps) {
+  const projectName = usePopulateProjectName();
+
   return (
     <Box
       position="fixed"
@@ -26,7 +29,7 @@ export function Page({ projectName, children }: PageProps) {
       alignItems="center"
       justifyContent="flex-start"
     >
-      <Navbar projectName={projectName} />
+      <Navbar />
       <Box
         width="100%"
         flex={1}
@@ -38,10 +41,17 @@ export function Page({ projectName, children }: PageProps) {
         <Box height="100%" maxHeight="100%" flex={0} overflow="auto">
           <Sidebar />
         </Box>
-        <Box height="100%" maxHeight="100%" flex={1} overflow="auto">
+        <Box
+          height="100%"
+          maxHeight="100%"
+          flex={1}
+          overflow="auto"
+          padding="0.25em"
+        >
           {children}
         </Box>
       </Box>
+      <LoadingBarrierNoUnmount />
     </Box>
   );
 }
