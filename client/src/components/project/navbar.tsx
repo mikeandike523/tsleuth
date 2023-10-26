@@ -4,44 +4,21 @@ EnsureReactInScope();
 import { ReactNode } from 'react';
 
 import { Box, Text } from '@chakra-ui/react';
+import { useNavigate } from 'react-router-dom';
 
 import { usePopulateProjectName } from '@/hooks/usePopulateProjectName';
 import { useCrumbs } from '@/hooks/useCrumbs';
+import { CrumbSequence } from './crumb-sequence';
+import {
+  rightFacingSmallTriangle,
+  rightFacingArrow,
+  doubleColon,
+} from './special-strings';
 
 export interface NavbarProps {}
 
-const rightFacingSmallTriangle = '\u{25B8}';
-const rightFacingArrow = '\u{2192}';
-const doubleColon = '::';
-
-export function CrumbSequence({
-  sep = rightFacingSmallTriangle,
-  path,
-}: {
-  sep?:
-    | typeof rightFacingSmallTriangle
-    | typeof rightFacingArrow
-    | typeof doubleColon;
-  path: string[];
-}) {
-  const items: ReactNode[] = [];
-  const addItem = (item: ReactNode) => {
-    const key = 'CrumSequence_' + items.length;
-    items.push(<Box key={key}>{item}</Box>);
-  };
-  for (let i = 0; i < path.length - 1; i++) {
-    addItem(<Text fontWeight="bold">{path[i]}</Text>);
-    addItem(sep);
-  }
-  addItem(<Text fontWeight="bold">{path[path.length - 1]}</Text>);
-  return (
-    <Box display="flex" flexDirection="row" alignItems="center" gap="0.25em">
-      {items}
-    </Box>
-  );
-}
-
 export function Navbar({}: NavbarProps) {
+  const navigate = useNavigate();
   const projectName = usePopulateProjectName();
   const crumbs = useCrumbs();
   const items: ReactNode[] = [];
@@ -62,6 +39,9 @@ export function Navbar({}: NavbarProps) {
     );
     addItem(
       <CrumbSequence
+        onNavigate={(path: string[]) => {
+          navigate(path.join('/'));
+        }}
         sep={rightFacingArrow}
         path={crumbs.containingDirectory.concat([crumbs.basename])}
       />

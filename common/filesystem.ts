@@ -99,6 +99,13 @@ export function assembleHierarchyFromRelativePathsAndAssociatedData<
 export function accessPathHierarchyNodeData<
   T extends SerializableObject = SerializableObject,
 >(node: PathHierarchyNode<T>, pathSegments: string[]): T | undefined {
+  const unwrapped = accessPathHierarchyNode<T>(node, pathSegments);
+  return unwrapped.data;
+}
+
+export function accessPathHierarchyNode<
+  T extends SerializableObject = SerializableObject,
+>(node: PathHierarchyNode<T>, pathSegments: string[]): PathHierarchyNode<T> {
   let unwrapped: PathHierarchyNode<T> = node;
 
   // No need to have a special condition for pathSegments.length === 0; the loop below will handle it.
@@ -111,7 +118,7 @@ export function accessPathHierarchyNodeData<
     unwrapped = unwrapped.children[segment] as PathHierarchyNode<T>;
   }
 
-  return unwrapped.data;
+  return unwrapped;
 }
 
 /**

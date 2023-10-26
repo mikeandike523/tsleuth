@@ -1,5 +1,7 @@
 import { useLocation } from 'react-router-dom';
 
+import { basenameIsSourceFile } from '@/lib/source-files';
+
 export function normalizeHashRoute(hash: string) {
   const processed = hash
     .trim()
@@ -50,31 +52,6 @@ export function useCrumbs(): Crumbs {
       basename: '',
     };
   }
-  const basenameIsFile = (basename: string | undefined) => {
-    if (typeof basename === 'undefined') {
-      return false;
-    }
-    basename = basename.toLowerCase();
-    const ext = basename.includes('.') ? basename.split('.').pop() ?? '' : '';
-    if (
-      [
-        'ts',
-        'tsx',
-        'js',
-        'jsx',
-        'json',
-        'jsonc',
-        'css',
-        'scss',
-        'xml',
-        'txt',
-        'md',
-      ].includes(ext)
-    ) {
-      return true;
-    }
-    return false;
-  };
 
   const rawCrumbs = hashRoute.split('/');
 
@@ -98,7 +75,7 @@ export function useCrumbs(): Crumbs {
   const lastItem =
     pathCrumbs.length > 0 ? pathCrumbs[pathCrumbs.length - 1] : undefined;
 
-  const routeType = basenameIsFile(lastItem) ? 'file' : 'directory';
+  const routeType = basenameIsSourceFile(lastItem) ? 'file' : 'directory';
 
   if (pathCrumbs.length === 0) {
     throw new Error('Unexpected route length of 0');
