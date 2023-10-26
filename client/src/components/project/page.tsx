@@ -38,16 +38,10 @@ export function Page({ children }: PageProps) {
         alignItems="flex-start"
         justifyContent="flex-start"
       >
-        <Box height="100%" maxHeight="100%" flex={0} overflow="auto">
+        <Box height="100%" maxHeight="100%" overflow="auto">
           <Sidebar />
         </Box>
-        <Box
-          height="100%"
-          maxHeight="100%"
-          flex={1}
-          overflow="auto"
-          padding="0.25em"
-        >
+        <Box height="100%" maxHeight="100%" flex={1} overflow="auto">
           {children}
         </Box>
       </Box>

@@ -8,6 +8,7 @@ import { ChakraProvider } from '@chakra-ui/react';
 import { RecoilRoot } from 'recoil';
 
 import Home from '@/pages/index';
+import SubpageRouter from './pages/subpage-router';
 
 EnsureReactInScope();
 
@@ -18,7 +19,8 @@ export default function App() {
         <HashRouter>
           <Routes>
             <Route path="/" element={<Home />} />
-            {/* More routes tbd */}
+            <Route path="" element={<Home />} />
+            <Route path="*" element={<SubpageRouter />} />
           </Routes>
         </HashRouter>
       </ChakraProvider>

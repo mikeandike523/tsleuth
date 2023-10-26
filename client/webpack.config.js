@@ -8,6 +8,10 @@ module.exports = {
     path: path.resolve(__dirname, 'dist'),
   },
   resolve: {
+    fallback: {
+      path: require.resolve('path-browserify'),
+      fs: false,
+    },
     extensions: ['.ts', '.tsx', '.js', '.jsx'],
     alias: {
       '@': path.resolve(__dirname, 'src'),

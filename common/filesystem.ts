@@ -96,6 +96,24 @@ export function assembleHierarchyFromRelativePathsAndAssociatedData<
   return root;
 }
 
+export function accessPathHierarchyNodeData<
+  T extends SerializableObject = SerializableObject,
+>(node: PathHierarchyNode<T>, pathSegments: string[]): T | undefined {
+  let unwrapped: PathHierarchyNode<T> = node;
+
+  // No need to have a special condition for pathSegments.length === 0; the loop below will handle it.
+
+  for (const segment of pathSegments) {
+    // Check if the segment exists in the children directly instead of creating an array of keys.
+    if (!Object.keys(unwrapped.children).includes(segment)) {
+      throw new Error(`Invalid path: ${pathSegments.join('/')}`);
+    }
+    unwrapped = unwrapped.children[segment] as PathHierarchyNode<T>;
+  }
+
+  return unwrapped.data;
+}
+
 /**
  * Thrown when a folder is expected, but another filesystem node type was found.
  */

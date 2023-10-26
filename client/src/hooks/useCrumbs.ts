@@ -13,7 +13,7 @@ export function normalizeHashRoute(hash: string) {
   return processed;
 }
 
-export type RouteType = 'file' | 'directory';
+export type RouteType = 'index' | 'file' | 'directory';
 
 export type Crumbs = {
   routeType: RouteType;
@@ -42,12 +42,13 @@ export type Crumbs = {
  * /my/path/to/directory/:/entity/route
  */
 export function useCrumbs(): Crumbs {
-  const hashRoute = normalizeHashRoute(useLocation().hash);
+  const hashRoute = normalizeHashRoute(useLocation().pathname);
   if (hashRoute === '') {
-    throw new Error(`
-    Cannot use \`useCrumbs\` on '' or '/' route)
-    This error is unexpected since the react-router-dom \`HashRouter\` should have handled the index page route as a special case.
-    `);
+    return {
+      routeType: 'index',
+      containingDirectory: [],
+      basename: '',
+    };
   }
   const basenameIsFile = (basename: string | undefined) => {
     if (typeof basename === 'undefined') {
