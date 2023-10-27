@@ -6,6 +6,7 @@ import { accessPathHierarchyNodeData } from '@common/filesystem';
 import { basenameIsSourceFile } from '@/lib/source-files';
 import { ContentIndex } from '@/lib/content-index';
 import { fetchJSONContent } from '@/lib/fetch-content';
+import { useCrumbs } from './useCrumbs';
 
 /**
  * Load the appropriate AST intermediate file from the "content" directory.
@@ -14,18 +15,24 @@ import { fetchJSONContent } from '@/lib/fetch-content';
  *
  * @returns - The desired AST intermediate, or null if the content index has not been loaded yet
  */
-export function useASTIntermediate(sourceFilePath: string[]) {
+export function useASTIntermediate(
+  sourceFilePath: string[],
+  isNavbar: boolean = false
+) {
+  const crumbs = useCrumbs();
+
+  const routeTypeOk = () => {
+    return !isNavbar || crumbs.routeType === 'file';
+  };
+
   const [content, setContent] = useState<ASTIntermediate | null>(null);
-  if (sourceFilePath.length === 0) {
-    throw new Error('No AST for root');
-  }
-  const bn = sourceFilePath[sourceFilePath.length - 1];
-  if (!basenameIsSourceFile(bn)) {
-    throw new Error('No AST for non-source file');
-  }
+
   const contentIndex = usePopulateContentIndex();
 
   const fetchRoutine = async () => {
+    if (!routeTypeOk()) {
+      return;
+    }
     const data = accessPathHierarchyNodeData(
       (contentIndex as ContentIndex).hierarchy,
       sourceFilePath
@@ -39,10 +46,24 @@ export function useASTIntermediate(sourceFilePath: string[]) {
   };
 
   useEffect(() => {
-    if (contentIndex && !content) {
+    if (routeTypeOk() && contentIndex && !content) {
       fetchRoutine();
     }
   }, [contentIndex, content]);
+
+  if (!routeTypeOk()) {
+    return null;
+  }
+
+  if (sourceFilePath.length === 0) {
+    return null;
+  }
+
+  const bn = sourceFilePath[sourceFilePath.length - 1];
+
+  if (!basenameIsSourceFile(bn)) {
+    return null;
+  }
 
   return content;
 }

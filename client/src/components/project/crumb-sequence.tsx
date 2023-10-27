@@ -12,6 +12,7 @@ import { linkCss } from '@/css/link';
 export function CrumbSequence({
   sep = rightFacingSmallTriangle,
   path,
+  prepend = false,
   onNavigate = () => {},
 }: {
   sep?:
@@ -20,12 +21,16 @@ export function CrumbSequence({
     | typeof doubleColon;
   path: string[];
   onNavigate?: (path: string[]) => void;
+  prepend?: boolean;
 }) {
   const items: ReactNode[] = [];
   const addItem = (item: ReactNode) => {
-    const key = 'CrumSequence_' + items.length;
-    items.push(<Box key={key}>{item}</Box>);
+    const key = 'CrumbSequence_' + items.length;
+    items.push(item);
   };
+  if (prepend) {
+    addItem(<div>{sep}</div>);
+  }
   for (let i = 0; i < path.length - 1; i++) {
     addItem(
       <Text
@@ -38,7 +43,7 @@ export function CrumbSequence({
         {path[i]}
       </Text>
     );
-    addItem(sep);
+    addItem(<div>{sep}</div>);
   }
   addItem(
     <Text

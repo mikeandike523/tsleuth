@@ -2,7 +2,7 @@ import EnsureReactInScope from '@/EnsureReactInScope';
 EnsureReactInScope();
 
 import { ReactNode, useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import { Box } from '@chakra-ui/react';
 import { throttle } from 'lodash';
@@ -90,47 +90,36 @@ export function SidebarList({ contentIndex }: { contentIndex: ContentIndex }) {
 export function Sidebar({}: SidebarProps) {
   const contentIndex = usePopulateContentIndex();
 
-  // Unfortunately, css doesn't respond well to combining flexbox and overflow
-  // The traditional solution is to first render without the change of overflow (i.e. dont render the sidebar list), measure the boundingClientRect, and then set the height to explicit
-  const [renderedHeight, setRenderedHeight] = useState<number | null>(null);
+  const [windowHeight, setWindowHeight] = useState<number | null>(null);
 
-  const outerBoxRef = useRef<HTMLDivElement | null>(null);
-
-  const handleResize = throttle(function () {
-    setRenderedHeight(null);
+  const handleResize = throttle(() => {
+    setWindowHeight(window.innerHeight);
   }, 250);
 
   useEffect(() => {
     window.addEventListener('resize', handleResize);
     return () => {
-      handleResize.cancel();
       window.removeEventListener('resize', handleResize);
     };
-  }, []);
+  });
 
   useEffect(() => {
-    if (outerBoxRef.current) {
-      setRenderedHeight(outerBoxRef.current.getBoundingClientRect().height);
-    }
-  }, [renderedHeight]);
-
-  const cssHeight = renderedHeight !== null ? `${renderedHeight}px` : `100%`;
+    handleResize();
+  }, []);
 
   return (
     <Box
-      height={cssHeight}
-      maxHeight={cssHeight}
+      height={windowHeight ? windowHeight - 64 + 'px' : 'auto'}
       borderRight="2px solid black"
       display="flex"
       flexDirection="column"
       alignItems="flex-start"
       justifyContent="flex-start"
       overflowY="auto"
-      ref={outerBoxRef}
     >
       {contentIndex ? (
         <>
-          {renderedHeight !== null ? (
+          {windowHeight !== null ? (
             <SidebarList contentIndex={contentIndex} />
           ) : (
             <></>

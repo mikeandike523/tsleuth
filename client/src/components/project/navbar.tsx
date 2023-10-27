@@ -14,6 +14,9 @@ import {
   rightFacingArrow,
   doubleColon,
 } from './special-strings';
+import { useASTIntermediate } from '@/hooks/useASTIntermediate';
+import { ASTIntermediate, SerializableASTNode } from '@cli/lib/ast-traversal';
+import { linkCss } from '@/css/link';
 
 export interface NavbarProps {}
 
@@ -21,13 +24,31 @@ export function Navbar({}: NavbarProps) {
   const navigate = useNavigate();
   const projectName = usePopulateProjectName();
   const crumbs = useCrumbs();
+  const astContent = useASTIntermediate(
+    crumbs.containingDirectory.concat([crumbs.basename]),
+    true
+  );
+
+  if (crumbs.routeType === 'file' && !astContent) {
+    return <>Loading...</>;
+  }
+
   const items: ReactNode[] = [];
   const addItem = (item: ReactNode) => {
     const key = 'navbar_item_' + items.length;
-    items.push(<Box key={key}>{item}</Box>);
+    items.push(item);
   };
   addItem(
-    <Text as="h1" fontSize="2xl">
+    <Text
+      as="h1"
+      fontSize="2xl"
+      css={linkCss}
+      onClick={() => {
+        if (projectName) {
+          navigate('');
+        }
+      }}
+    >
       {projectName ?? 'Loading...'}
     </Text>
   );
@@ -52,7 +73,28 @@ export function Navbar({}: NavbarProps) {
           {rightFacingArrow}
         </Text>
       );
-      addItem(<CrumbSequence sep={doubleColon} path={crumbs.entityPath} />);
+      const namedEntityPath: string[] = [];
+      if ((astContent as ASTIntermediate).root === null) {
+        throw new Error('AST content is empty');
+      }
+      let unwrapped: SerializableASTNode = (astContent as ASTIntermediate)
+        .root as SerializableASTNode;
+      for (const entityId of crumbs.entityPath) {
+        console.log(unwrapped.children.map((child) => child.id));
+        const child = unwrapped.children.find((child) => child.id === entityId);
+        if (!child) {
+          return <Box>Invalid entity path: {crumbs.entityPath.join('::')}</Box>;
+        }
+        namedEntityPath.push(child.name ?? '[[anonymous]]');
+        unwrapped = child;
+      }
+      addItem(
+        <CrumbSequence
+          sep={doubleColon}
+          path={namedEntityPath}
+          prepend={true}
+        />
+      );
     }
   }
 
@@ -63,9 +105,10 @@ export function Navbar({}: NavbarProps) {
       flexDirection="row"
       alignItems="center"
       background="skyblue"
-      padding="0.5em"
       gap="0.5em"
       borderBottom="2px solid black"
+      height="64px"
+      paddingLeft="8px"
     >
       {items}
     </Box>
