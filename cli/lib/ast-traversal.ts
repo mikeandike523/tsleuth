@@ -82,7 +82,12 @@ export type ASTNode = {
   parent: ASTNode | null;
 };
 
-export type SerializableASTNode = Omit<ASTNode, 'parent' | 'tsNode'>;
+export type SerializableASTNode = Omit<
+  ASTNode,
+  'parent' | 'tsNode' | 'children'
+> & {
+  children: SerializableASTNode[];
+};
 
 export function walkAST(sourceFilePath: string) {
   const fullSourceCode = fs.readFileSync(sourceFilePath, { encoding: 'utf8' });
@@ -253,10 +258,9 @@ export function walkAST(sourceFilePath: string) {
 
   const visitor = (node: ts.Node) => {
     if (isImportantSyntaxKind(node.kind)) {
-      // In the future, may want this to be a commad line option
-      // if (!isDocumented(node)) {
-      //   return;
-      // }
+      if (!isDocumented(node)) {
+        return;
+      }
       const nodeToAdd: ASTNode = {
         tsNode: node,
         kind: node.kind,
@@ -348,6 +352,8 @@ export function walkAST(sourceFilePath: string) {
     }
   }
 
+  const keysToDelete: string[] = [];
+
   if (root !== null) {
     for (const key of Array.from(nodes.keys())) {
       const node = nodes.get(key)!;
@@ -364,9 +370,19 @@ export function walkAST(sourceFilePath: string) {
           if (!hasChildById(compareNode, node)) {
             compareNode.children.push(node);
           }
+          if (compareNode.id !== root.id) {
+            keysToDelete.push(key);
+          }
         }
       }
     }
+  }
+
+  if (root) {
+    root.children =
+      root.children.filter((node) => {
+        return !keysToDelete.includes(node.id);
+      }) ?? [];
   }
 
   const cleanNode = (node: ASTNode): SerializableASTNode => {

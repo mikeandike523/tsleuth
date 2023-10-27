@@ -11,6 +11,9 @@ import { usePopulateContentIndex } from '@/hooks/usePopulateContentIndex';
 import { ContentIndex } from '@/lib/content-index';
 import { PathHierarchyNode } from '@common/filesystem';
 import { linkCss } from '@/css/link';
+import { SidebarEntityList } from './sidebar-entity-list';
+import { basenameIsSourceFile } from '@/lib/source-files';
+import { pageFacingUp, fileFolder } from './special-strings';
 
 export interface SidebarProps {}
 
@@ -27,9 +30,12 @@ export function SidebarList({ contentIndex }: { contentIndex: ContentIndex }) {
     level: number = 0,
     nodePath: string[] = []
   ) => {
-    const margin = 2 * level + 'em';
+    const margin = 2 * (level - 1) + 'em';
+    const extraMargin = 2 * level + 'em';
     const url = `${nodePath.join('/')}`;
     if (level > 0) {
+      const isFile = basenameIsSourceFile(nodePath[nodePath.length - 1]);
+
       addItem(
         <Box
           display="flex"
@@ -37,12 +43,7 @@ export function SidebarList({ contentIndex }: { contentIndex: ContentIndex }) {
           alignItems="center"
           justifyContent="flex-start"
         >
-          <Box
-            height="1.5em"
-            width={margin}
-            color="transparent"
-            background="skyblue"
-          ></Box>
+          <Box height="1.5em" width={margin}></Box>
           <Box
             onClick={() => {
               navigate(url);
@@ -50,12 +51,25 @@ export function SidebarList({ contentIndex }: { contentIndex: ContentIndex }) {
             css={linkCss}
             height="1.5em"
             lineHeight="1.5em"
-            background="khaki"
+            fontWeight={isFile ? 'bold' : 'regular'}
           >
+            {isFile ? pageFacingUp : fileFolder}
             {node.segment}
+            {!isFile && '/'}
           </Box>
         </Box>
       );
+      if (nodePath.length > 0) {
+        const baseName = nodePath[nodePath.length - 1];
+        if (basenameIsSourceFile(baseName)) {
+          addItem(
+            <SidebarEntityList
+              marginLeft={extraMargin}
+              sourceFilePath={nodePath}
+            />
+          );
+        }
+      }
     }
 
     const childKeys = Object.keys(node.children);

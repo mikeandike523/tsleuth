@@ -10,7 +10,8 @@
     "moduleResolution": "node",
     "paths": {
       "@/*": ["./src/*"],
-      "@common/*": ["../common/*"]
+      "@common/*": ["../common/*"],
+      "@cli/*": ["../cli/*"]
     }
   },
   "include": ["src/**/*"],

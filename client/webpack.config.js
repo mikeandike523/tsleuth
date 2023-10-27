@@ -16,6 +16,7 @@ module.exports = {
     alias: {
       '@': path.resolve(__dirname, 'src'),
       '@common': path.resolve(__dirname, '..', 'common'),
+      '@cli': path.resolve(__dirname, '..', 'cli'),
     },
   },
   module: {
