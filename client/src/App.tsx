@@ -12,6 +12,8 @@ import SubpageRouter from './pages/subpage-router';
 
 EnsureReactInScope();
 
+import '@/highlightjs-themes/monokai.css';
+
 export default function App() {
   return (
     <RecoilRoot>
