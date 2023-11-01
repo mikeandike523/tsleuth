@@ -1,9 +1,10 @@
 import EnsureReactInScope from '@/EnsureReactInScope';
 EnsureReactInScope();
 
-import { ReactNode } from 'react';
+import { ReactNode, useState, useEffect } from 'react';
 
 import { Box } from '@chakra-ui/react';
+import { throttle } from 'lodash';
 
 import { Navbar } from './navbar';
 import { Sidebar } from './sidebar';
@@ -16,6 +17,23 @@ export interface PageProps {
 
 export function Page({ children }: PageProps) {
   const projectName = usePopulateProjectName();
+
+  const [windowHeight, setWindowHeight] = useState<number | null>(null);
+
+  const handleResize = throttle(() => {
+    setWindowHeight(window.innerHeight / window.devicePixelRatio);
+  }, 250);
+
+  useEffect(() => {
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  });
+
+  useEffect(() => {
+    handleResize();
+  }, []);
 
   return (
     <Box
@@ -38,10 +56,19 @@ export function Page({ children }: PageProps) {
         alignItems="flex-start"
         justifyContent="flex-start"
       >
-        <Box height="100%" maxHeight="100%" overflow="auto">
+        <Box
+          height={windowHeight === null ? 0 : windowHeight - 64 + 'px'}
+          maxHeight="100%"
+          overflowY="auto"
+        >
           <Sidebar />
         </Box>
-        <Box height="100%" maxHeight="100%" flex={1} overflow="auto">
+        <Box
+          height={windowHeight === null ? 0 : windowHeight - 64 + 'px'}
+          maxHeight="100%"
+          flex={1}
+          overflowY="auto"
+        >
           {children}
         </Box>
       </Box>

@@ -49,7 +49,7 @@ export function SubpageDirectory({}: SubpageDirectoryProps) {
   );
   const names = Object.keys(node.children);
   return (
-    <Box width="100%" height="100%">
+    <>
       <Box
         width="100%"
         display="flex"
@@ -86,6 +86,6 @@ export function SubpageDirectory({}: SubpageDirectoryProps) {
           })}
         </ul>
       </Box>
-    </Box>
+    </>
   );
 }

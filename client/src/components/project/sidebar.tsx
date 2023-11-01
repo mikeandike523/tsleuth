@@ -90,41 +90,15 @@ export function SidebarList({ contentIndex }: { contentIndex: ContentIndex }) {
 export function Sidebar({}: SidebarProps) {
   const contentIndex = usePopulateContentIndex();
 
-  const [windowHeight, setWindowHeight] = useState<number | null>(null);
-
-  const handleResize = throttle(() => {
-    setWindowHeight(window.innerHeight / window.devicePixelRatio);
-  }, 250);
-
-  useEffect(() => {
-    window.addEventListener('resize', handleResize);
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
-  });
-
-  useEffect(() => {
-    handleResize();
-  }, []);
-
   return (
     <Box
-      height={windowHeight ? windowHeight - 64 + 'px' : 'auto'}
-      borderRight="2px solid black"
       display="flex"
       flexDirection="column"
       alignItems="flex-start"
       justifyContent="flex-start"
-      overflowY="auto"
     >
       {contentIndex ? (
-        <>
-          {windowHeight !== null ? (
-            <SidebarList contentIndex={contentIndex} />
-          ) : (
-            <></>
-          )}
-        </>
+        <SidebarList contentIndex={contentIndex} />
       ) : (
         <>Loading...</>
       )}

@@ -1,12 +1,20 @@
+import { useState } from 'react';
+
 import Highlight from 'react-highlight';
-import { Box } from '@chakra-ui/react';
+import { Box, Button, Text } from '@chakra-ui/react';
 
 import { heavyPlusSign, heavyMinusSign } from '../project/special-strings';
+import { lowerShadowCss } from '@/css/lower-shadow';
+
+export const supportedLanguageClassnames = {
+  typescript: 'typescript ts tsx',
+  javascript: 'javascript jsx js mjs cjs',
+} as const;
 
 /**
  * A subset of the languages supported by "highlight.js" third party library
  */
-export type SupportedLanguage = 'typescript' | 'javascript';
+export type SupportedLanguage = keyof typeof supportedLanguageClassnames;
 
 /**
  * The possible states of the `CodeSnippet` component.
@@ -20,7 +28,7 @@ export interface CodeSnippetProps {
   /**
    * Optionally, a title for the code snippet
    */
-  title: string;
+  title?: string;
   /**
    * Whether to start expanded or collapsed, i.e. the initial value used in the React `useState` call
    */
@@ -37,6 +45,10 @@ export interface CodeSnippetProps {
    * If ellipsis is used, then now shadow is present in the collapsed state
    */
   previewLines: number;
+  /**
+   * The source code to display
+   */
+  code: string;
 }
 
 /**
@@ -50,22 +62,93 @@ export function CodeSnippet({
   initialState,
   language,
   previewLines,
+  code,
 }: CodeSnippetProps) {
+  const [expandState, setExpandState] = useState(initialState);
+
+  const normalizedCode = code.replace(/\r\n/g, '\n');
+
+  const getCollapsedCode = () => {
+    if (previewLines === 0) {
+      return '...';
+    }
+    if (!normalizedCode.includes('\n')) {
+      return normalizedCode;
+    }
+    const lines = normalizedCode.split('\n');
+    const numLines = Math.min(previewLines, lines.length);
+    return lines.slice(0, numLines).join('\n');
+  };
+
+  const numLines = (
+    expandState === 'collapsed' ? getCollapsedCode() : normalizedCode
+  ).split('\n').length;
+
   return (
-    <Box
-      width="100%"
-      display="flex"
-      flexDirection="column"
-      alignItems="flex-start"
-      justifyContent="flex-start"
-    >
+    <Box width="100%" padding="8px" position="relative">
       <Box
-        display="flex"
-        flexDirection="row"
-        alignItems="center"
-        justifyContent="center"
-        gap="8px"
-      ></Box>
+        width="100%"
+        border="2px solid blue"
+        borderRadius="8px"
+        position="relative"
+      >
+        <Box width="100%" position="relative" height={1.5 * numLines + 'em'}>
+          <Box position="absolute" width="100%" background="#272822">
+            <Highlight className={supportedLanguageClassnames[language]}>
+              {expandState === 'expanded' ? normalizedCode : getCollapsedCode()}
+            </Highlight>
+          </Box>
+          <Box
+            position="absolute"
+            width="100%"
+            css={expandState === 'collapsed' ? lowerShadowCss : undefined}
+          >
+            <Box width="100%" visibility="hidden">
+              <Highlight className={supportedLanguageClassnames[language]}>
+                {expandState === 'expanded'
+                  ? normalizedCode
+                  : getCollapsedCode()}
+              </Highlight>
+            </Box>
+            <Box
+              position="absolute"
+              bottom={0}
+              width="100%"
+              display="flex"
+              flexDirection="row"
+              alignItems="center"
+              justifyContent="flex-end"
+            >
+              <Box
+                fontSize="sm"
+                display="flex"
+                flexDirection="row"
+                alignItems="center"
+                justifyContent="flex-start"
+                padding="8px"
+                gap="8px"
+                border="2px solid blue"
+                background="white"
+                cursor="pointer"
+                userSelect="none"
+                borderRadius="8px"
+                onClick={() => {
+                  setExpandState(
+                    expandState === 'expanded' ? 'collapsed' : 'expanded'
+                  );
+                }}
+              >
+                <Text fontSize="lg">
+                  {expandState === 'expanded' ? heavyMinusSign : heavyPlusSign}
+                </Text>
+                <Text fontSize="lg">
+                  {expandState === 'expanded' ? 'Collapse' : 'Expand'}
+                </Text>
+              </Box>
+            </Box>
+          </Box>
+        </Box>
+      </Box>
     </Box>
   );
 }
