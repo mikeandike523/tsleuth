@@ -93,7 +93,7 @@ export function Sidebar({}: SidebarProps) {
   const [windowHeight, setWindowHeight] = useState<number | null>(null);
 
   const handleResize = throttle(() => {
-    setWindowHeight(window.innerHeight);
+    setWindowHeight(window.innerHeight / window.devicePixelRatio);
   }, 250);
 
   useEffect(() => {

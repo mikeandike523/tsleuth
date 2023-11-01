@@ -79,8 +79,8 @@ export function Navbar({}: NavbarProps) {
       }
       let unwrapped: SerializableASTNode = (astContent as ASTIntermediate)
         .root as SerializableASTNode;
+      console.log('navbar unwrapped', unwrapped);
       for (const entityId of crumbs.entityPath) {
-        console.log(unwrapped.children.map((child) => child.id));
         const child = unwrapped.children.find((child) => child.id === entityId);
         if (!child) {
           return <Box>Invalid entity path: {crumbs.entityPath.join('::')}</Box>;

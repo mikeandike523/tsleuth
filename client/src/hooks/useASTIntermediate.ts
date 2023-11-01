@@ -46,10 +46,10 @@ export function useASTIntermediate(
   };
 
   useEffect(() => {
-    if (routeTypeOk() && contentIndex && !content) {
+    if (routeTypeOk() && contentIndex) {
       fetchRoutine();
     }
-  }, [contentIndex, content]);
+  }, [contentIndex, JSON.stringify(crumbs)]);
 
   if (!routeTypeOk()) {
     return null;
