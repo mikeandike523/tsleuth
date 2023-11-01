@@ -16,37 +16,6 @@ import { Hr } from '@/components/framework/Hr';
 import { CodeSnippet } from '@/components/framework/code-snippet';
 import { SerializableASTNode } from '@cli/lib/ast-traversal';
 
-/* For reference
-export type ASTNode = {
-  kind: ts.SyntaxKind;
-  kindName: string;
-  narrowKind: ts.SyntaxKind | null;
-  narrowKindName: string | null;
-  startChar: number;
-  endChar: number;
-  startLCP: LineColumnPair;
-  endLCP: LineColumnPair;
-  sourceCode: string; // Does not include doc comment
-  documentation: string | null;
-  name: string | null;
-  storageQualifier: StorageQualifier | null;
-  classElementModifiers: Modifier[] | null;
-  signatureCode: string | null;
-  exported: ExportMode | null;
-  id: string;
-  tsNode?: ts.Node;
-  children: ASTNode[];
-  parent: ASTNode | null;
-};
-
-export type SerializableASTNode = Omit<
-  ASTNode,
-  'parent' | 'tsNode' | 'children'
-> & {
-  children: SerializableASTNode[];
-};
-*/
-
 export function SymbolSummary({
   node,
   prior,
@@ -60,7 +29,7 @@ export function SymbolSummary({
   return (
     <Box border="2px solid black" marginBottom="8px" width="100%">
       <Box display="flex" flexDirection="row" alignItems="center">
-        <Text textDecoration="underline" fontSize="lg">
+        <Text fontWeight="bold" fontSize="lg">
           {name}
         </Text>
         <Text fontSize="lg">&nbsp;</Text>
@@ -76,7 +45,17 @@ export function SymbolSummary({
           </>
         )}
       </Box>
-
+      {node.documentation && (
+        <>
+          <Text>Documentation:</Text>
+          <CodeSnippet
+            language="typescript"
+            previewLines={0}
+            initialState="expanded"
+            code={node.documentation}
+          />
+        </>
+      )}
       {(node.storageQualifier ||
         (node.classElementModifiers?.length ?? 0 > 0) ||
         node.exported) && (
@@ -169,18 +148,7 @@ export function SymbolSummary({
           </table>
         </>
       )}
-      {/* For now, the documentation is in the doc comment syntax, but if in the future we parse and dedent it we need to handle it differently */}
-      {node.documentation && (
-        <>
-          <Text>Documentation:</Text>
-          <CodeSnippet
-            language="typescript"
-            previewLines={0}
-            initialState="expanded"
-            code={node.documentation}
-          />
-        </>
-      )}
+
       {node.signatureCode && (
         <>
           <Text>Signature:</Text>
