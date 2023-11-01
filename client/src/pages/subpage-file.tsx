@@ -15,6 +15,7 @@ import { rightFacingArrow } from '@/components/project/special-strings';
 import { Hr } from '@/components/framework/Hr';
 import { CodeSnippet } from '@/components/framework/code-snippet';
 import { SerializableASTNode } from '@cli/lib/ast-traversal';
+import { docCommentToParagraph } from '@common/text';
 
 export function SymbolSummary({
   node,
@@ -26,6 +27,32 @@ export function SymbolSummary({
   const chain = prior.concat([node]);
   // TODO: Make it more robust by using the CrumbSequence component and navigating properly
   const name = '::' + chain.map((n) => n.name).join('::');
+  let docElement: ReactElement | null = null;
+  if (node.documentation) {
+    try {
+      docElement = (
+        <Box
+          background="lightgrey"
+          color="green"
+          whiteSpace="pre-wrap"
+          fontFamily="monospace"
+        >
+          {docCommentToParagraph(node.documentation)}
+        </Box>
+      );
+    } catch (e) {
+      console.log(e);
+      docElement = (
+        <CodeSnippet
+          language="typescript"
+          previewLines={0}
+          initialState="expanded"
+          code={node.documentation}
+        />
+      );
+    }
+  }
+
   return (
     <Box border="2px solid black" marginBottom="8px" width="100%">
       <Box display="flex" flexDirection="row" alignItems="center">
@@ -45,15 +72,10 @@ export function SymbolSummary({
           </>
         )}
       </Box>
-      {node.documentation && (
+      {docElement !== null && (
         <>
           <Text>Documentation:</Text>
-          <CodeSnippet
-            language="typescript"
-            previewLines={0}
-            initialState="expanded"
-            code={node.documentation}
-          />
+          {docElement}
         </>
       )}
       {(node.storageQualifier ||

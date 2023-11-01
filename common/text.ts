@@ -1,3 +1,4 @@
+import { m } from 'framer-motion';
 import { arrayGcf } from './math';
 
 export function normalizeLineEndings(
@@ -163,15 +164,15 @@ export function docCommentToParagraph(docCommentText: string): string {
     }
     return match[1];
   }
-  const startPattern = /^.*?\/\*\*.*?$/g;
-  const plainStartPattern = /^.*?\/\*\*\s+$/g;
-  const endPattern = /^\s*\*\/\s*$/g;
-  const plainEndPattern = /^\s*\*\/\s*/g;
+  const startPattern = /^.*?\/\*\*.*?$/;
+  const plainStartPattern = /^.*?\/\*\*\s*$/;
+  const endPattern = /^\s*\*\/\s*$/;
+  const plainEndPattern = /^\s*\*\/\s*/;
 
   const extractorPatterns = [
-    /\s*\/\*\*(\s+.*?)\s*/g,
-    /\s+\*(\s+.*?)\s*/g,
-    /\s*(.*?)\*\/\s*/g,
+    /^\s*\/\*\*(\s+.*?)\s*$/,
+    /^\s*\*(\s+.*?)\s*$/,
+    /^\s*(.*?)\*\/\s*$/,
   ];
 
   const lines = normalized.split('\n');
@@ -181,14 +182,16 @@ export function docCommentToParagraph(docCommentText: string): string {
     const matchesPlainStartPattern = line.match(plainStartPattern);
     if (matchesStartPattern && !matchesPlainStartPattern) {
       console.warn(
-        'It is not recommended to put text on the first line of a multiline doc comment'
+        'It is not recommended to put text on the first line of a multiline doc comment',
+        normalized
       );
     }
     const matchesEndPattern = line.match(endPattern);
     const matchesPlainEndPattern = line.match(plainEndPattern);
     if (matchesEndPattern && !matchesPlainEndPattern) {
       console.warn(
-        'It is not recommended to put text on the last line of a multiline doc comment'
+        'It is not recommended to put text on the last line of a multiline doc comment',
+        normalized
       );
     }
 
@@ -196,6 +199,7 @@ export function docCommentToParagraph(docCommentText: string): string {
     for (const extractorPattern of extractorPatterns) {
       const match = line.match(extractorPattern);
       if (match) {
+        console.log('hasMatched', match);
         extractedLines.push(match[1]);
         hasMatched = true;
         break;
