@@ -46,6 +46,7 @@ function FullyLoadedComponent({
               .join('/');
             navigate(url);
           }}
+          background={node.documentation ? 'magenta' : 'none'}
         >
           {doubleColon}
           {node.name ?? '[[anonymous]]'}

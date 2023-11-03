@@ -50,7 +50,7 @@ export function CrumbSequence({
       css={linkCss}
       fontWeight="bold"
       onClick={() => {
-        onNavigate(path.slice(0, path.length - 1));
+        onNavigate(path.slice(0, path.length));
       }}
     >
       {path[path.length - 1]}

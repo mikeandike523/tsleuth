@@ -2,12 +2,11 @@ import EnsureReactInScope from './EnsureReactInScope';
 
 import { createRoot } from 'react-dom/client';
 
-import { HashRouter, Routes, Route } from 'react-router-dom';
+import { HashRouter, Route, Routes } from 'react-router-dom';
 
 import { ChakraProvider } from '@chakra-ui/react';
 import { RecoilRoot } from 'recoil';
 
-import Home from '@/pages/index';
 import SubpageRouter from './pages/subpage-router';
 
 EnsureReactInScope();
@@ -20,9 +19,6 @@ export default function App() {
       <ChakraProvider>
         <HashRouter>
           <Routes>
-            {/* Seems to break sidebar */}
-            {/* <Route path="/" element={<Home />} /> */}
-            {/* <Route path="" element={<Home />} /> */}
             <Route path="*" element={<SubpageRouter />} />
           </Routes>
         </HashRouter>

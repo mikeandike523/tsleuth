@@ -216,7 +216,7 @@ export function SymbolSummary({
           <Text>Signature:</Text>
           <CodeSnippet
             language="typescript"
-            previewLines={0}
+            previewLines={3}
             initialState="expanded"
             code={node.signatureCode}
           />
@@ -225,7 +225,7 @@ export function SymbolSummary({
       <Text>Source Code:</Text>
       <CodeSnippet
         language="typescript"
-        previewLines={0}
+        previewLines={6}
         initialState="collapsed"
         code={node.sourceCode}
       />
@@ -364,6 +364,11 @@ export function SubpageFile({ scrollTopSetter }: SubpageFileProps) {
           Full Source Code
         </Text>
         <CodeSnippet
+          codeId={JSON.stringify(
+            crumbs.containingDirectory
+              .concat([crumbs.basename])
+              .concat(['full_source_code'])
+          )}
           previewLines={16}
           initialState="collapsed"
           language="typescript"

@@ -87,14 +87,26 @@ export function Navbar({}: NavbarProps) {
       let unwrapped: SerializableASTNode = (astContent as ASTIntermediate)
         .root as SerializableASTNode;
       console.log('navbar unwrapped', unwrapped);
-      for (const entityId of crumbs.entityPath) {
-        const child = unwrapped.children.find((child) => child.id === entityId);
-        if (!child) {
-          return <Box>Invalid entity path: {crumbs.entityPath.join('::')}</Box>;
+      if (
+        crumbs.entityPath.length === 1 &&
+        crumbs.entityPath[0] === 'full_source_code'
+      ) {
+        namedEntityPath.push('Full Source Code');
+      } else {
+        for (const entityId of crumbs.entityPath) {
+          const child = unwrapped.children.find(
+            (child) => child.id === entityId
+          );
+          if (!child) {
+            return (
+              <Box>Invalid entity path: {crumbs.entityPath.join('::')}</Box>
+            );
+          }
+          namedEntityPath.push(child.name ?? '[[anonymous]]');
+          unwrapped = child;
         }
-        namedEntityPath.push(child.name ?? '[[anonymous]]');
-        unwrapped = child;
       }
+
       addItem(
         <CrumbSequence
           sep={doubleColon}

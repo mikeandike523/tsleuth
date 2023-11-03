@@ -255,46 +255,53 @@ export function walkAST(sourceFilePath: string) {
   };
 
   const nodes: Map<string, ASTNode> = new Map();
+  const specialCovered: Set<string> = new Set();
 
   const visitor = (node: ts.Node) => {
     if (isImportantSyntaxKind(node.kind)) {
-      if (!isDocumented(node)) {
-        return;
-      }
-      const nodeToAdd: ASTNode = {
-        tsNode: node,
-        kind: node.kind,
-        kindName: ts.SyntaxKind[node.kind],
-        narrowKind: null,
-        narrowKindName: null,
-        startChar: node.getStart(),
-        endChar: node.getEnd(),
-        startLCP: getLCP(node.getStart()),
-        endLCP: getLCP(node.getEnd()),
-        sourceCode: fullSourceCode.slice(node.getStart(), node.getEnd()),
-        documentation: getDocumentation(node),
-        name: drillForName(node),
-        storageQualifier: getStorageQualifier(node),
-        signatureCode: signatureFromFunctionNode(node),
-        exported: drillDirectExport(node),
-        classElementModifiers: getClassElementModifiers(node),
-        id: getId(node),
-        children: [],
-        parent: null,
-      };
+      const name = drillForName(node);
+      if (
+        name ||
+        node.kind === ts.SyntaxKind.SourceFile ||
+        getId(node) === getId(sourceFile)
+      ) {
+        const nodeToAdd: ASTNode = {
+          tsNode: node,
+          kind: node.kind,
+          kindName: ts.SyntaxKind[node.kind],
+          narrowKind: null,
+          narrowKindName: null,
+          startChar: node.getStart(),
+          endChar: node.getEnd(),
+          startLCP: getLCP(node.getStart()),
+          endLCP: getLCP(node.getEnd()),
+          sourceCode: fullSourceCode.slice(node.getStart(), node.getEnd()),
+          documentation: getDocumentation(node),
+          name: drillForName(node),
+          storageQualifier: getStorageQualifier(node),
+          signatureCode: signatureFromFunctionNode(node),
+          exported: drillDirectExport(node),
+          classElementModifiers: getClassElementModifiers(node),
+          id: getId(node),
+          children: [],
+          parent: null,
+        };
 
-      if (node.kind === ts.SyntaxKind.VariableDeclaration) {
-        const potentialFunction = drillForPotentialFunction(node);
-        if (potentialFunction !== null) {
-          nodeToAdd.tsNode = potentialFunction;
-          nodeToAdd.narrowKind = potentialFunction.kind;
-          nodeToAdd.narrowKindName = ts.SyntaxKind[potentialFunction.kind];
-          nodeToAdd.signatureCode =
-            signatureFromFunctionNode(potentialFunction);
+        if (node.kind === ts.SyntaxKind.VariableDeclaration) {
+          const potentialFunction = drillForPotentialFunction(node);
+          if (potentialFunction !== null) {
+            nodeToAdd.tsNode = potentialFunction;
+            nodeToAdd.narrowKind = potentialFunction.kind;
+            nodeToAdd.narrowKindName = ts.SyntaxKind[potentialFunction.kind];
+            nodeToAdd.signatureCode =
+              signatureFromFunctionNode(potentialFunction);
+            specialCovered.add(getId(potentialFunction));
+          }
+        }
+        if (!specialCovered.has(getId(node))) {
+          nodes.set(getId(node), nodeToAdd);
         }
       }
-
-      nodes.set(getId(node), nodeToAdd);
     }
     node.forEachChild(visitor);
   };

@@ -25,6 +25,7 @@ export function generateAstIntermediates(
     const outputFilename = intermediatesWD.getUuid('.json');
     const ast = walkAST(sourceFile);
     if (ast.root === null) {
+      process.stdout.write(chalk.blue('done (no symbols)\n'));
       continue;
     }
     fs.writeFileSync(
