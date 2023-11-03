@@ -156,10 +156,17 @@ export function walkAST(sourceFilePath: string) {
     if (typeof ranges === 'undefined') {
       return null;
     }
+
+    // This will allow "//" based comments to still come through if they preceed a significant item to document
+    // Is this a good choice?
     let documentation: string = '';
     for (const range of ranges) {
-      documentation += fullSourceCode.substring(range.pos, range.end);
+      documentation +=
+        fullSourceCode.substring(range.pos, range.end).trim() + '\n';
     }
+    documentation = documentation.replace(/\r?\n/g, '\n');
+    documentation = documentation.trim();
+
     return documentation;
   };
 
@@ -255,7 +262,7 @@ export function walkAST(sourceFilePath: string) {
   };
 
   const nodes: Map<string, ASTNode> = new Map();
-  const specialCovered: Set<string> = new Set();
+  const covered: Set<string> = new Set();
 
   const visitor = (node: ts.Node) => {
     if (isImportantSyntaxKind(node.kind)) {
@@ -295,10 +302,11 @@ export function walkAST(sourceFilePath: string) {
             nodeToAdd.narrowKindName = ts.SyntaxKind[potentialFunction.kind];
             nodeToAdd.signatureCode =
               signatureFromFunctionNode(potentialFunction);
-            specialCovered.add(getId(potentialFunction));
+            covered.add(getId(potentialFunction));
           }
         }
-        if (!specialCovered.has(getId(node))) {
+        if (!covered.has(getId(node))) {
+          covered.add(getId(node));
           nodes.set(getId(node), nodeToAdd);
         }
       }
@@ -359,37 +367,44 @@ export function walkAST(sourceFilePath: string) {
     }
   }
 
-  const keysToDelete: string[] = [];
+  if (root) {
+    root.children = Array.from(nodes.values());
+  }
 
-  if (root !== null) {
-    for (const key of Array.from(nodes.keys())) {
-      const node = nodes.get(key)!;
-      if (node.kind === ts.SyntaxKind.SourceFile) {
-        continue;
+  const computeParentage = (node: ASTNode): void => {
+    const childrenMap = new Map<string, ASTNode>();
+    const filteredMap = new Map<string, ASTNode>();
+    for (const child of node.children) {
+      if (root && child.id !== root.id) {
+        childrenMap.set(child.id, child);
+        filteredMap.set(child.id, child);
       }
-      for (const compareKey of Array.from(nodes.keys())) {
-        if (compareKey === key) {
+    }
+    const keys = Array.from(childrenMap.keys());
+    for (const filterKey of keys) {
+      for (const testKey of keys) {
+        if (root && testKey === root.id) {
           continue;
         }
-        const compareNode = nodes.get(compareKey)!;
-        if (isChildOf(node, compareNode)) {
-          node.parent = compareNode;
-          if (!hasChildById(compareNode, node)) {
-            compareNode.children.push(node);
-          }
-          if (compareNode.id !== root.id) {
-            keysToDelete.push(key);
+        if (filteredMap.get(filterKey)) {
+          const filterNode = filteredMap.get(filterKey)!;
+          const testNode = childrenMap.get(testKey)!;
+          if (isChildOf(filterNode, testNode)) {
+            filterNode.parent = testNode;
+            testNode.children.push(filterNode);
+            filteredMap.delete(filterKey);
           }
         }
       }
     }
-  }
+    node.children = Array.from(filteredMap.values());
+    for (const child of node.children) {
+      computeParentage(child);
+    }
+  };
 
   if (root) {
-    root.children =
-      root.children.filter((node) => {
-        return !keysToDelete.includes(node.id);
-      }) ?? [];
+    computeParentage(root);
   }
 
   const cleanNode = (node: ASTNode): SerializableASTNode => {
