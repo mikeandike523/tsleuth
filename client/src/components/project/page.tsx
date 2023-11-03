@@ -1,9 +1,9 @@
 import EnsureReactInScope from '@/EnsureReactInScope';
 EnsureReactInScope();
 
-import { ReactNode, useState, useEffect } from 'react';
+import { ReactNode, useState, useEffect, forwardRef, RefObject } from 'react';
 
-import { Box } from '@chakra-ui/react';
+import { Box, BoxProps } from '@chakra-ui/react';
 import { throttle } from 'lodash';
 
 import { Navbar } from './navbar';
@@ -11,11 +11,16 @@ import { Sidebar } from './sidebar';
 import { LoadingBarrierNoUnmount } from './simple-loading-barrier';
 import { usePopulateProjectName } from '@/hooks/usePopulateProjectName';
 
-export interface PageProps {
+export interface PageProps extends BoxProps {
   children?: ReactNode;
+  ref: RefObject<HTMLDivElement | null>;
 }
 
-export function Page({ children }: PageProps) {
+export const Page = forwardRef(function Page({
+  children,
+  ref,
+  ...rest
+}: PageProps) {
   const projectName = usePopulateProjectName();
 
   const [windowHeight, setWindowHeight] = useState<number | null>(null);
@@ -68,6 +73,8 @@ export function Page({ children }: PageProps) {
           maxHeight="100%"
           flex={1}
           overflowY="auto"
+          ref={ref}
+          {...rest}
         >
           {children}
         </Box>
@@ -75,4 +82,4 @@ export function Page({ children }: PageProps) {
       <LoadingBarrierNoUnmount />
     </Box>
   );
-}
+});

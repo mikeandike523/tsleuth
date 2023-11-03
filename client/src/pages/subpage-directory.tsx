@@ -28,7 +28,9 @@ function ItemLink({
     <Text
       css={linkCss}
       onClick={() => {
-        navigate(path.join('/'));
+        navigate(
+          path.join('/') + (itemType === 'file' ? '/:/full_source_code' : '')
+        );
       }}
     >
       {itemType === 'file' ? pageFacingUp : fileFolder}&nbsp;{name}

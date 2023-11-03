@@ -17,6 +17,7 @@ import {
 import { useASTIntermediate } from '@/hooks/useASTIntermediate';
 import { ASTIntermediate, SerializableASTNode } from '@cli/lib/ast-traversal';
 import { linkCss } from '@/css/link';
+import { basenameIsSourceFile } from '@/lib/source-files';
 
 export interface NavbarProps {}
 
@@ -61,7 +62,13 @@ export function Navbar({}: NavbarProps) {
     addItem(
       <CrumbSequence
         onNavigate={(path: string[]) => {
-          navigate(path.join('/'));
+          navigate(
+            path.join('/') +
+              (path.length > 0 &&
+                (basenameIsSourceFile(path[path.length - 1])
+                  ? '/:/full_source_code'
+                  : ''))
+          );
         }}
         sep={rightFacingArrow}
         path={crumbs.containingDirectory.concat([crumbs.basename])}

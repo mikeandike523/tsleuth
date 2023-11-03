@@ -1,7 +1,7 @@
 import EnsureReactInScope from '@/EnsureReactInScope';
 EnsureReactInScope();
 
-import { ReactElement } from 'react';
+import { ReactElement, useState, useEffect, useRef } from 'react';
 
 import { Box, Text } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
@@ -16,15 +16,47 @@ import { Hr } from '@/components/framework/Hr';
 import { CodeSnippet } from '@/components/framework/code-snippet';
 import { SerializableASTNode } from '@cli/lib/ast-traversal';
 import { docCommentToParagraph } from '@common/text';
+import { useLookAtMeAnimationCss } from '@/css/look-at-me';
+import { basenameIsSourceFile } from '@/lib/source-files';
 
 export function SymbolSummary({
   node,
   prior,
+  scrollTopSetter,
 }: {
   node: SerializableASTNode;
   prior: SerializableASTNode[];
+  scrollTopSetter: (scrollTop: number) => void;
 }) {
+  const crumbs = useCrumbs();
+
+  const animationCss = useLookAtMeAnimationCss(500, 'yellow');
+
   const chain = prior.concat([node]);
+
+  const boxRef = useRef<HTMLDivElement | null>(null);
+
+  const isDirectLinked =
+    JSON.stringify(crumbs.entityPath ?? []) ===
+    JSON.stringify(
+      chain.map((lnk) => {
+        return lnk.id;
+      })
+    );
+
+  useEffect(() => {
+    if (isDirectLinked && boxRef.current) {
+      boxRef.current.scrollIntoView({ behavior: 'auto' });
+      setIsFlashing(true);
+      const tm = setTimeout(() => {
+        setIsFlashing(false);
+        clearTimeout(tm);
+      }, 1500);
+    }
+  }, [isDirectLinked, boxRef.current]);
+
+  const [isFlashing, setIsFlashing] = useState(false);
+
   // TODO: Make it more robust by using the CrumbSequence component and navigating properly
   const name = '::' + chain.map((n) => n.name).join('::');
   let docElement: ReactElement | null = null;
@@ -43,18 +75,26 @@ export function SymbolSummary({
     } catch (e) {
       console.log(e);
       docElement = (
-        <CodeSnippet
-          language="typescript"
-          previewLines={0}
-          initialState="expanded"
-          code={node.documentation}
-        />
+        <Box
+          background="lightgrey"
+          color="green"
+          whiteSpace="pre-wrap"
+          fontFamily="monospace"
+        >
+          {node.documentation}
+        </Box>
       );
     }
   }
 
   return (
-    <Box border="2px solid black" marginBottom="8px" width="100%">
+    <Box
+      border="2px solid black"
+      marginBottom="8px"
+      width="100%"
+      css={isFlashing && animationCss}
+      ref={boxRef}
+    >
       <Box display="flex" flexDirection="row" alignItems="center">
         <Text fontWeight="bold" fontSize="lg">
           {name}
@@ -186,20 +226,23 @@ export function SymbolSummary({
       <CodeSnippet
         language="typescript"
         previewLines={0}
-        initialState="expanded"
+        initialState="collapsed"
         code={node.sourceCode}
       />
     </Box>
   );
 }
 
-export interface SubpageFileProps {}
+export interface SubpageFileProps {
+  scrollTopSetter: (scrollTop: number) => void;
+}
 
-export function SubpageFile({}: SubpageFileProps) {
+export function SubpageFile({ scrollTopSetter }: SubpageFileProps) {
   const navigate = useNavigate();
   const crumbs = useCrumbs();
   const contentIndex = usePopulateContentIndex();
   const symbolSummaries: ReactElement[] = [];
+  const fullSourceCodeRef = useRef<HTMLDivElement | null>(null);
   const addSummary = (symbolSummary: ReactElement) => {
     const key = 'symbol-summary-' + symbolSummaries.length;
     symbolSummaries.push(
@@ -212,6 +255,34 @@ export function SubpageFile({}: SubpageFileProps) {
     crumbs.containingDirectory.concat([crumbs.basename]),
     false
   );
+
+  const rootId = intermediate?.root?.id ?? null;
+  const flashingCss = useLookAtMeAnimationCss(500, 'yellow');
+  const [isFlashing, setIsFlashing] = useState(false);
+  useEffect(() => {
+    if ((crumbs.entityPath ?? []).length > 0) {
+      const entity0 = (crumbs.entityPath ?? [])[0];
+      if (
+        rootId !== null &&
+        (entity0 === rootId || entity0 === 'full_source_code')
+      ) {
+        if (fullSourceCodeRef.current) {
+          fullSourceCodeRef.current.scrollIntoView({ behavior: 'auto' });
+          setIsFlashing(true);
+          const tm = setTimeout(() => {
+            setIsFlashing(false);
+            clearTimeout(tm);
+          }, 1500);
+        }
+      }
+    }
+  }, [
+    fullSourceCodeRef.current,
+    rootId,
+    intermediate !== null,
+    JSON.stringify(crumbs.containingDirectory.concat([crumbs.basename])),
+    JSON.stringify(crumbs.entityPath ?? []),
+  ]);
 
   if (!contentIndex) {
     return <>Loading...</>;
@@ -244,7 +315,13 @@ export function SubpageFile({}: SubpageFileProps) {
     node: SerializableASTNode,
     prior: SerializableASTNode[]
   ) => {
-    addSummary(<SymbolSummary node={node} prior={prior} />);
+    addSummary(
+      <SymbolSummary
+        scrollTopSetter={scrollTopSetter}
+        node={node}
+        prior={prior}
+      />
+    );
     for (const child of node.children) {
       recursion(child, prior.concat([node]));
     }
@@ -268,22 +345,31 @@ export function SubpageFile({}: SubpageFileProps) {
         <Text fontSize="xl">Symbols Of:</Text>
         <CrumbSequence
           onNavigate={(path: string[]) => {
-            navigate(path.join('/'));
+            let extra = '';
+            if (
+              path.length > 0 &&
+              basenameIsSourceFile(path[path.length - 1])
+            ) {
+              extra = '/:/full_source_code';
+            }
+            navigate(path.join('/') + extra);
           }}
           sep={rightFacingArrow}
           path={crumbs.containingDirectory.concat([crumbs.basename])}
         />
       </Box>
       {symbolSummaries}
-      <Text textDecoration="underline" fontSize="lg">
-        Full Source Code
-      </Text>
-      <CodeSnippet
-        previewLines={16}
-        initialState="collapsed"
-        language="typescript"
-        code={intermediate.fullSourceCode}
-      />
+      <Box width="100%" ref={fullSourceCodeRef} css={isFlashing && flashingCss}>
+        <Text textDecoration="underline" fontSize="lg">
+          Full Source Code
+        </Text>
+        <CodeSnippet
+          previewLines={16}
+          initialState="collapsed"
+          language="typescript"
+          code={intermediate.fullSourceCode}
+        />
+      </Box>
     </>
   );
 }

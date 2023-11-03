@@ -20,8 +20,9 @@ export default function App() {
       <ChakraProvider>
         <HashRouter>
           <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="" element={<Home />} />
+            {/* Seems to break sidebar */}
+            {/* <Route path="/" element={<Home />} /> */}
+            {/* <Route path="" element={<Home />} /> */}
             <Route path="*" element={<SubpageRouter />} />
           </Routes>
         </HashRouter>

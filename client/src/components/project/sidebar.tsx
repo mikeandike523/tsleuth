@@ -46,7 +46,7 @@ export function SidebarList({ contentIndex }: { contentIndex: ContentIndex }) {
           <Box height="1.5em" width={margin}></Box>
           <Box
             onClick={() => {
-              navigate(url);
+              navigate(url + (isFile ? '/:/full_source_code' : ''));
             }}
             css={linkCss}
             height="1.5em"

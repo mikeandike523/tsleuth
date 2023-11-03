@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { ReactNode, useState } from 'react';
 
 import { Box, Text, BoxProps } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
@@ -6,8 +6,9 @@ import { useNavigate } from 'react-router-dom';
 import { useASTIntermediate } from '@/hooks/useASTIntermediate';
 import { ASTIntermediate } from '@cli/lib/ast-traversal';
 import { SerializableASTNode } from '@cli/lib/ast-traversal';
-import { doubleColon } from './special-strings';
+import { doubleColon, heavyPlusSign, heavyMinusSign } from './special-strings';
 import { linkCss } from '@/css/link';
+import { useCrumbs } from '@/hooks/useCrumbs';
 
 function FullyLoadedComponent({
   intermediate,
@@ -17,6 +18,7 @@ function FullyLoadedComponent({
   sourceFilePath: string[];
 }) {
   const navigate = useNavigate();
+  const crumbs = useCrumbs();
   const items: ReactNode[] = [];
   const addItem = (item: ReactNode) => {
     const key = 'FullyLoadedComponent_' + items.length;
@@ -78,22 +80,50 @@ function FullyLoadedComponent({
 
 export function SidebarEntityList({
   sourceFilePath,
+  startOpen = false,
   ...rest
 }: {
+  startOpen?: boolean;
   sourceFilePath: string[];
 } & BoxProps) {
   const astIntermediate = useASTIntermediate(sourceFilePath);
-
+  const [isOpen, setIsOpen] = useState(startOpen);
   return (
-    <Box {...rest}>
-      {astIntermediate ? (
-        <FullyLoadedComponent
-          sourceFilePath={sourceFilePath}
-          intermediate={astIntermediate}
-        />
-      ) : (
-        <>Loading...</>
-      )}
+    <Box
+      flexDirection="column"
+      alignItems="flex-start"
+      justifyContent="flex-start"
+      {...rest}
+    >
+      <Box
+        background="lightgreen"
+        display="flex"
+        flexDirection="row"
+        alignItems="center"
+        justifyContent="flex-start"
+      >
+        <Text
+          color="black"
+          css={linkCss}
+          onClick={() => {
+            setIsOpen(!isOpen);
+          }}
+        >
+          {isOpen ? heavyMinusSign : heavyPlusSign}
+        </Text>
+        <Text>&nbsp;</Text>
+        <Text>Symbols</Text>
+      </Box>
+      <Box display={isOpen ? 'flex' : 'none'}>
+        {astIntermediate ? (
+          <FullyLoadedComponent
+            sourceFilePath={sourceFilePath}
+            intermediate={astIntermediate}
+          />
+        ) : (
+          <>Loading...</>
+        )}
+      </Box>
     </Box>
   );
 }

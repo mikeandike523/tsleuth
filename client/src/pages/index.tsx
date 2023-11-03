@@ -17,7 +17,7 @@ export default function Home() {
   const topLevelReadmeContent = usePopulateTopLevelReadme();
   const projectName = usePopulateProjectName();
   return (
-    <Page>
+    <Box width="100%">
       <Text as="h1">Project: {projectName ?? 'Loading...'}</Text>
       <Box
         width="100%"
@@ -54,6 +54,6 @@ export default function Home() {
           No README file (.md or .txt, case insensitive)
         </Box>
       )}
-    </Page>
+    </Box>
   );
 }
