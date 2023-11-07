@@ -80,12 +80,16 @@ function FullyLoadedComponent({
 }
 
 export function SidebarEntityList({
+  nameComponent,
   sourceFilePath,
   startOpen = false,
+  marginLeft,
   ...rest
 }: {
+  nameComponent: ReactNode;
   startOpen?: boolean;
   sourceFilePath: string[];
+  marginLeft?: BoxProps['marginLeft'];
 } & BoxProps) {
   const astIntermediate = useASTIntermediate(sourceFilePath);
   const [isOpen, setIsOpen] = useState(startOpen);
@@ -94,15 +98,17 @@ export function SidebarEntityList({
       flexDirection="column"
       alignItems="flex-start"
       justifyContent="flex-start"
+      marginLeft={marginLeft}
       {...rest}
     >
       <Box
-        background="lightgreen"
         display="flex"
         flexDirection="row"
         alignItems="center"
         justifyContent="flex-start"
       >
+        {nameComponent}
+        <Text>&nbsp;</Text>
         <Text
           color="black"
           css={linkCss}
@@ -112,8 +118,6 @@ export function SidebarEntityList({
         >
           {isOpen ? heavyMinusSign : heavyPlusSign}
         </Text>
-        <Text>&nbsp;</Text>
-        <Text>Symbols</Text>
       </Box>
       <Box display={isOpen ? 'flex' : 'none'}>
         {astIntermediate ? (

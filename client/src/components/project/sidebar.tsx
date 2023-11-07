@@ -35,39 +35,44 @@ export function SidebarList({ contentIndex }: { contentIndex: ContentIndex }) {
     const url = `${nodePath.join('/')}`;
     if (level > 0) {
       const isFile = basenameIsSourceFile(nodePath[nodePath.length - 1]);
-
-      addItem(
-        <Box
-          display="flex"
-          flexDirection="row"
-          alignItems="center"
-          justifyContent="flex-start"
-        >
-          <Box height="1.5em" width={margin}></Box>
+      const nameComponent = (
+        <>
           <Box
-            onClick={() => {
-              navigate(url + (isFile ? '/:/full_source_code' : ''));
-            }}
-            css={linkCss}
-            height="1.5em"
-            lineHeight="1.5em"
-            fontWeight={isFile ? 'bold' : 'regular'}
+            display="flex"
+            flexDirection="row"
+            alignItems="center"
+            justifyContent="flex-start"
           >
-            {isFile ? pageFacingUp : fileFolder}
-            {node.segment}
-            {!isFile && '/'}
+            {!isFile && <Box height="1.5em" width={margin}></Box>}
+            <Box
+              onClick={() => {
+                navigate(url + (isFile ? '/:/full_source_code' : ''));
+              }}
+              css={linkCss}
+              height="1.5em"
+              lineHeight="1.5em"
+              fontWeight={isFile ? 'bold' : 'regular'}
+            >
+              {isFile ? pageFacingUp : fileFolder}
+              {node.segment}
+              {!isFile && '/'}
+            </Box>
           </Box>
-        </Box>
+        </>
       );
+
       if (nodePath.length > 0) {
         const baseName = nodePath[nodePath.length - 1];
         if (basenameIsSourceFile(baseName)) {
           addItem(
             <SidebarEntityList
+              nameComponent={nameComponent}
               marginLeft={extraMargin}
               sourceFilePath={nodePath}
             />
           );
+        } else {
+          addItem(nameComponent);
         }
       }
     }
