@@ -1,4 +1,3 @@
-import { m } from 'framer-motion';
 import { arrayGcf } from './math';
 
 export function normalizeLineEndings(
@@ -168,6 +167,7 @@ export function docCommentToParagraph(docCommentText: string): string {
   const plainStartPattern = /^.*?\/\*\*\s*$/;
   const endPattern = /^\s*\*\/\s*$/;
   const plainEndPattern = /^\s*\*\/\s*/;
+  const blankCommentLinePattern = /^\s*\*$/;
 
   const extractorPatterns = [
     /^\s*\/\*\*(\s+.*?)\s*$/,
@@ -196,30 +196,62 @@ export function docCommentToParagraph(docCommentText: string): string {
     }
 
     let hasMatched = false;
-    for (const extractorPattern of extractorPatterns) {
-      const match = line.match(extractorPattern);
-      if (match) {
-        console.log('hasMatched', match);
-        extractedLines.push(match[1]);
-        hasMatched = true;
-        break;
+    if (blankCommentLinePattern.test(line)) {
+      hasMatched = true;
+    } else {
+      for (const extractorPattern of extractorPatterns) {
+        const match = line.match(extractorPattern);
+        if (match) {
+          console.log('hasMatched', match);
+          extractedLines.push(match[1]);
+          hasMatched = true;
+          break;
+        }
       }
     }
+
     if (!hasMatched) {
       if (
         startPattern.test(line) ||
         plainStartPattern.test(line) ||
         endPattern.test(line) ||
-        plainEndPattern.test(line)
+        plainEndPattern.test(line) ||
+        blankCommentLinePattern.test(line)
       ) {
         continue;
       } else {
-        throw new InvalidDocCommentError(
-          `Invalid doc comment line syntax: ${line}`
-        );
+        if (!/^\s*\*.*?\s*$/.test(line)) {
+          throw new InvalidDocCommentError(
+            `A doc comment line that is neither a start nor end must begin have the leading "*" (regex /^\\s*?\\*.*?$/): ${line}`
+          );
+        } else {
+          throw new InvalidDocCommentError(
+            `Invalid doc comment line syntax: ${line}`
+          );
+        }
       }
     }
   }
 
   return dedent(extractedLines.join('\n'));
+}
+
+/**
+ * Extracts all (potential) true-doc-comments from a string
+ *
+ * Use case: Typescript `getLeadingCommentRanges` may capture more than one doc comment (for instance, maybe there is a comment at the top of the module), and it also may capture blocks of text whose lines start with "//"
+ *
+ *
+ * This algorithm is not advanced enough to detect if the doc comment conforms to the standard where each line needs a leading *. It just looks for the start and end patten
+ *
+ * Note, the text eol is normalized to LF not CRLF
+ * Tbh, why would anyone really use CRLF when they have the choice?
+ *
+ * @param commentText - The text to extract doc comments from
+ */
+export function getDocComments(commentText: string): string[] {
+  const normalizedCommentText = normalizeLineEndings(commentText, '\n');
+  const trueDocCommentPattern = /(^|\n)\s*?\/\*\*.*?\*\/\s*?(\n|$)/gs; // Once again, not advanced enough to detect conforming to "leading *" doc comment standards
+
+  return normalizedCommentText.match(trueDocCommentPattern) || [];
 }

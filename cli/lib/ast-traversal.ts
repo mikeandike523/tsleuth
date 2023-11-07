@@ -3,6 +3,8 @@ import fs from 'fs';
 import ts from 'typescript';
 import lodash from 'lodash';
 
+import { getDocComments } from '@common/text';
+
 export type ImportantSyntaxKind =
   | ts.SyntaxKind.ClassDeclaration
   | ts.SyntaxKind.PropertyDeclaration
@@ -167,7 +169,13 @@ export function walkAST(sourceFilePath: string) {
     documentation = documentation.replace(/\r?\n/g, '\n');
     documentation = documentation.trim();
 
-    return documentation;
+    const allComments = getDocComments(documentation);
+
+    if (allComments.length >= 1) {
+      return allComments.pop() ?? null;
+    }
+
+    return null;
   };
 
   const isDocumented = (node: ts.Node): boolean => {
