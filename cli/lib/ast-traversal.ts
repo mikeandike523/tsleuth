@@ -267,8 +267,9 @@ export function walkAST(sourceFilePath: string) {
   const visitor = (node: ts.Node) => {
     if (isImportantSyntaxKind(node.kind)) {
       const name = drillForName(node);
+      const hasDocumentation = isDocumented(node);
       if (
-        name ||
+        (name && hasDocumentation) ||
         node.kind === ts.SyntaxKind.SourceFile ||
         getId(node) === getId(sourceFile)
       ) {

@@ -1,6 +1,7 @@
 import fs from 'fs';
 
 import chalk from 'chalk';
+import ts from 'typescript';
 
 import { collectTSSourceFiles } from '@common/git';
 import { WorkingDirectory } from '@common/filesystem';
@@ -24,7 +25,12 @@ export function generateAstIntermediates(
     process.stdout.write(`Generating intermediate for ${sourceFile}...`);
     const outputFilename = intermediatesWD.getUuid('.json');
     const ast = walkAST(sourceFile);
-    if (ast.root === null) {
+    if (
+      ast.root === null ||
+      ast.root.children.length === 0 ||
+      (ast.root.children.length === 1 &&
+        ast.root.children[0].kind === ts.SyntaxKind.SourceFile)
+    ) {
       process.stdout.write(chalk.blue('done (no symbols)\n'));
       continue;
     }
