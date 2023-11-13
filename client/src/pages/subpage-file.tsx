@@ -51,7 +51,7 @@ export function SymbolSummary({
       const tm = setTimeout(() => {
         setIsFlashing(false);
         clearTimeout(tm);
-      }, 1500);
+      }, 1000);
     }
   }, [isDirectLinked, boxRef.current]);
 
@@ -94,18 +94,70 @@ export function SymbolSummary({
       width="100%"
       css={isFlashing && animationCss}
       ref={boxRef}
+      gap="1em"
     >
       <Box display="flex" flexDirection="row" alignItems="center">
-        <Text fontWeight="bold" fontSize="lg">
+        {node.storageQualifier === 'const' && (
+          <Text color="blue" fontWeight="bold">
+            const
+          </Text>
+        )}
+        {node.storageQualifier === 'let' && (
+          <Text color="blue" fontWeight="bold">
+            let
+          </Text>
+        )}
+        {node.storageQualifier === 'var' && (
+          <Text color="blue" fontWeight="bold">
+            var
+          </Text>
+        )}
+        {node.storageQualifier === 'global' && (
+          <Text color="grey" fontWeight="bold" fontStyle="italic">
+            (global)
+          </Text>
+        )}
+        {node.exported && (
+          <Text fontWeight="bold" color="magenta">
+            export
+          </Text>
+        )}
+        {node.classElementModifiers &&
+          node.classElementModifiers.length > 0 &&
+          node.classElementModifiers.map((modifier, i) => {
+            return (
+              <Text key={i} fontWeight="bold" color="blue">
+                {modifier.text}
+              </Text>
+            );
+          })}
+        <Text
+          onClick={(e) => {
+            if (e.ctrlKey) {
+              console.log(node);
+              navigator.clipboard
+                .writeText(JSON.stringify(node, null, 2))
+                .then(() => {
+                  alert('Full node info c opied to clipboard');
+                })
+                .catch((e) => {
+                  alert(
+                    'Could not copy to clipboard. Check the console for more details.'
+                  );
+                  console.log(e);
+                });
+            }
+          }}
+          fontWeight="bold"
+          fontSize="lg"
+        >
           {name}
         </Text>
-        <Text fontSize="lg">&nbsp;</Text>
         <Text fontSize="lg" fontStyle="italic" color="green">
           {node.kindName}
         </Text>
         {node.narrowKindName && (
           <>
-            <Text fontSize="lg">&nbsp;</Text>
             <Text fontSize="lg" fontStyle="italic" color="green">
               {node.narrowKindName}
             </Text>
@@ -116,98 +168,6 @@ export function SymbolSummary({
         <>
           <Text>Documentation:</Text>
           {docElement}
-        </>
-      )}
-      {(node.storageQualifier ||
-        (node.classElementModifiers?.length ?? 0 > 0) ||
-        node.exported) && (
-        <>
-          <Text>Qualifiers:</Text>
-          <table
-            style={{
-              borderCollapse: 'collapse',
-              border: '1px solid black',
-              tableLayout: 'auto',
-            }}
-          >
-            {/* No need for thead in this table */}
-            <tbody>
-              <tr>
-                <td
-                  style={{
-                    border: '1px solid black',
-                    padding: '4px',
-                  }}
-                >
-                  Export Type
-                </td>
-                <td>{node.exported ?? 'Not Exported'}</td>
-              </tr>
-              {node.storageQualifier && (
-                <tr>
-                  <td
-                    style={{
-                      border: '1px solid black',
-                      padding: '0.125em',
-                    }}
-                  >
-                    Storage Qualifier
-                  </td>
-                  <td
-                    style={{
-                      border: '1px solid black',
-                      padding: '0.125em',
-                    }}
-                  >
-                    {node.storageQualifier}
-                  </td>
-                </tr>
-              )}
-              {node.classElementModifiers?.length && (
-                <tr
-                  style={{
-                    border: '1px solid black',
-                    padding: '0.125em',
-                  }}
-                >
-                  <td
-                    style={{
-                      border: '1px solid black',
-                      padding: '0.125em',
-                    }}
-                  >
-                    Class Element Modifiers
-                  </td>
-                  <td
-                    style={{
-                      border: '1px solid black',
-                      padding: '0.125em',
-                    }}
-                  >
-                    <Box
-                      display="flex"
-                      flexDirection="row"
-                      alignItems="flex-start"
-                      gap="1em"
-                      paddingTop="4px"
-                      paddingBottom="4px"
-                    >
-                      {node.classElementModifiers?.map((m, i) => (
-                        <Box
-                          key={i}
-                          border="1px dashed black"
-                          padding="0.125em"
-                          whiteSpace="pre-wrap"
-                        >
-                          {JSON.stringify(m, null, 2)}
-                        </Box>
-                      ))}
-                    </Box>
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
         </>
       )}
 
@@ -272,7 +232,7 @@ export function SubpageFile({ scrollTopSetter }: SubpageFileProps) {
           const tm = setTimeout(() => {
             setIsFlashing(false);
             clearTimeout(tm);
-          }, 1500);
+          }, 1000);
         }
       }
     }
