@@ -138,10 +138,15 @@ export function walkAST(sourceFilePath: string) {
 
   const drillDirectExport = (node: ts.Node): ExportMode | null => {
     for (const child of node.getChildren()) {
-      if (child.kind === ts.SyntaxKind.ExportKeyword) {
-        return 'direct';
+      if (child.kind === ts.SyntaxKind.SyntaxList) {
+        for (const subchild of child.getChildren()) {
+          if (subchild.kind === ts.SyntaxKind.ExportKeyword) {
+            return 'direct';
+          }
+        }
       }
     }
+
     return null;
   };
 
@@ -159,16 +164,21 @@ export function walkAST(sourceFilePath: string) {
       return null;
     }
 
-    // This will allow "//" based comments to still come through if they preceed a significant item to document
-    // Is this a good choice?
     let documentation: string = '';
     for (const range of ranges) {
       documentation +=
         fullSourceCode.substring(range.pos, range.end).trim() + '\n';
     }
     documentation = documentation.replace(/\r?\n/g, '\n');
-    documentation = documentation.trim();
 
+    // Remove eslint diasable next line comments
+
+    documentation = documentation.replace(
+      /^\s*?\/\/\s*?eslint-disable-next-line.*?$/gm,
+      ''
+    );
+
+    documentation = documentation.trim();
     const allComments = getDocComments(documentation);
 
     if (allComments.length >= 1) {
@@ -363,9 +373,29 @@ export function walkAST(sourceFilePath: string) {
     });
   };
 
-  // Second pass to detect indirect exports
-  // Very difficult since parsing export declarations/statements (even by ast traversal) is very complex
-  // @todo
+  const setNodeToIndirectExportByName = (nodeName: string): void => {
+    const keys = Array.from(nodes.keys());
+    for (const key of keys) {
+      const item = nodes.get(key)!;
+      if (item.name === nodeName) {
+        item.exported = 'indirect';
+      }
+    }
+  };
+
+  const exportVisitor = (node: ts.Node) => {
+    if (node.kind === ts.SyntaxKind.ExportSpecifier) {
+      for (const child of node.getChildren()) {
+        if (child.kind === ts.SyntaxKind.Identifier) {
+          setNodeToIndirectExportByName(child.getText());
+          break;
+        }
+      }
+    }
+    ts.forEachChild(node, exportVisitor);
+  };
+
+  exportVisitor(sourceFile);
 
   let root: ASTNode | null = null;
 
