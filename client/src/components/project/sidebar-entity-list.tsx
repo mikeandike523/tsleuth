@@ -1,14 +1,13 @@
 import { ReactNode, useState } from 'react';
-
 import { Box, Text, BoxProps } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
+import { css } from '@emotion/react';
 
 import { useASTIntermediate } from '@/hooks/useASTIntermediate';
 import { ASTIntermediate } from '@cli/lib/ast-traversal';
 import { SerializableASTNode } from '@cli/lib/ast-traversal';
 import { doubleColon, heavyPlusSign, heavyMinusSign } from './special-strings';
 import { linkCss } from '@/css/link';
-import { useCrumbs } from '@/hooks/useCrumbs';
 
 function FullyLoadedComponent({
   intermediate,
@@ -18,7 +17,6 @@ function FullyLoadedComponent({
   sourceFilePath: string[];
 }) {
   const navigate = useNavigate();
-  const crumbs = useCrumbs();
   const items: ReactNode[] = [];
   const addItem = (item: ReactNode) => {
     const key = 'FullyLoadedComponent_' + items.length;
@@ -29,6 +27,8 @@ function FullyLoadedComponent({
     level: number = 0,
     precedingPath: string[]
   ) => {
+    const hasDocumentation =
+      node.documentation !== null && node.documentation.trim() !== '';
     const indent = 2 * level + 'em';
     addItem(
       <Box
@@ -38,7 +38,6 @@ function FullyLoadedComponent({
         justifyContent="flex-start"
       >
         <Text
-          css={linkCss}
           marginLeft={indent}
           onClick={() => {
             const url = sourceFilePath
@@ -46,6 +45,15 @@ function FullyLoadedComponent({
               .join('/');
             navigate(url);
           }}
+          color={hasDocumentation ? 'magenta' : 'blue'}
+          as="span"
+          css={css`
+            cursor: pointer;
+            text-decoration: none;
+            &:hover {
+              text-decoration: underline;
+            }
+          `}
         >
           {doubleColon}
           {node.name ?? '[[anonymous]]'}
