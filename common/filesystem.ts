@@ -635,3 +635,29 @@ export function copyDirectoryContentsRecursive(
     }
   }
 }
+
+export function getDirectoriesThroughParent(
+  parent: string,
+  directory: string
+): string[] {
+  const nparent = normalizePath(parent, '/');
+  const ndirectory = normalizePath(directory, '/');
+  if (!ndirectory.startsWith(nparent)) {
+    throw new Error('`directory` is not a child of `parent`');
+  }
+  const ndirectoryParts = ndirectory.split('/');
+  const nparentParts = nparent.split('/');
+  const directories: string[] = [];
+  const getParentParts = (parts: string[]) => parts.slice(0, -1);
+  const compare = (a: string[], b: string[]) =>
+    JSON.stringify(a) === JSON.stringify(b);
+
+  let parts: string[] = ndirectoryParts;
+  while (!compare(parts, nparentParts)) {
+    directories.unshift(parts.join('/'));
+    parts = getParentParts(parts);
+  }
+  directories.unshift(parts.join('/'));
+
+  return directories;
+}
