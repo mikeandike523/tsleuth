@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# Translation of my working windows batch code to bash/macintosh
+
+# My old batch code
+
+# node %~dp0cli/dist/main.js "%CD%" %*
+
+# Equivalent bash code
+
+# Get the directory which contains this script
+script_dir=$(dirname "$(realpath "$0")")
+node "$script_dir/cli/dist/main.js" "$(pwd)" "$@"

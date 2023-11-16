@@ -5,6 +5,13 @@ import { v4 as uuidv4 } from 'uuid';
 import commonPathPrefix from 'common-path-prefix';
 import { SerializableObject } from './serialization';
 
+export function posixMakeAbsolute(filepath: string): string {
+  if(!filepath.startsWith('/')) {
+    return "/"+filepath
+  }
+  return filepath
+}
+
 export function convertToPrefixAndRelativePaths(absolutePaths: string[]) {
   const cleanedAbsolutePaths = absolutePaths.map((absolutePath) => {
     return normalizePath(absolutePath, '/');

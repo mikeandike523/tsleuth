@@ -21,13 +21,16 @@ export const Page = forwardRef(function Page({
   ref,
   ...rest
 }: PageProps) {
-  const projectName = usePopulateProjectName();
 
   const [windowHeight, setWindowHeight] = useState<number | null>(null);
 
   const handleResize = throttle(() => {
-    setWindowHeight(window.innerHeight / window.devicePixelRatio);
+    setWindowHeight(window.innerHeight);
   }, 250);
+
+  const handleSetInitialSize = ()=>{
+    setWindowHeight(window.innerHeight)
+  }
 
   useEffect(() => {
     window.addEventListener('resize', handleResize);
@@ -37,8 +40,10 @@ export const Page = forwardRef(function Page({
   });
 
   useEffect(() => {
-    handleResize();
-  }, []);
+    handleSetInitialSize();
+  }, [
+    windowHeight === null
+  ]);
 
   return (
     <Box

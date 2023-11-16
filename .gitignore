@@ -1,11 +1,11 @@
 # Node Modules
-node_modules
+node_modules/*
 
 # Build Directory
-dist
+dist/*
 
 #tsleuth cache (if running tsleuth on itslef)
-.tsleuth
+.tsleuth/*
 
 # No real need to check in the archive files
-archive
+archive/*

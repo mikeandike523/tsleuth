@@ -14,6 +14,7 @@ import {
 } from '@common/filesystem';
 import { normalizePath } from '@common/filesystem';
 import { findReadmeInFolder } from './find-readme';
+import { posixMakeAbsolute } from '@common/filesystem'
 
 /**
  *
@@ -116,7 +117,7 @@ export function generateSiteAndCopyFiles(
     );
   }
 
-  const projectRoot = projectPathConfig.prefix;
+  const projectRoot = posixMakeAbsolute(projectPathConfig.prefix);
   const relpaths = projectPathConfig.relativePaths;
 
   // Arrange the AST intermediates in a hierarchy according to the relative paths, an attach metadata regarding the name of the intermediate file
@@ -145,7 +146,7 @@ export function generateSiteAndCopyFiles(
 
   process.stdout.write(chalk.magenta(`Searching for top-level README...\n`));
 
-  const readmePath = findReadmeInFolder(projectRoot);
+  const readmePath = findReadmeInFolder(posixMakeAbsolute(projectRoot));
 
   const contentIndex = {
     projectName,

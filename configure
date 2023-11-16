@@ -1,0 +1,25 @@
+#!/bin/bash
+
+
+# adding TSLEUTH to the path
+
+# Get the directory containing this script
+script_dir=$(dirname "$(realpath "$0")")
+
+# making TSLEUTH executable
+chmod +x "$script_dir/tsleuth"
+
+# Define the .zshrc file location
+zshrc="$HOME/.zshrc"
+
+# Prepare the line to add to .zshrc
+line_to_add="export PATH=\"$script_dir:\$PATH\""
+
+# Check if the line is already in .zshrc
+if grep -Fxq "$line_to_add" "$zshrc"; then
+    echo "Directory already added to PATH in .zshrc."
+else
+    # If not, append the line to .zshrc
+    echo "$line_to_add" >> "$zshrc"
+    echo "Added $script_dir to PATH in .zshrc."
+fi
