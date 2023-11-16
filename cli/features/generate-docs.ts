@@ -79,7 +79,9 @@ export const feature: Feature<FeatureArgs> = {
 
     if (serve) {
       console.log('serving...');
-      serveDocumentation(projectName, projectRoot, docsOutputDir.root, true);
+      serveDocumentation(projectName, projectRoot, docsOutputDir.root, true)
+        .then(() => {})
+        .catch(() => {});
       return ExitCode.HANG;
     }
 
