@@ -1,11 +1,19 @@
+# not sure why, but with a combination of need to conform to windows and mac git, as well as how the nodjs based gitignore parser library used in the project works, both ignoring the folder itself and the items inside it is necessary
+
+# I think this may be just a bug in the project (algorithm to get included files), not related to how git works
+
 # Node Modules
+node_modules 
 node_modules/*
 
 # Build Directory
+dist
 dist/*
 
 #tsleuth cache (if running tsleuth on itslef)
+.tsleuth
 .tsleuth/*
 
 # No real need to check in the archive files
+archive
 archive/*

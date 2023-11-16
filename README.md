@@ -17,7 +17,18 @@ Ideas:
 
 ### generate-docs
 
-![Example](/readme-assets/screenshot-1.png)
+**Example 1:**
+
+This application ("tsleuth")
+
+- @todo
+
+**Example 2:**
+
+Cellannotate, A tool for the annotation of sites of interest on tissue section images
+
+- cellannotate.com
+- cellannotate-docs.vercel.app
 
 ## Requirements
 
@@ -28,8 +39,21 @@ Ideas:
 - Clone the repo
 - `yarn install`
 - `yarn run build-all`
-- Add the repo root to your path
-- **IMPORTANT!** In any project you want to use with this tool, add ".tsleuth" to your `.gitignore` file
+- Windows
+  - Add the repo root to your `PATH` environment variable
+- Mac
+  - Zsh users:
+    - Navigate to the cloned repo
+    - `chmod +x ./configure`
+    - `./configure`
+  - Bash, or other non-zsh
+    - @todo
+- Linux
+  - @todo
+- **IMPORTANT!**
+  - In any project you want to use with this tool, add `.tsleuth` to your `.gitignore` file
+  - Mac: Also add `.tsleuth\*` to your `.gitignore` file
+  - Not yet tested on linux
 
 ## Usage
 

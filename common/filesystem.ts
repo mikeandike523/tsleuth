@@ -5,11 +5,20 @@ import { v4 as uuidv4 } from 'uuid';
 import commonPathPrefix from 'common-path-prefix';
 import { SerializableObject } from './serialization';
 
+/**
+ * A janky hotfix for some wierd behaviour regarding how nodejs and bash handle relative and absolute paths
+ * @param filepath - A path assumed to be absolute, but may be missing a leading slash if on posix
+ * @returns
+ */
 export function posixMakeAbsolute(filepath: string): string {
-  if(!filepath.startsWith('/')) {
-    return "/"+filepath
+  //If windows, return original
+  if (process.platform === 'win32') {
+    return filepath;
   }
-  return filepath
+  if (!filepath.startsWith('/')) {
+    return '/' + filepath;
+  }
+  return filepath;
 }
 
 export function convertToPrefixAndRelativePaths(absolutePaths: string[]) {
