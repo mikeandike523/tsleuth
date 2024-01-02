@@ -196,28 +196,37 @@ export function walkAST(sourceFilePath: string) {
   };
 
   const getStorageQualifierFromVariableStatement = (node: ts.Node) => {
-    const nodeSourceCode = sourceFile
-      .getText()
-      .substring(node.getStart(), node.getEnd());
+    const nodeSourceCode = node.getText();
     const trimmed = nodeSourceCode.trim();
-    if (trimmed.startsWith('let')) {
+    const rgx = new RegExp('^(.*?)=.*?');
+    const match = rgx.exec(trimmed);
+    if (match === null) {
+      return 'global';
+    }
+    const captured = match[1].toLowerCase();
+    if (captured.includes(`const`)) {
+      return 'const';
+    }
+    if (captured.includes(`let`)) {
       return 'let';
     }
-    if (trimmed.startsWith('var')) {
+    if (captured.includes(`var`)) {
       return 'var';
-    }
-    if (trimmed.startsWith('const')) {
-      return 'const';
     }
     return 'global';
   };
 
   const getStorageQualifier = (node: ts.Node): StorageQualifier | null => {
-    if (node.kind == ts.SyntaxKind.VariableDeclaration) {
-      if (node.parent.kind == ts.SyntaxKind.VariableDeclarationList) {
-        if (node.parent.parent.kind == ts.SyntaxKind.VariableStatement) {
-          return getStorageQualifierFromVariableStatement(node.parent.parent);
+    let current = node;
+    while (current.parent as ts.Node | null | undefined) {
+      if (current.parent?.kind !== ts.SyntaxKind.SourceFile) {
+        if (current.parent?.kind === ts.SyntaxKind.VariableStatement) {
+          return getStorageQualifierFromVariableStatement(current.parent);
+        } else {
+          current = current.parent as ts.Node;
         }
+      } else {
+        return null;
       }
     }
     return null;
