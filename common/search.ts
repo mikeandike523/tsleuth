@@ -4,7 +4,7 @@
  * Used primarily to add searchbar to the left menu
  */
 
-import { escapeRegExp, BetterRegExp } from './rgx';
+import { escapeRegExp, BetterRegExp, findAllMatches } from './rgx';
 import { enumerate } from './arrays';
 
 export const seperatorSpecialCharacters =
@@ -171,74 +171,97 @@ export function analyzeSymbolName(
   return result;
 }
 
-export type SymbolSearchResult = {
-  originalText: string;
-  matchedComponents: Array<{
-    startPos: number;
-    length: number;
-    text: string;
-    kind: 'text' | 'separator';
-  }>;
-};
+// export type SymbolSearchResult = {
+//   originalText: string;
+//   matchedComponents: Array<{
+//     startPos: number;
+//     length: number;
+//     text: string;
+//     kind: 'text' | 'separator';
+//   }>;
+// };
 
-export function getSearchMatch(
+// export function getSearchMatch(
+//   searchQuery: string,
+//   symbolName: string,
+//   considerCase: boolean = false,
+//   considerSeparators: boolean = false
+// ): SymbolSearchResult | null {
+//   const segmentsMatch = (
+//     a: SymbolNameSegment,
+//     b: SymbolNameSegment
+//   ): boolean => {
+//     if (
+//       !considerSeparators &&
+//       a.kind === 'separator' &&
+//       b.kind === 'separator'
+//     ) {
+//       return false;
+//     }
+//     if (a.kind !== b.kind) {
+//       return false;
+//     }
+//     if (a.kind === 'separator') {
+//       return a.text === b.text;
+//     }
+//     if (a.kind === 'text') {
+//       if (considerCase) {
+//         return a.text === b.text;
+//       } else {
+//         return a.text.toLowerCase() === b.text.toLowerCase();
+//       }
+//     }
+
+//     return false;
+//   };
+//   const searchQuerySegments = analyzeSymbolName(searchQuery);
+//   const segments = analyzeSymbolName(symbolName);
+//   const matchAnalysis: Array<{
+//     startPos: number;
+//     text: string;
+//     length: number;
+//     kind: 'text' | 'separator';
+//   }> = [];
+//   for (const searchQuerySegment of searchQuerySegments) {
+//     for (const segment of segments) {
+//       if (segmentsMatch(searchQuerySegment, segment)) {
+//         matchAnalysis.push({
+//           startPos: segment.startPos,
+//           text: segment.text,
+//           length: segment.length,
+//           kind: segment.kind,
+//         });
+//       }
+//     }
+//   }
+//   if (matchAnalysis.length > 0) {
+//     return {
+//       originalText: symbolName,
+//       matchedComponents: matchAnalysis,
+//     };
+//   }
+//   return null;
+// }
+
+export function getSearchMatches(
   searchQuery: string,
   symbolName: string,
   considerCase: boolean = false,
   considerSeparators: boolean = false
-): SymbolSearchResult | null {
-  const segmentsMatch = (
-    a: SymbolNameSegment,
-    b: SymbolNameSegment
-  ): boolean => {
-    if (
-      !considerSeparators &&
-      a.kind === 'separator' &&
-      b.kind === 'separator'
-    ) {
-      return false;
-    }
-    if (a.kind !== b.kind) {
-      return false;
-    }
-    if (a.kind === 'separator') {
-      return a.text === b.text;
-    }
-    if (a.kind === 'text') {
-      if (considerCase) {
-        return a.text === b.text;
-      } else {
-        return a.text.toLowerCase() === b.text.toLowerCase();
+): RegExpExecArray[] {
+  const searchQuerySegments = analyzeSymbolName(searchQuery).filter(
+    (segment) => {
+      if (!considerSeparators && segment.kind === 'separator') {
+        return false;
       }
+      return true;
     }
-
-    return false;
-  };
-  const searchQuerySegments = analyzeSymbolName(searchQuery);
-  const segments = analyzeSymbolName(symbolName);
-  const matchAnalysis: Array<{
-    startPos: number;
-    text: string;
-    length: number;
-    kind: 'text' | 'separator';
-  }> = [];
-  for (const searchQuerySegment of searchQuerySegments) {
-    for (const segment of segments) {
-      if (segmentsMatch(searchQuerySegment, segment)) {
-        matchAnalysis.push({
-          startPos: segment.startPos,
-          text: segment.text,
-          length: segment.length,
-          kind: segment.kind,
-        });
-      }
-    }
-  }
-  if (matchAnalysis.length > 0) {
-    return {
-      originalText: symbolName,
-      matchedComponents: matchAnalysis,
-    };
-  }
-  return null;
+  );
+  const regExpSourceCode = searchQuerySegments
+    .map((segment) => {
+      return `(${escapeRegExp(segment.text)})`;
+    })
+    .join('(.*?)');
+  const regExp = new RegExp(regExpSourceCode, 'g' + (considerCase ? '' : 'i'));
+  return findAllMatches(regExp, symbolName);
 }

@@ -8,7 +8,7 @@ import { ASTIntermediate } from '@cli/lib/ast-traversal';
 import { SerializableASTNode } from '@cli/lib/ast-traversal';
 import { doubleColon, heavyPlusSign, heavyMinusSign } from './special-strings';
 import { linkCss } from '@/css/link';
-import { getSearchMatch } from '@common/search';
+import { getSearchMatches } from '@common/search';
 
 function FullyLoadedComponent({
   intermediate,
@@ -41,8 +41,8 @@ function FullyLoadedComponent({
     let toAddItem = true;
 
     if (searchQuery !== '') {
-      const match = getSearchMatch(searchQuery, searchName);
-      if (match === null) {
+      const matches = getSearchMatches(searchQuery, searchName);
+      if (matches.length === 0) {
         toAddItem = false;
       }
     }
@@ -151,8 +151,7 @@ export function SidebarEntityList({
   if (searchQuery !== '') {
     if (symbolSearchNames.length > 0) {
       shouldShow = symbolSearchNames.some((name) => {
-        const match = getSearchMatch(searchQuery, name);
-        return match !== null;
+        return getSearchMatches(searchQuery, name).length > 0;
       });
     } else {
       shouldShow = false;

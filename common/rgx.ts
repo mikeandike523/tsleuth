@@ -50,6 +50,25 @@ export function hasAnyMatch(pattern: RegExp, string: string): boolean {
   return patternCopy.test(string);
 }
 
+export function findAllMatches(
+  pattern: RegExp,
+  string: string
+): Array<RegExpExecArray> {
+  const patternCopy = copyAndEnforceGlobalRegExp(pattern);
+  let match: RegExpExecArray | null = null;
+  const result: Array<RegExpExecArray> = [];
+  while ((match = patternCopy.exec(string)) !== null) {
+    if (match) {
+      result.push(match);
+    }
+    // This is necessary to avoid infinite loops with zero-width matches
+    if (match.index === patternCopy.lastIndex) {
+      patternCopy.lastIndex++;
+    }
+  }
+  return result;
+}
+
 /**
  * Splits a string into segments based on a regular expression pattern.
  *
