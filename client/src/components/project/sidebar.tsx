@@ -1,23 +1,30 @@
 import EnsureReactInScope from '@/EnsureReactInScope';
 EnsureReactInScope();
 
-import { ReactNode, useState, useRef, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { ReactNode, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-import { Box } from '@chakra-ui/react';
-import { throttle } from 'lodash';
+import { Box, Input } from '@chakra-ui/react';
 
+import { linkCss } from '@/css/link';
 import { usePopulateContentIndex } from '@/hooks/usePopulateContentIndex';
 import { ContentIndex } from '@/lib/content-index';
-import { PathHierarchyNode } from '@common/filesystem';
-import { linkCss } from '@/css/link';
-import { SidebarEntityList } from './sidebar-entity-list';
 import { basenameIsSourceFile } from '@/lib/source-files';
-import { pageFacingUp, fileFolder } from './special-strings';
+import { PathHierarchyNode } from '@common/filesystem';
+import { SidebarEntityList } from './sidebar-entity-list';
+import { fileFolder, pageFacingUp } from './special-strings';
 
 export interface SidebarProps {}
 
-export function SidebarList({ contentIndex }: { contentIndex: ContentIndex }) {
+export function SidebarList({
+  contentIndex,
+  symbolList,
+  searchQuery,
+}: {
+  contentIndex: ContentIndex;
+  symbolList: Set<string>;
+  searchQuery: string;
+}) {
   const navigate = useNavigate();
   const items: ReactNode[] = [];
   const addItem = (item: ReactNode) => {
@@ -69,6 +76,8 @@ export function SidebarList({ contentIndex }: { contentIndex: ContentIndex }) {
               nameComponent={nameComponent}
               marginLeft={extraMargin}
               sourceFilePath={nodePath}
+              symbolList={symbolList}
+              searchQuery={searchQuery}
             />
           );
         } else {
@@ -94,7 +103,8 @@ export function SidebarList({ contentIndex }: { contentIndex: ContentIndex }) {
 
 export function Sidebar({}: SidebarProps) {
   const contentIndex = usePopulateContentIndex();
-
+  const symbolList = new Set<string>();
+  const [searchQuery, setSearchQuery] = useState('');
   return (
     <Box
       display="flex"
@@ -102,11 +112,26 @@ export function Sidebar({}: SidebarProps) {
       alignItems="flex-start"
       justifyContent="flex-start"
     >
-      {contentIndex ? (
-        <SidebarList contentIndex={contentIndex} />
-      ) : (
-        <>Loading...</>
-      )}
+      <Box width="100%">
+        <Input
+          type="text"
+          width="100%"
+          onChange={(e) => {
+            setSearchQuery(e.target.value);
+          }}
+        />
+      </Box>
+      <Box flex={1}>
+        {contentIndex ? (
+          <SidebarList
+            searchQuery={searchQuery}
+            contentIndex={contentIndex}
+            symbolList={symbolList}
+          />
+        ) : (
+          <>Loading...</>
+        )}
+      </Box>
     </Box>
   );
 }
