@@ -12,7 +12,6 @@ export type SubpageType = 'file' | 'directory';
 
 export default function SubpageRouter() {
   const crumbs = useCrumbs();
-  console.log(crumbs);
   const routeType = crumbs.routeType;
   const pageBoxRef = useRef<HTMLDivElement | null>(null);
   return (

@@ -126,9 +126,7 @@ export function SidebarEntityList({
   marginLeft?: BoxProps['marginLeft'];
   searchQuery: string;
 } & BoxProps) {
-  // @delete{
   startOpen = true;
-  //}@delete
 
   const astIntermediate = useASTIntermediate(sourceFilePath);
   const [isOpen, setIsOpen] = useState(startOpen);

@@ -134,7 +134,6 @@ export function SymbolSummary({
         <Text
           onClick={(e) => {
             if (e.ctrlKey) {
-              console.log(node);
               navigator.clipboard
                 .writeText(JSON.stringify(node, null, 2))
                 .then(() => {

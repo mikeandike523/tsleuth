@@ -202,7 +202,6 @@ export function docCommentToParagraph(docCommentText: string): string {
       for (const extractorPattern of extractorPatterns) {
         const match = line.match(extractorPattern);
         if (match) {
-          console.log('hasMatched', match);
           extractedLines.push(match[1]);
           hasMatched = true;
           break;
