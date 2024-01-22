@@ -1,10 +1,19 @@
 import EnsureReactInScope from '@/EnsureReactInScope';
 EnsureReactInScope();
 
-import { ReactNode, useState } from 'react';
+import {
+  ReactNode,
+  useState,
+  useRef,
+  useEffect,
+  MutableRefObject,
+  useCallback,
+} from 'react';
 import { useNavigate } from 'react-router-dom';
-
 import { Box, Input } from '@chakra-ui/react';
+import ts from 'typescript';
+import * as uuid from 'uuid';
+import { throttle } from 'lodash';
 
 import { linkCss } from '@/css/link';
 import { usePopulateContentIndex } from '@/hooks/usePopulateContentIndex';
@@ -13,6 +22,9 @@ import { basenameIsSourceFile } from '@/lib/source-files';
 import { PathHierarchyNode } from '@common/filesystem';
 import { SidebarEntityList } from './sidebar-entity-list';
 import { fileFolder, pageFacingUp } from './special-strings';
+import { retrieveASTIntermediateFromContentIndex } from '@/hooks/useASTIntermediate';
+import { SerializableASTNode } from '@cli/lib/ast-traversal';
+import { getSearchMatches } from '@common/search';
 
 export interface SidebarProps {}
 
@@ -27,11 +39,142 @@ export function SidebarList({
 }) {
   const navigate = useNavigate();
   const items: ReactNode[] = [];
-  const addItem = (item: ReactNode) => {
-    const key = 'SidebarList_' + items.length;
-    items.push(<Box key={key}>{item}</Box>);
-  };
+
   const hierarchy = contentIndex.hierarchy;
+
+  const [, setHideMapStringified] = useState<string>(JSON.stringify([]));
+
+  const hideMapRef: MutableRefObject<Map<string, boolean> | null> = useRef<Map<
+    string,
+    boolean
+  > | null>(null);
+
+  useEffect(() => {
+    if (hideMapRef.current === null) {
+      hideMapRef.current = new Map();
+    }
+  }, [hideMapRef.current]);
+
+  const getHideMap = () => {
+    const current = hideMapRef.current;
+    if (current === null) {
+      hideMapRef.current = new Map();
+    }
+    return hideMapRef.current as Map<string, boolean>;
+  };
+
+  const tryUpdateHideMap = () => {
+    setHideMapStringified(JSON.stringify(Array.from(getHideMap().entries())));
+  };
+
+  const throttledTryUpdateHideMap = useCallback(
+    throttle(tryUpdateHideMap, 300, { trailing: true }),
+    []
+  );
+
+  const taskUuidRef: MutableRefObject<string | null> = useRef<string | null>(
+    null
+  );
+
+  const updateSearchTask = async (taskId: string) => {
+    if (taskId !== taskUuidRef.current) {
+      return;
+    }
+    getHideMap().clear();
+    const visit = async (
+      indexNode: ContentIndex['hierarchy'],
+      path: string[]
+    ) => {
+      if (path.length > 0) {
+        if (basenameIsSourceFile(path[path.length - 1])) {
+          const data = indexNode.data;
+          if (typeof data !== 'undefined') {
+            const intermediate = await retrieveASTIntermediateFromContentIndex(
+              contentIndex,
+              path
+            );
+            if (intermediate !== null) {
+              const rootNode = intermediate.root;
+              if (rootNode !== null) {
+                const foundNames: string[] = [];
+                const astVisitor = (node: SerializableASTNode) => {
+                  if (node.kind !== ts.SyntaxKind.SourceFile) {
+                    foundNames.push(node.name ?? '[[anonymous]]');
+                  }
+                  for (const child of node.children) {
+                    astVisitor(child);
+                  }
+                };
+                astVisitor(rootNode);
+                let hasAny = false;
+                for (const foundName of foundNames) {
+                  const matches = getSearchMatches(searchQuery, foundName);
+                  if (matches.length > 0) {
+                    hasAny = true;
+                    break;
+                  }
+                }
+                if (!hasAny) {
+                  for (
+                    let iSegment = path.length - 1;
+                    iSegment >= 0;
+                    iSegment--
+                  ) {
+                    const through = path.slice(0, iSegment + 1);
+                    const id = through.join('/');
+
+                    if (!getHideMap().has(id)) {
+                      getHideMap().set(id, true);
+                    }
+                  }
+                } else {
+                  for (
+                    let iSegment = path.length - 1;
+                    iSegment >= 0;
+                    iSegment--
+                  ) {
+                    const through = path.slice(0, iSegment + 1);
+                    const id = through.join('/');
+
+                    getHideMap().set(id, false);
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+
+      for (const childKey of Object.keys(indexNode.children)) {
+        const child = indexNode.children[childKey]!;
+        await visit(
+          child as ContentIndex['hierarchy'],
+          path.concat([childKey])
+        );
+      }
+    };
+    await visit(contentIndex.hierarchy, []);
+    throttledTryUpdateHideMap();
+  };
+
+  useEffect(() => {
+    if (searchQuery !== '') {
+      const id = uuid.v4();
+      taskUuidRef.current = id;
+      updateSearchTask(id);
+    }
+  }, [searchQuery]);
+
+  const addItemIfShouldShow = (item: ReactNode, nodePath: Array<string>) => {
+    const key = 'SidebarList_' + items.length;
+    const id = nodePath.join('/');
+    items.push(
+      <Box display={getHideMap().get(id) ?? false ? 'none' : 'block'} key={key}>
+        {item}
+      </Box>
+    );
+  };
+
   const renderHierarchyItem = (
     node: PathHierarchyNode<string>,
     level: number = 0,
@@ -68,20 +211,24 @@ export function SidebarList({
         </>
       );
 
+      const setSearchNoResults = (value: boolean) => {};
+
       if (nodePath.length > 0) {
-        const baseName = nodePath[nodePath.length - 1];
-        if (basenameIsSourceFile(baseName)) {
-          addItem(
+        const basename = nodePath[nodePath.length - 1];
+        if (basenameIsSourceFile(basename)) {
+          addItemIfShouldShow(
             <SidebarEntityList
+              setSearchNoResults={setSearchNoResults}
               nameComponent={nameComponent}
               marginLeft={extraMargin}
               sourceFilePath={nodePath}
               symbolList={symbolList}
               searchQuery={searchQuery}
-            />
+            />,
+            nodePath
           );
         } else {
-          addItem(nameComponent);
+          addItemIfShouldShow(nameComponent, nodePath);
         }
       }
     }
@@ -114,6 +261,7 @@ export function Sidebar({}: SidebarProps) {
     >
       <Box width="100%">
         <Input
+          placeholder="Filter Symbols"
           type="text"
           width="100%"
           onChange={(e) => {

@@ -1,4 +1,4 @@
-import { ReactNode, useState } from 'react';
+import { ReactNode, useState, useEffect } from 'react';
 import { Box, Text, BoxProps } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
 import { css } from '@emotion/react';
@@ -13,12 +13,10 @@ import { getSearchMatches } from '@common/search';
 function FullyLoadedComponent({
   intermediate,
   sourceFilePath,
-  symbolList,
   searchQuery,
 }: {
   intermediate: ASTIntermediate;
   sourceFilePath: string[];
-  symbolList: Set<string>;
   searchQuery: string;
 }) {
   const navigate = useNavigate();
@@ -117,8 +115,10 @@ export function SidebarEntityList({
   marginLeft,
   symbolList,
   searchQuery,
+  setSearchNoResults,
   ...rest
 }: {
+  setSearchNoResults: (value: boolean) => void;
   symbolList: Set<string>;
   nameComponent: ReactNode;
   startOpen?: boolean;
@@ -144,7 +144,6 @@ export function SidebarEntityList({
   if (astIntermediate?.root) {
     visit(astIntermediate?.root, true);
   }
-  console.log(symbolSearchNames);
   let shouldShow = true;
   if (searchQuery !== '') {
     if (symbolSearchNames.length > 0) {
@@ -155,6 +154,14 @@ export function SidebarEntityList({
       shouldShow = false;
     }
   }
+
+  useEffect(() => {
+    if (searchQuery !== '') {
+      setSearchNoResults(!shouldShow);
+    } else {
+      setSearchNoResults(false);
+    }
+  }, [shouldShow, searchQuery]);
 
   return (
     <Box
@@ -188,7 +195,6 @@ export function SidebarEntityList({
           <FullyLoadedComponent
             sourceFilePath={sourceFilePath}
             intermediate={astIntermediate}
-            symbolList={symbolList}
             searchQuery={searchQuery}
           />
         ) : (

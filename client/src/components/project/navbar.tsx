@@ -86,7 +86,6 @@ export function Navbar({}: NavbarProps) {
       }
       let unwrapped: SerializableASTNode = (astContent as ASTIntermediate)
         .root as SerializableASTNode;
-      console.log('navbar unwrapped', unwrapped);
       if (
         crumbs.entityPath.length === 1 &&
         crumbs.entityPath[0] === 'full_source_code'

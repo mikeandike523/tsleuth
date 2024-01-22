@@ -113,7 +113,7 @@ function LoadingSpinner() {
     border-top: 0.25em solid #3498db;
     animation: ${animation} 1s linear infinite;
   `;
-  return <Box css={spinnerCss} flex={0}></Box>;
+  return <Box css={spinnerCss}></Box>;
 }
 
 export function LoadingBarrierNoUnmount({

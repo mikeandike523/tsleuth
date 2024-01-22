@@ -14,7 +14,7 @@ import {
 } from '@common/filesystem';
 import { normalizePath } from '@common/filesystem';
 import { findReadmeInFolder } from './find-readme';
-import { posixMakeAbsolute } from '@common/filesystem'
+import { posixMakeAbsolute } from '@common/filesystem';
 
 /**
  *

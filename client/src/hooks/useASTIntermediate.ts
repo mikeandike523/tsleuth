@@ -8,6 +8,25 @@ import { ContentIndex } from '@/lib/content-index';
 import { fetchJSONContent } from '@/lib/fetch-content';
 import { useCrumbs } from './useCrumbs';
 
+export async function retrieveASTIntermediateFromContentIndex(
+  contentIndex: ContentIndex | null,
+  sourceFilePath: string[]
+) {
+  if (contentIndex === null) {
+    return null;
+  }
+  const data = accessPathHierarchyNodeData(
+    (contentIndex as ContentIndex).hierarchy,
+    sourceFilePath
+  );
+  if (typeof data === 'undefined') {
+    throw new Error(
+      `Could not find AST intermediate for ${sourceFilePath.join('/')}`
+    );
+  }
+  return await fetchJSONContent<ASTIntermediate>(data);
+}
+
 /**
  * Load the appropriate AST intermediate file from the "content" directory.
  *
@@ -33,16 +52,13 @@ export function useASTIntermediate(
     if (!routeTypeOk()) {
       return;
     }
-    const data = accessPathHierarchyNodeData(
-      (contentIndex as ContentIndex).hierarchy,
-      sourceFilePath
+
+    setContent(
+      await retrieveASTIntermediateFromContentIndex(
+        contentIndex,
+        sourceFilePath
+      )
     );
-    if (typeof data === 'undefined') {
-      throw new Error(
-        `Could not find AST intermediate for ${sourceFilePath.join('/')}`
-      );
-    }
-    setContent(await fetchJSONContent<ASTIntermediate>(data));
   };
 
   useEffect(() => {
