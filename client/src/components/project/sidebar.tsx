@@ -32,138 +32,17 @@ export function SidebarList({
   contentIndex,
   symbolList,
   searchQuery,
+  getHideMap,
 }: {
   contentIndex: ContentIndex;
   symbolList: Set<string>;
   searchQuery: string;
+  getHideMap: () => Map<string, boolean>;
 }) {
-  const navigate = useNavigate();
-  const items: ReactNode[] = [];
-
   const hierarchy = contentIndex.hierarchy;
 
-  const [, setHideMapStringified] = useState<string>(JSON.stringify([]));
-
-  const hideMapRef: MutableRefObject<Map<string, boolean> | null> = useRef<Map<
-    string,
-    boolean
-  > | null>(null);
-
-  useEffect(() => {
-    if (hideMapRef.current === null) {
-      hideMapRef.current = new Map();
-    }
-  }, [hideMapRef.current]);
-
-  const getHideMap = () => {
-    const current = hideMapRef.current;
-    if (current === null) {
-      hideMapRef.current = new Map();
-    }
-    return hideMapRef.current as Map<string, boolean>;
-  };
-
-  const tryUpdateHideMap = () => {
-    setHideMapStringified(JSON.stringify(Array.from(getHideMap().entries())));
-  };
-
-  const throttledTryUpdateHideMap = useCallback(
-    throttle(tryUpdateHideMap, 300, { trailing: true }),
-    []
-  );
-
-  const taskUuidRef: MutableRefObject<string | null> = useRef<string | null>(
-    null
-  );
-
-  const updateSearchTask = async (taskId: string) => {
-    if (taskId !== taskUuidRef.current) {
-      return;
-    }
-    getHideMap().clear();
-    const visit = async (
-      indexNode: ContentIndex['hierarchy'],
-      path: string[]
-    ) => {
-      if (path.length > 0) {
-        if (basenameIsSourceFile(path[path.length - 1])) {
-          const data = indexNode.data;
-          if (typeof data !== 'undefined') {
-            const intermediate = await retrieveASTIntermediateFromContentIndex(
-              contentIndex,
-              path
-            );
-            if (intermediate !== null) {
-              const rootNode = intermediate.root;
-              if (rootNode !== null) {
-                const foundNames: string[] = [];
-                const astVisitor = (node: SerializableASTNode) => {
-                  if (node.kind !== ts.SyntaxKind.SourceFile) {
-                    foundNames.push(node.name ?? '[[anonymous]]');
-                  }
-                  for (const child of node.children) {
-                    astVisitor(child);
-                  }
-                };
-                astVisitor(rootNode);
-                let hasAny = false;
-                for (const foundName of foundNames) {
-                  const matches = getSearchMatches(searchQuery, foundName);
-                  if (matches.length > 0) {
-                    hasAny = true;
-                    break;
-                  }
-                }
-                if (!hasAny) {
-                  for (
-                    let iSegment = path.length - 1;
-                    iSegment >= 0;
-                    iSegment--
-                  ) {
-                    const through = path.slice(0, iSegment + 1);
-                    const id = through.join('/');
-
-                    if (!getHideMap().has(id)) {
-                      getHideMap().set(id, true);
-                    }
-                  }
-                } else {
-                  for (
-                    let iSegment = path.length - 1;
-                    iSegment >= 0;
-                    iSegment--
-                  ) {
-                    const through = path.slice(0, iSegment + 1);
-                    const id = through.join('/');
-
-                    getHideMap().set(id, false);
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-
-      for (const childKey of Object.keys(indexNode.children)) {
-        const child = indexNode.children[childKey]!;
-        await visit(
-          child as ContentIndex['hierarchy'],
-          path.concat([childKey])
-        );
-      }
-    };
-    await visit(contentIndex.hierarchy, []);
-    throttledTryUpdateHideMap();
-  };
-
-  useEffect(() => {
-    if (searchQuery !== '') {
-      const id = uuid.v4();
-      taskUuidRef.current = id;
-      updateSearchTask(id);
-    }
-  }, [searchQuery]);
+  const navigate = useNavigate();
+  const items: ReactNode[] = [];
 
   const addItemIfShouldShow = (item: ReactNode, nodePath: Array<string>) => {
     const key = 'SidebarList_' + items.length;
@@ -252,6 +131,138 @@ export function Sidebar({}: SidebarProps) {
   const contentIndex = usePopulateContentIndex();
   const symbolList = new Set<string>();
   const [searchQuery, setSearchQuery] = useState('');
+
+  const [, setHideMapStringified] = useState<string>(JSON.stringify([]));
+
+  const hideMapRef: MutableRefObject<Map<string, boolean> | null> = useRef<Map<
+    string,
+    boolean
+  > | null>(null);
+
+  useEffect(() => {
+    if (hideMapRef.current === null) {
+      hideMapRef.current = new Map();
+    }
+  }, [hideMapRef.current]);
+
+  const getHideMap = () => {
+    const current = hideMapRef.current;
+    if (current === null) {
+      hideMapRef.current = new Map();
+    }
+    return hideMapRef.current as Map<string, boolean>;
+  };
+
+  const tryUpdateHideMap = () => {
+    setHideMapStringified(JSON.stringify(Array.from(getHideMap().entries())));
+  };
+
+  const taskUuidRef: MutableRefObject<string | null> = useRef<string | null>(
+    null
+  );
+
+  const updateSearchTask = useCallback(
+    async (taskId: string) => {
+      if (taskId !== taskUuidRef.current) {
+        return;
+      }
+      getHideMap().clear();
+      const visit = async (
+        indexNode: ContentIndex['hierarchy'],
+        path: string[]
+      ) => {
+        if (!contentIndex) {
+          return;
+        }
+        if (path.length > 0) {
+          if (basenameIsSourceFile(path[path.length - 1])) {
+            const data = indexNode.data;
+            if (typeof data !== 'undefined') {
+              const intermediate =
+                await retrieveASTIntermediateFromContentIndex(
+                  contentIndex,
+                  path
+                );
+              if (intermediate !== null) {
+                const rootNode = intermediate.root;
+                if (rootNode !== null) {
+                  const foundNames: string[] = [];
+                  const astVisitor = (node: SerializableASTNode) => {
+                    if (node.kind !== ts.SyntaxKind.SourceFile) {
+                      foundNames.push(node.name ?? '[[anonymous]]');
+                    }
+                    for (const child of node.children) {
+                      astVisitor(child);
+                    }
+                  };
+                  astVisitor(rootNode);
+                  let hasAny = false;
+                  for (const foundName of foundNames) {
+                    const matches = getSearchMatches(searchQuery, foundName);
+                    if (matches.length > 0) {
+                      hasAny = true;
+                      break;
+                    }
+                  }
+                  if (!hasAny) {
+                    for (
+                      let iSegment = path.length - 1;
+                      iSegment >= 0;
+                      iSegment--
+                    ) {
+                      const through = path.slice(0, iSegment + 1);
+                      const id = through.join('/');
+
+                      if (!getHideMap().has(id)) {
+                        getHideMap().set(id, true);
+                      }
+                    }
+                  } else {
+                    for (
+                      let iSegment = path.length - 1;
+                      iSegment >= 0;
+                      iSegment--
+                    ) {
+                      const through = path.slice(0, iSegment + 1);
+                      const id = through.join('/');
+
+                      getHideMap().set(id, false);
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        for (const childKey of Object.keys(indexNode.children)) {
+          const child = indexNode.children[childKey]!;
+          await visit(
+            child as ContentIndex['hierarchy'],
+            path.concat([childKey])
+          );
+        }
+      };
+      await visit((contentIndex as ContentIndex).hierarchy, []);
+      tryUpdateHideMap();
+    },
+    [searchQuery]
+  );
+
+  const search = () => {
+    if (searchQuery !== '') {
+      const id = uuid.v4();
+      taskUuidRef.current = id;
+      updateSearchTask(id);
+    } else {
+      getHideMap().clear();
+      tryUpdateHideMap();
+    }
+  };
+
+  useEffect(() => {
+    search();
+  }, [searchQuery]);
   return (
     <Box
       display="flex"
@@ -267,11 +278,17 @@ export function Sidebar({}: SidebarProps) {
           onChange={(e) => {
             setSearchQuery(e.target.value);
           }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              search();
+            }
+          }}
         />
       </Box>
       <Box flex={1}>
         {contentIndex ? (
           <SidebarList
+            getHideMap={getHideMap}
             searchQuery={searchQuery}
             contentIndex={contentIndex}
             symbolList={symbolList}

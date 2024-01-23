@@ -21,16 +21,15 @@ export const Page = forwardRef(function Page({
   ref,
   ...rest
 }: PageProps) {
-
   const [windowHeight, setWindowHeight] = useState<number | null>(null);
 
   const handleResize = throttle(() => {
     setWindowHeight(window.innerHeight);
   }, 250);
 
-  const handleSetInitialSize = ()=>{
-    setWindowHeight(window.innerHeight)
-  }
+  const handleSetInitialSize = () => {
+    setWindowHeight(window.innerHeight);
+  };
 
   useEffect(() => {
     window.addEventListener('resize', handleResize);
@@ -41,9 +40,7 @@ export const Page = forwardRef(function Page({
 
   useEffect(() => {
     handleSetInitialSize();
-  }, [
-    windowHeight === null
-  ]);
+  }, [windowHeight === null]);
 
   return (
     <Box
