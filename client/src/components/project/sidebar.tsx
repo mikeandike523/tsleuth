@@ -270,7 +270,7 @@ export function Sidebar({}: SidebarProps) {
       alignItems="flex-start"
       justifyContent="flex-start"
     >
-      <Box width="100%">
+      {/* <Box width="100%">
         <Input
           placeholder="Filter Symbols"
           type="text"
@@ -284,7 +284,7 @@ export function Sidebar({}: SidebarProps) {
             }
           }}
         />
-      </Box>
+      </Box> */}
       <Box flex={1}>
         {contentIndex ? (
           <SidebarList

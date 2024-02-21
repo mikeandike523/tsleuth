@@ -5,42 +5,41 @@ import lodash from 'lodash';
 
 import { getDocComments } from '@common/text';
 
-export type ImportantSyntaxKind =
-  | ts.SyntaxKind.ClassDeclaration
-  | ts.SyntaxKind.PropertyDeclaration
-  | ts.SyntaxKind.MethodDeclaration
-  | ts.SyntaxKind.Constructor
-  | ts.SyntaxKind.InterfaceDeclaration
-  | ts.SyntaxKind.TypeAliasDeclaration
-  | ts.SyntaxKind.FunctionDeclaration
-  | ts.SyntaxKind.FunctionExpression
-  | ts.SyntaxKind.ArrowFunction
-  | ts.SyntaxKind.EnumDeclaration
-  | ts.SyntaxKind.EnumMember
-  | ts.SyntaxKind.VariableDeclaration
-  | ts.SyntaxKind.SourceFile;
+export const importantSyntaxKinds = [
+  ts.SyntaxKind.ClassDeclaration,
+  ts.SyntaxKind.PropertyDeclaration,
+  ts.SyntaxKind.MethodDeclaration,
+  ts.SyntaxKind.Constructor,
+  ts.SyntaxKind.InterfaceDeclaration,
+  ts.SyntaxKind.TypeAliasDeclaration,
+  ts.SyntaxKind.FunctionDeclaration,
+  ts.SyntaxKind.FunctionExpression,
+  ts.SyntaxKind.ArrowFunction,
+  ts.SyntaxKind.EnumDeclaration,
+  ts.SyntaxKind.EnumMember,
+  ts.SyntaxKind.VariableDeclaration,
+  ts.SyntaxKind.SourceFile,
+] as const;
+
+export type ImportantSyntaxKind = (typeof importantSyntaxKinds)[number];
 
 export function isImportantSyntaxKind(
   kind: ts.SyntaxKind
 ): kind is ImportantSyntaxKind {
-  switch (kind) {
-    case ts.SyntaxKind.ClassDeclaration:
-    case ts.SyntaxKind.PropertyDeclaration:
-    case ts.SyntaxKind.MethodDeclaration:
-    case ts.SyntaxKind.Constructor:
-    case ts.SyntaxKind.InterfaceDeclaration:
-    case ts.SyntaxKind.TypeAliasDeclaration:
-    case ts.SyntaxKind.FunctionDeclaration:
-    case ts.SyntaxKind.FunctionExpression:
-    case ts.SyntaxKind.ArrowFunction:
-    case ts.SyntaxKind.EnumDeclaration:
-    case ts.SyntaxKind.EnumMember:
-    case ts.SyntaxKind.VariableDeclaration:
-    case ts.SyntaxKind.SourceFile:
-      return true;
-    default:
-      return false;
-  }
+  return importantSyntaxKinds.includes(kind as number);
+}
+
+export const importantSyntaxKindsOnlyIfDocumented = [
+  ts.SyntaxKind.PropertyAssignment,
+] as const;
+
+export type ImportantSyntaxKindOnlyIfDocumented =
+  (typeof importantSyntaxKindsOnlyIfDocumented)[number];
+
+export function isImportantSyntaxKindOnlyIfDocumented(
+  kind: ts.SyntaxKind
+): kind is ImportantSyntaxKindOnlyIfDocumented {
+  return importantSyntaxKindsOnlyIfDocumented.includes(kind as number);
 }
 
 export type StorageQualifier = 'let' | 'var' | 'const' | 'global';
@@ -104,7 +103,7 @@ export function walkAST(sourceFilePath: string) {
 
   if (typeof sourceFile === 'undefined') {
     throw new Error(
-      'Could not get source file from program. This is not expected as the `program` object was intantiated with exactly one surce file.'
+      'Could not get source file from program. This is not expected as the `program` object was instantiated with exactly one source file.'
     );
   }
 
@@ -171,7 +170,7 @@ export function walkAST(sourceFilePath: string) {
     }
     documentation = documentation.replace(/\r?\n/g, '\n');
 
-    // Remove eslint diasable next line comments
+    // Remove eslint disable next line comments
 
     documentation = documentation.replace(
       /^\s*?\/\/\s*?eslint-disable-next-line.*?$/gm,
@@ -323,9 +322,18 @@ export function walkAST(sourceFilePath: string) {
     return false;
   };
 
-  const approveInclusionOfSymbol = (node: ts.Node): boolean => {
+  const nodes: Map<string, ASTNode> = new Map();
+  const covered: Set<string> = new Set();
+
+  const approveInclusionOfSymbol = (
+    node: ts.Node,
+    forceIfDocumented: boolean = false
+  ): boolean => {
+    if (forceIfDocumented && isDocumented(node) && !covered.has(getId(node))) {
+      return true;
+    }
     // Step 1. If it is a source file node, then it is included
-    // Future steps in the pipline strip out the node so we dont see "SourceFile" in the generated documentation static site
+    // Future steps in the pipeline strip out the node so we don't see "SourceFile" in the generated documentation static site
     //
     if (node.kind === ts.SyntaxKind.SourceFile) {
       return true;
@@ -333,7 +341,13 @@ export function walkAST(sourceFilePath: string) {
 
     // Step 2. Ignore the smaller, less significant syntax kinds, usually related to simple tokens
     // See `isImportantSyntaxKind` above
-    if (!isImportantSyntaxKind(node.kind)) {
+    if (
+      !isImportantSyntaxKind(node.kind) &&
+      !(isDocumented(node) && isImportantSyntaxKindOnlyIfDocumented(node.kind))
+    ) {
+      // We always report any node if it has documentation, even if it wouldn't normally be important
+      // This is useful to cover edge cases such as properties in an "as const" object that are individually documented
+
       return false;
     }
 
@@ -431,11 +445,8 @@ export function walkAST(sourceFilePath: string) {
     return false;
   };
 
-  const nodes: Map<string, ASTNode> = new Map();
-  const covered: Set<string> = new Set();
-
-  const visitor = (node: ts.Node) => {
-    if (approveInclusionOfSymbol(node)) {
+  const visitor = (node: ts.Node, forceIfDocumented: boolean = false) => {
+    if (approveInclusionOfSymbol(node, forceIfDocumented)) {
       const nodeToAdd: ASTNode = {
         tsNode: node,
         kind: node.kind,
@@ -475,7 +486,9 @@ export function walkAST(sourceFilePath: string) {
       }
     }
 
-    node.forEachChild(visitor);
+    node.forEachChild((n: ts.Node) => {
+      visitor(n, forceIfDocumented);
+    });
   };
 
   visitor(sourceFile);

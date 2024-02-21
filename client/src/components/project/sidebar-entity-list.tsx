@@ -126,8 +126,6 @@ export function SidebarEntityList({
   marginLeft?: BoxProps['marginLeft'];
   searchQuery: string;
 } & BoxProps) {
-  startOpen = true;
-
   const astIntermediate = useASTIntermediate(sourceFilePath);
   const [isOpen, setIsOpen] = useState(startOpen);
 

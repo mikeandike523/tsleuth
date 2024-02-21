@@ -25,3 +25,18 @@ export var e = 'f';
  * an item that is a variable statement that contains an arrow function
  */
 export const g = () => 'h';
+
+/**
+ * A const object to perhaps document properties of
+ */
+export const i = {
+  /**
+   * An explicitly documented property assignment
+   */
+  j: 'k',
+  l: 'm',
+};
+
+export function aFunctionMissingADocstring() {}
+
+function aFunctionMissingADocstring2() {}
