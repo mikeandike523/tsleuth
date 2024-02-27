@@ -1,12 +1,10 @@
 import { useRef } from 'react';
 
-import { Box } from '@chakra-ui/react';
-
 import { Page } from '@/components/project/page';
 import { useCrumbs } from '@/hooks/useCrumbs';
-import { SubpageFile } from './subpage-file';
-import { SubpageDirectory } from './subpage-directory';
 import Home from '@/pages/index';
+import { SubpageDirectory } from './subpage-directory';
+import { SubpageFile } from './subpage-file';
 
 export type SubpageType = 'file' | 'directory';
 

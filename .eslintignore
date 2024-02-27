@@ -2,8 +2,11 @@ node_modules
 dist
 .tsleuth
 archive
-archive\node_modules
-archive\dist
-archive\.tsleuth
+archive/node_modules
+archive/dist
+archive/.tsleuth
 archive\documentation-generator-dom\dist
-cli\dist
+cli/dist
+client/webpack.config.js
+cli/webpack.config.js
+test-files-for-documentation/*

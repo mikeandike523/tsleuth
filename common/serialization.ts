@@ -8,7 +8,7 @@ export type SerializablePrimitive = string | number | boolean | null;
  * Checks if a value is a serializable primitive
  */
 export function isSerializablePrimitive(
-  value: any,
+  value: unknown
 ): value is SerializablePrimitive {
   return (
     typeof value === 'string' ||

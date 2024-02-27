@@ -1,32 +1,29 @@
 import EnsureReactInScope from '@/EnsureReactInScope';
 EnsureReactInScope();
 
-import { ReactElement, useState, useEffect, useRef } from 'react';
+import { ReactElement, useEffect, useRef, useState } from 'react';
 
 import { Box, Text } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
 
-import { useCrumbs } from '@/hooks/useCrumbs';
-import { usePopulateContentIndex } from '@/hooks/usePopulateContentIndex';
-import { accessPathHierarchyNodeData } from '@common/filesystem';
-import { useASTIntermediate } from '@/hooks/useASTIntermediate';
+import { CodeSnippet } from '@/components/framework/code-snippet';
 import { CrumbSequence } from '@/components/project/crumb-sequence';
 import { rightFacingArrow } from '@/components/project/special-strings';
-import { Hr } from '@/components/framework/Hr';
-import { CodeSnippet } from '@/components/framework/code-snippet';
-import { SerializableASTNode } from '@cli/lib/ast-traversal';
-import { docCommentToParagraph } from '@common/text';
 import { useLookAtMeAnimationCss } from '@/css/look-at-me';
+import { useASTIntermediate } from '@/hooks/useASTIntermediate';
+import { useCrumbs } from '@/hooks/useCrumbs';
+import { usePopulateContentIndex } from '@/hooks/usePopulateContentIndex';
 import { basenameIsSourceFile } from '@/lib/source-files';
+import { SerializableASTNode } from '@cli/lib/ast-traversal';
+import { accessPathHierarchyNodeData } from '@common/filesystem';
+import { docCommentToParagraph } from '@common/text';
 
 export function SymbolSummary({
   node,
   prior,
-  scrollTopSetter,
 }: {
   node: SerializableASTNode;
   prior: SerializableASTNode[];
-  scrollTopSetter: (scrollTop: number) => void;
 }) {
   const crumbs = useCrumbs();
 
@@ -57,7 +54,6 @@ export function SymbolSummary({
 
   const [isFlashing, setIsFlashing] = useState(false);
 
-  // TODO: Make it more robust by using the CrumbSequence component and navigating properly
   const name = '::' + chain.map((n) => n.name).join('::');
   let docElement: ReactElement | null = null;
   if (node.documentation) {
@@ -196,7 +192,7 @@ export interface SubpageFileProps {
   scrollTopSetter: (scrollTop: number) => void;
 }
 
-export function SubpageFile({ scrollTopSetter }: SubpageFileProps) {
+export function SubpageFile({}: SubpageFileProps) {
   const navigate = useNavigate();
   const crumbs = useCrumbs();
   const contentIndex = usePopulateContentIndex();
@@ -274,13 +270,7 @@ export function SubpageFile({ scrollTopSetter }: SubpageFileProps) {
     node: SerializableASTNode,
     prior: SerializableASTNode[]
   ) => {
-    addSummary(
-      <SymbolSummary
-        scrollTopSetter={scrollTopSetter}
-        node={node}
-        prior={prior}
-      />
-    );
+    addSummary(<SymbolSummary node={node} prior={prior} />);
     for (const child of node.children) {
       recursion(child, prior.concat([node]));
     }

@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { ReactNode, Fragment } from 'react';
 
 import { Box, Text } from '@chakra-ui/react';
 
@@ -26,7 +26,7 @@ export function CrumbSequence({
   const items: ReactNode[] = [];
   const addItem = (item: ReactNode) => {
     const key = 'CrumbSequence_' + items.length;
-    items.push(item);
+    items.push(<Fragment key={key}>{item}</Fragment>);
   };
   if (prepend) {
     addItem(<div>{sep}</div>);

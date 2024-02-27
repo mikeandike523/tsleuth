@@ -1,16 +1,13 @@
 import EnsureReactInScope from '@/EnsureReactInScope';
 EnsureReactInScope();
 
-import { useState, useEffect } from 'react';
-
 import { Box, Text } from '@chakra-ui/react';
-import remarkGfm from 'remark-gfm';
 import Markdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
-import { Page } from '@/components/project/page';
-import { usePopulateTopLevelReadme } from '@/hooks/usePopulateTopLevelReadme';
 import { usePopulateContentIndex } from '@/hooks/usePopulateContentIndex';
 import { usePopulateProjectName } from '@/hooks/usePopulateProjectName';
+import { usePopulateTopLevelReadme } from '@/hooks/usePopulateTopLevelReadme';
 
 export default function Home() {
   const contentIndex = usePopulateContentIndex();

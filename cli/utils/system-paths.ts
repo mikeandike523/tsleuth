@@ -3,7 +3,6 @@ import path from 'path';
 import {
   WorkingDirectory,
   normalizePath,
-  pathsStringsAreEquivalent,
   readUtf8OrNull,
 } from '@common/filesystem';
 import { normalizeLineEndings } from '@common/text';
@@ -45,11 +44,11 @@ export class TsleuthDirectory extends WorkingDirectory {
   isInGitignore() {
     const gitignorePath = path.resolve(
       this.containingDirectoryPath(),
-      '.gitignore',
+      '.gitignore'
     );
     const content = normalizeLineEndings(
       readUtf8OrNull(gitignorePath) ?? '',
-      '\n',
+      '\n'
     );
     const lines = content.split('\n');
     for (const line of lines) {
@@ -57,7 +56,7 @@ export class TsleuthDirectory extends WorkingDirectory {
         continue;
       }
       const cleanLine = normalizePath(
-        line.replace(/^\s+/g, '').replace(/\s+$/g, '/'),
+        line.replace(/^\s+/g, '').replace(/\s+$/g, '/')
       )
         .replace(/^\/+/g, '')
         .replace(/\/+$/g, '');

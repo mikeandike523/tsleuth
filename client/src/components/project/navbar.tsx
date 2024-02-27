@@ -1,7 +1,7 @@
 import EnsureReactInScope from '@/EnsureReactInScope';
 EnsureReactInScope();
 
-import { ReactNode } from 'react';
+import { ReactNode, Fragment } from 'react';
 
 import { Box, Text } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
@@ -37,7 +37,7 @@ export function Navbar({}: NavbarProps) {
   const items: ReactNode[] = [];
   const addItem = (item: ReactNode) => {
     const key = 'navbar_item_' + items.length;
-    items.push(item);
+    items.push(<Fragment key={key}>{item}</Fragment>);
   };
   addItem(
     <Text

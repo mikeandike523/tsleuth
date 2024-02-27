@@ -1,23 +1,19 @@
-import { ReactNode, useState, useEffect } from 'react';
-import { Box, Text, BoxProps } from '@chakra-ui/react';
-import { useNavigate } from 'react-router-dom';
+import { Box, BoxProps, Text } from '@chakra-ui/react';
 import { css } from '@emotion/react';
+import { ReactNode, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-import { useASTIntermediate } from '@/hooks/useASTIntermediate';
-import { ASTIntermediate } from '@cli/lib/ast-traversal';
-import { SerializableASTNode } from '@cli/lib/ast-traversal';
-import { doubleColon, heavyPlusSign, heavyMinusSign } from './special-strings';
 import { linkCss } from '@/css/link';
-import { getSearchMatches } from '@common/search';
+import { useASTIntermediate } from '@/hooks/useASTIntermediate';
+import { ASTIntermediate, SerializableASTNode } from '@cli/lib/ast-traversal';
+import { doubleColon, heavyMinusSign, heavyPlusSign } from './special-strings';
 
 function FullyLoadedComponent({
   intermediate,
   sourceFilePath,
-  searchQuery,
 }: {
   intermediate: ASTIntermediate;
   sourceFilePath: string[];
-  searchQuery: string;
 }) {
   const navigate = useNavigate();
   const items: ReactNode[] = [];
@@ -34,54 +30,42 @@ function FullyLoadedComponent({
     const hasDocumentation =
       node.documentation !== null && node.documentation.trim() !== '';
     const indent = 2 * level + 'em';
-    const searchName = node.name ?? '[[anonymous]]';
 
-    let toAddItem = true;
-
-    if (searchQuery !== '') {
-      const matches = getSearchMatches(searchQuery, searchName);
-      if (matches.length === 0) {
-        toAddItem = false;
-      }
-    }
-
-    if (toAddItem) {
-      addItem(
-        <Box
-          display="flex"
-          flexDirection="row"
-          alignItems="center"
-          justifyContent="flex-start"
+    addItem(
+      <Box
+        display="flex"
+        flexDirection="row"
+        alignItems="center"
+        justifyContent="flex-start"
+      >
+        <Text
+          marginLeft={indent}
+          onClick={() => {
+            const url = sourceFilePath
+              .concat([':', ...[...precedingPath, node.id]])
+              .join('/');
+            navigate(url);
+          }}
+          color={hasDocumentation ? 'magenta' : 'blue'}
+          as="span"
+          css={css`
+            cursor: pointer;
+            text-decoration: none;
+            &:hover {
+              text-decoration: underline;
+            }
+          `}
         >
-          <Text
-            marginLeft={indent}
-            onClick={() => {
-              const url = sourceFilePath
-                .concat([':', ...[...precedingPath, node.id]])
-                .join('/');
-              navigate(url);
-            }}
-            color={hasDocumentation ? 'magenta' : 'blue'}
-            as="span"
-            css={css`
-              cursor: pointer;
-              text-decoration: none;
-              &:hover {
-                text-decoration: underline;
-              }
-            `}
-          >
-            {doubleColon}
-            {node.name ?? '[[anonymous]]'}
-          </Text>
-          &nbsp;
-          <Text fontStyle="italic" color="green">
-            ({node.kindName})
-            {node.narrowKindName ? ` (${node.narrowKindName})` : ''}
-          </Text>
-        </Box>
-      );
-    }
+          {doubleColon}
+          {node.name ?? '[[anonymous]]'}
+        </Text>
+        &nbsp;
+        <Text fontStyle="italic" color="green">
+          ({node.kindName})
+          {node.narrowKindName ? ` (${node.narrowKindName})` : ''}
+        </Text>
+      </Box>
+    );
 
     for (const child of node.children) {
       renderASTNode(
@@ -92,7 +76,6 @@ function FullyLoadedComponent({
       );
     }
   };
-  // Top level node is just a container, not a symbol, so jump to children of top level node
   for (const childNode of (intermediate.root as SerializableASTNode).children) {
     renderASTNode(childNode, 0, [], []);
   }
@@ -113,18 +96,12 @@ export function SidebarEntityList({
   sourceFilePath,
   startOpen = false,
   marginLeft,
-  symbolList,
-  searchQuery,
-  setSearchNoResults,
   ...rest
 }: {
-  setSearchNoResults: (value: boolean) => void;
-  symbolList: Set<string>;
   nameComponent: ReactNode;
   startOpen?: boolean;
   sourceFilePath: string[];
   marginLeft?: BoxProps['marginLeft'];
-  searchQuery: string;
 } & BoxProps) {
   const astIntermediate = useASTIntermediate(sourceFilePath);
   const [isOpen, setIsOpen] = useState(startOpen);
@@ -142,28 +119,8 @@ export function SidebarEntityList({
   if (astIntermediate?.root) {
     visit(astIntermediate?.root, true);
   }
-  let shouldShow = true;
-  if (searchQuery !== '') {
-    if (symbolSearchNames.length > 0) {
-      shouldShow = symbolSearchNames.some((name) => {
-        return getSearchMatches(searchQuery, name).length > 0;
-      });
-    } else {
-      shouldShow = false;
-    }
-  }
-
-  useEffect(() => {
-    if (searchQuery !== '') {
-      setSearchNoResults(!shouldShow);
-    } else {
-      setSearchNoResults(false);
-    }
-  }, [shouldShow, searchQuery]);
-
   return (
     <Box
-      display={shouldShow ? 'flex' : 'none'}
       flexDirection="column"
       alignItems="flex-start"
       justifyContent="flex-start"
@@ -193,7 +150,6 @@ export function SidebarEntityList({
           <FullyLoadedComponent
             sourceFilePath={sourceFilePath}
             intermediate={astIntermediate}
-            searchQuery={searchQuery}
           />
         ) : (
           <>Loading...</>

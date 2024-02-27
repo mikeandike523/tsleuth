@@ -152,7 +152,7 @@ export class NotADirectoryError extends Error {
  *
  * Thrown when a file, folder, or symlink is expected but does not exist.
  *
- * @param requestedPath
+ * @param requestedPath -
  * @returns
  */
 export class FilesystemNodeNonexistentError extends Error {
@@ -502,7 +502,7 @@ export class WorkingDirectory {
    *
    * Build a new path which is relative to `this.root`
    *
-   * @param pathSegments
+   * @param pathSegments -
    * @returns
    */
   resolve(...pathSegments: string[]): string {

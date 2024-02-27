@@ -148,7 +148,7 @@ export class InvalidDocCommentError extends Error {
  *
  * Strips doc comment syntax and neatly arranges in a paragraph
  *
- * @param docCommentText
+ * @param docCommentText -
  * @returns
  */
 export function docCommentToParagraph(docCommentText: string): string {

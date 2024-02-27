@@ -4,23 +4,22 @@
  * Used primarily to add searchbar to the left menu
  */
 
-import { escapeRegExp, BetterRegExp, findAllMatches } from './rgx';
-import { enumerate } from './arrays';
+import { BetterRegExp, escapeRegExp, findAllMatches } from './rgx';
 
-export const seperatorSpecialCharacters =
+export const separatorSpecialCharacters =
   '~!@#$%^&*()_+`[]{},.?;:\'"\\|/' as const;
 
-export const seperatorSpecialCharactersRegex = new RegExp(
-  escapeRegExp(seperatorSpecialCharacters),
+export const separatorSpecialCharactersRegex = new RegExp(
+  escapeRegExp(separatorSpecialCharacters),
   'g'
 );
 
-export type SeperatorSpecialCharacter =
-  (typeof seperatorSpecialCharacters)[number];
+export type SeparatorSpecialCharacter =
+  (typeof separatorSpecialCharacters)[number];
 
 export type SymbolNameSegment = {
   kind: 'text' | 'separator';
-  text: string | SeperatorSpecialCharacter;
+  text: string | SeparatorSpecialCharacter;
   startPos: number;
   length: number;
 };
@@ -47,19 +46,19 @@ export function getCase(character: string): TextCase | null {
  *
  * Split a string into segments based upper/lower camel case conventions
  *
- * @param text - The text to analyze and splioot
+ * @param text - The text to analyze and split
  * @returns
  *
- * @attention - This function does not adhere to any particular standard, it is what I personalyl found reasonable
+ * @attention - This function does not adhere to any particular standard, it is what I personally found reasonable
  *
  * @remarks
  * The rules are as follows:
  *
  * 0. Start the result as an array of one segment, the empty string (result=[''])
  * 1. A transition from either lowercase or number to Upper breaks into a new segment, unless it is the first character of the segment
- * Example: myCamelCase -> ['my', 'Camel', 'Case']
+ * Example: myCamelCase -\> ['my', 'Camel', 'Case']
  * 2. A transition from uppercase back down to lowercase breaks into a new segment, placing the encounter uppercase in the new segment
- * Example: Suppose in a given project it is common to abbreviate "Wrapped Ref" to WR. Then for instance, myWRManager -> ['my', 'WR', 'Manager']
+ * Example: Suppose in a given project it is common to abbreviate "Wrapped Ref" to WR. Then for instance, myWRManager -\> ['my', 'WR', 'Manager']
  */
 export function splitByCamelCase(text: string): Array<string> {
   if (text.length < 2) {
@@ -107,7 +106,7 @@ export function analyzeSymbolName(
 ): Array<SymbolNameSegment> {
   // Pass 1
   const parts = BetterRegExp.from(
-    seperatorSpecialCharactersRegex
+    separatorSpecialCharactersRegex
   ).separateTextWithTyping(symbolName, true);
   let result: Array<SymbolNameSegment> = parts.map((component) => {
     if (component.kind === 'text') {

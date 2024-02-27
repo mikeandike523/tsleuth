@@ -56,10 +56,6 @@ export function useLoadingTaskManager() {
     return getActiveTasks().some((task) => task.name === name);
   };
 
-  const getActiveIds = () => {
-    return getActiveTasks().map((task) => task.name);
-  };
-
   const useTask = (name: string, initialMessage?: string) => {
     const initialTask = {
       name,

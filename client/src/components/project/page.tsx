@@ -1,7 +1,7 @@
 import EnsureReactInScope from '@/EnsureReactInScope';
 EnsureReactInScope();
 
-import { ReactNode, useState, useEffect, forwardRef, RefObject } from 'react';
+import { ReactNode, RefObject, forwardRef, useEffect, useState } from 'react';
 
 import { Box, BoxProps } from '@chakra-ui/react';
 import { throttle } from 'lodash';
@@ -9,7 +9,6 @@ import { throttle } from 'lodash';
 import { Navbar } from './navbar';
 import { Sidebar } from './sidebar';
 import { LoadingBarrierNoUnmount } from './simple-loading-barrier';
-import { usePopulateProjectName } from '@/hooks/usePopulateProjectName';
 
 export interface PageProps extends BoxProps {
   children?: ReactNode;

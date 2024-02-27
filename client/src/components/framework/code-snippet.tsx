@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
+import { Box, Text } from '@chakra-ui/react';
 import Highlight from 'react-highlight';
-import { Box, Button, Text } from '@chakra-ui/react';
 
-import { heavyPlusSign, heavyMinusSign } from '../project/special-strings';
 import { lowerShadowCss } from '@/css/lower-shadow';
+import { heavyMinusSign, heavyPlusSign } from '../project/special-strings';
 
 export const supportedLanguageClassnames = {
   typescript: 'typescript ts tsx',
@@ -60,7 +60,6 @@ export interface CodeSnippetProps {
  * The caller/user of the comopnent is expected to import the desired "highlight.js" theme
  */
 export function CodeSnippet({
-  title,
   initialState,
   language,
   previewLines,
