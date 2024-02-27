@@ -57,7 +57,7 @@ export interface CodeSnippetProps {
  * A component that displays a code snippet in an expandable container
  * Supports previewing multiple lines, or adding an ellipsis for minimal preview footprint
  *
- * The caller/user of the comopnent is expected to import the desired "highlight.js" theme
+ * The caller/user of the component is expected to import the desired "highlight.js" theme
  */
 export function CodeSnippet({
   initialState,

@@ -25,18 +25,5 @@
       "**/*.code-search": true,
       "archive": true,
     },
-    "cSpell.words": [
-      "chakra",
-      "esbenp",
-      "janky",
-      "relpath",
-      "relpaths",
-      "subpage",
-      "tsdoc",
-      "tsleuth",
-      "unflattened",
-      "uuidv",
-      "Whitespaces",
-    ],
   },
 }

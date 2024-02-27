@@ -133,7 +133,7 @@ export function SymbolSummary({
               navigator.clipboard
                 .writeText(JSON.stringify(node, null, 2))
                 .then(() => {
-                  alert('Full node info c opied to clipboard');
+                  alert('Full node info copied to clipboard');
                 })
                 .catch((e) => {
                   alert(
