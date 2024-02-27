@@ -38,7 +38,7 @@ const availableFeatures: {
 };
 
 /**
- * Short descriptsion for the features available in "tsleuth"
+ * Short description for the features available in "tsleuth"
  *
  */
 const availableFeaturesShortDescriptions = {
@@ -50,14 +50,12 @@ const availableFeaturesShortDescriptions = {
  * The main entry point is async. An express server will be used to wait while all remaining promises resolve
  */
 async function main(): Promise<ExitCode> {
-  // Very basic manual routing of process.argv, easier than doubling up on using commander library, when each feature already uses commander
-
   if (process.argv.length < 1) {
     console.log(
       `No command specified.
       Use --help or -h for more information and to list available commands.
       Use --version or -v for version information.
-      `,
+      `
     );
     return ExitCode.INVALID_ARGUMENTS;
   }
@@ -71,10 +69,9 @@ async function main(): Promise<ExitCode> {
   const isValidCommand = (value: string) => validCommands.includes(value);
 
   const getVersion = () => {
-    // Get the version from package.json
     const packageJsonPath = path.resolve(__dirname, '..', '..', 'package.json');
     const contents = JSON.parse(
-      fs.readFileSync(packageJsonPath, 'utf-8').toString(),
+      fs.readFileSync(packageJsonPath, 'utf-8').toString()
     ) as {
       version: string;
     };
@@ -95,7 +92,7 @@ Usage:
   -h --help       output usage information
 
   Available Commands:
-  ${Object.keys(availableFeatures).map(name => {
+  ${Object.keys(availableFeatures).map((name) => {
     return `  ${name}  ${
       availableFeaturesShortDescriptions[
         name as keyof typeof availableFeaturesShortDescriptions
@@ -140,7 +137,7 @@ Use --help or -h for more information and to list available commands.
 }
 
 main()
-  .then(code => {
+  .then((code) => {
     if (code !== ExitCode.HANG) {
       process.exit(code);
     } else {
@@ -150,7 +147,7 @@ main()
       });
     }
   })
-  .catch(err => {
+  .catch((err) => {
     console.error(err);
     process.exit(ExitCode.ERROR);
   });
@@ -162,7 +159,7 @@ const app = express();
 app.get('*', (req, res) => {
   const listeningPort = portForWaiting || '<unknown Port>';
   res.send(
-    `Express server listening on port http://localhost:${listeningPort} to allow promises to resolve...`,
+    `Express server listening on port http://localhost:${listeningPort} to allow promises to resolve...`
   );
 });
 
@@ -170,6 +167,6 @@ const server = app.listen(0, () => {
   const port = (server.address() as AddressInfo).port;
   portForWaiting = port;
   console.log(
-    `Express server listening on http://localhost:${portForWaiting} to allow promises to resolve...`,
+    `Express server listening on http://localhost:${portForWaiting} to allow promises to resolve...`
   );
 });

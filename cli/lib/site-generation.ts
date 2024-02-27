@@ -75,7 +75,6 @@ export function generateSiteAndCopyFiles(
     `;
   }
 
-  // Collect all the intermediate files
   const intermediates: Map<string, ASTIntermediate> = new Map();
 
   const intermediatesWD = new WorkingDirectory(intermediateDirectory);
@@ -102,12 +101,9 @@ export function generateSiteAndCopyFiles(
 
   process.stdout.write(chalk.green(`Done.\n`));
 
-  // The source files from which the AST intermediates were generated
   const sourceFiles = Array.from(intermediates.values()).map((item) => {
     return item.path;
   });
-
-  // Determine what the user's project root was, and get a list of relative paths
 
   const projectPathConfig = convertToPrefixAndRelativePaths(sourceFiles);
 
@@ -120,16 +116,11 @@ export function generateSiteAndCopyFiles(
   const projectRoot = posixMakeAbsolute(projectPathConfig.prefix);
   const relpaths = projectPathConfig.relativePaths;
 
-  // Arrange the AST intermediates in a hierarchy according to the relative paths, an attach metadata regarding the name of the intermediate file
-  // Do not need to attach the intermediate itself since this needs to be fetched async at runtime in the React app
-
-  // Step 1: Reverse map from relpath back to intermediate filename
   const reverseMap: Map<string, string> = new Map();
   for (const [key, value] of intermediates.entries()) {
     reverseMap.set(normalizePath(path.relative(projectRoot, value.path)), key);
   }
 
-  // Step 2: Prepare the data for the tree transform
   const treeTransformInput: {
     relativePath: string;
     data: string;
@@ -140,7 +131,6 @@ export function generateSiteAndCopyFiles(
     };
   });
 
-  // Step 3: Calculate the tree/hierarchy
   const hierarchy =
     assembleHierarchyFromRelativePathsAndAssociatedData(treeTransformInput);
 
@@ -210,6 +200,5 @@ export function generateSiteAndCopyFiles(
     );
   }
 
-  // Copy all contents (recursively) of directory contentDir to directory outContentDir
   copyDirectoryContentsRecursive(contentDir, outContentDir, true);
 }

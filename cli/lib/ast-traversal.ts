@@ -70,7 +70,7 @@ export type ASTNode = {
   endChar: number;
   startLCP: LineColumnPair;
   endLCP: LineColumnPair;
-  sourceCode: string; // Does not include doc comment
+  sourceCode: string;
   documentation: string | null;
   name: string | null;
   storageQualifier: StorageQualifier | null;
@@ -332,68 +332,31 @@ export function walkAST(sourceFilePath: string) {
     if (forceIfDocumented && isDocumented(node) && !covered.has(getId(node))) {
       return true;
     }
-    // Step 1. If it is a source file node, then it is included
-    // Future steps in the pipeline strip out the node so we don't see "SourceFile" in the generated documentation static site
-    //
+
     if (node.kind === ts.SyntaxKind.SourceFile) {
       return true;
     }
 
-    // Step 2. Ignore the smaller, less significant syntax kinds, usually related to simple tokens
-    // See `isImportantSyntaxKind` above
     if (
       !isImportantSyntaxKind(node.kind) &&
       !(isDocumented(node) && isImportantSyntaxKindOnlyIfDocumented(node.kind))
     ) {
-      // We always report any node if it has documentation, even if it wouldn't normally be important
-      // This is useful to cover edge cases such as properties in an "as const" object that are individually documented
-
       return false;
     }
-
-    // Step 3. Symbols need a name
-    // Anonymous symbols will end up captured by some parent symbol that is not the source file
-    // Best option for now
-    // See `drillForName` above
-    // Note, `drillForName` handles special case of `constructor` and renames it to `[[constructor]]`
 
     const symbolName = drillForName(node);
     if (symbolName === null || symbolName.trim() === '') {
       return false;
     }
 
-    // Step 4. If this point is reached, and symbol has a TRUE docstring (slash star star notation), then it is included
-    // See `isDocumented` above
     if (isDocumented(node)) {
       return true;
     }
 
-    // Step 5. If the node is not documented, there is a list of exceptions
-
-    // Exception List:
-
-    // A. Any symbol at the top level (direct child of sourcefile). This will end up including type aliases, interfaces, enums, and classes by default
-    // B. Specific children of top level symbols
-    //     Enum Member
-    //     Type Alias Property ** (see note 1) **
-    //     Interface Property ** (see note 1) **
-    //     Class Property
-    //     Class Method
-    //     Class Constructor
-
-    // Note 1: Note exactly sure about how nested properties are parsed, either way ideal design is to extract nested objects into seperate types, so its difficult to cover the case of "worse" code
-
-    // Note 2: To determine if some nodes are at the top level, some specical handling is needed, e.g. for variable declarations
-    // Testing will be reuired to determin if any additional special handling is required.
-
     if (node.kind === ts.SyntaxKind.VariableDeclaration) {
-      // As far as I recall, a variable declaration at the top level will either be a child of a variable statement, or a child of declarationlist which is a child of a variable statement.
-      // But just in case, also will handle the case where the direct parent of the node is the sourcefile, though I think this should not occur
       if (node.parent && node.parent.kind === ts.SyntaxKind.SourceFile) {
         return true;
       }
-
-      // Terrible code but extremely clear
 
       if (node.parent && node.parent.kind === ts.SyntaxKind.VariableStatement) {
         if (

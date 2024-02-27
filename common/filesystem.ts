@@ -6,12 +6,11 @@ import commonPathPrefix from 'common-path-prefix';
 import { SerializableObject } from './serialization';
 
 /**
- * A janky hotfix for some wierd behaviour regarding how nodejs and bash handle relative and absolute paths
+ * A janky hotfix for some weird behavior regarding how nodejs and bash handle relative and absolute paths
  * @param filepath - A path assumed to be absolute, but may be missing a leading slash if on posix
  * @returns
  */
 export function posixMakeAbsolute(filepath: string): string {
-  //If windows, return original
   if (process.platform === 'win32') {
     return filepath;
   }
@@ -30,7 +29,6 @@ export function convertToPrefixAndRelativePaths(absolutePaths: string[]) {
     ''
   );
   if (commonPrefix.length === 0) {
-    // see docs for common-path-prefix
     return null;
   }
   const relativePaths = cleanedAbsolutePaths.map((absolutePath) => {
@@ -60,15 +58,12 @@ export function assembleHierarchyFromRelativePathsAndAssociatedData<
     data?: T;
   }[]
 ): PathHierarchyNode<T> {
-  // Just in case
   const cleanedEntries = entries.map((entry) => {
     return {
       ...entry,
       relativePath: normalizePath(entry.relativePath, '/').replace(/^\/+/g, ''),
     };
   });
-
-  // Slow but clear
 
   const root: PathHierarchyNode<T> = {
     segment: '',
@@ -85,7 +80,6 @@ export function assembleHierarchyFromRelativePathsAndAssociatedData<
     for (let i = 0; i < segments.length; i++) {
       const segment = segments[i];
 
-      // If the segment doesn't exist in the current level, create it.
       if (!currentLevel.children[segment]) {
         currentLevel.children[segment] = {
           segment,
@@ -93,13 +87,11 @@ export function assembleHierarchyFromRelativePathsAndAssociatedData<
         };
       }
 
-      // If this is the last segment in the path, set the data.
       if (i === segments.length - 1) {
         if (currentLevel.children[segment]) {
           currentLevel.children[segment].data = entry.data;
         }
       } else {
-        // Otherwise, continue navigating down.
         currentLevel = currentLevel.children[segment] as PathHierarchyNode<T>;
       }
     }
@@ -124,10 +116,7 @@ export function accessPathHierarchyNode<
 >(node: PathHierarchyNode<T>, pathSegments: string[]): PathHierarchyNode<T> {
   let unwrapped: PathHierarchyNode<T> = node;
 
-  // No need to have a special condition for pathSegments.length === 0; the loop below will handle it
-
   for (const segment of pathSegments) {
-    // Check if the segment exists in the children directly instead of creating an array of keys.
     if (!Object.keys(unwrapped.children).includes(segment)) {
       throw new Error(`Invalid path: ${pathSegments.join('/')}`);
     }
@@ -163,7 +152,7 @@ export class FilesystemNodeNonexistentError extends Error {
  * Thrown when a symbolic link loop is detected
  */
 export class SymbolicLinkLoopError extends Error {
-  name: string = 'SymbolikLinkLoopError';
+  name: string = 'SymbolicLinkLoopError';
   constructor(requestedPath: string) {
     const message = `Symbolic link loop detected at ${requestedPath}`;
     super(message);
@@ -178,13 +167,12 @@ export class SymbolicLinkLoopError extends Error {
  *
  * @returns Whether or not the requested path exists, following symlinks if requested.
  *
- * @throws SymbolikLinkLoopError - Thrown when a symbolic link loop is detected.
+ * @throws SymbolicLinkLoopError - Thrown when a symbolic link loop is detected.
  */
 export function filesystemNodeExists(
   filepath: string,
   followSymlinks = false
 ): boolean {
-  // The convention throughout the entire project is to call any closure used to hide recursion state from the caller, `inner`
   const inner = (__path: string, pathsSoFar: string[]): boolean => {
     const newPathSoFar = pathsSoFar.concat(__path);
     const resolvedPath = path.resolve(__path);
@@ -248,8 +236,6 @@ export function getFilesystemNodeKind(filepath: string): FilesystemNodeKind {
     return 'socket';
   }
   if (stats.isSymbolicLink()) {
-    // On windows, its not common to symlink to a symlink in a context where we really need to know that the link target is a symlink and not just a generic filesystem node. So "follow-all" needed.
-    // Not sure about linux
     const target = path.resolve(fs.readlinkSync(filepath));
     if (!fs.existsSync(target)) {
       return 'generic-symbolic-link';
@@ -307,10 +293,8 @@ export type PathAnalysis = {
 };
 
 export function analyzePath(filepath: string): PathAnalysis {
-  // Step 1. Resolve the path
   const resolved = path.resolve(filepath);
 
-  // Step 2. Check if the item exists, but dont follow symlinks
   if (!fs.existsSync(resolved)) {
     return {
       requested: filepath,
@@ -321,10 +305,8 @@ export function analyzePath(filepath: string): PathAnalysis {
     };
   }
 
-  // Step 3. Follow all symlinks
   const afterSymlinks = followAllSymlinks(resolved);
 
-  // Step 4. Check for existence after symlinks
   if (!fs.existsSync(afterSymlinks)) {
     return {
       exists: false,
@@ -375,7 +357,6 @@ export function removeDirectoryNonRecursive(
   path: string,
   followSymlinks = true
 ) {
-  // The error conditions are the same as directoryIsEmpty, so just call it
   const isEmpty = directoryIsEmpty(path, followSymlinks);
   if (isEmpty) {
     const target = followSymlinks ? path : followAllSymlinks(path);
@@ -442,7 +423,6 @@ export function removeDirectoryRecursive(
   const files = fs.readdirSync(target);
 
   for (const file of files) {
-    // Assume existence since we did readdirSync. In the future might need to handle the error better
     const filepath = path.resolve(target, file);
     const fileAnalysis = analyzePath(filepath);
     const kind = followSymlinks
@@ -573,17 +553,14 @@ export function readUtf8OrNull(
 }
 
 export function normalizePath(filepath: string, sep = '/'): string {
-  return (
-    filepath
-      .replace(/\\/g, sep)
-      .replace(/\/\//g, sep)
-      .replace(/\/+/g, sep)
-      .replace(/\\+/g, sep)
-      .replace(/^\//g, '')
-      .replace(/\/$/g, '')
-      // .replace(/^\\/g, '') // Note: should NOT remove leading, especially for unix and linux systems
-      .replace(/\\$/g, '')
-  );
+  return filepath
+    .replace(/\\/g, sep)
+    .replace(/\/\//g, sep)
+    .replace(/\/+/g, sep)
+    .replace(/\\+/g, sep)
+    .replace(/^\//g, '')
+    .replace(/\/$/g, '')
+    .replace(/\\$/g, '');
 }
 
 export function removeExtension(filepath: string): string {

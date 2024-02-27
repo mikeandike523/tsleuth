@@ -61,10 +61,6 @@ export class TsleuthDirectory extends WorkingDirectory {
         .replace(/^\/+/g, '')
         .replace(/\/+$/g, '');
 
-      // Good enough for now, should cover most glob patterns
-      // Fails for really complex stuff like the file extension globs
-      // But why is user ignoring only certain file extensions in a custom hidden folder for a cli app?
-      // May need to be improved in the future
       if (cleanLine.startsWith('.tsleuth')) {
         return true;
       }

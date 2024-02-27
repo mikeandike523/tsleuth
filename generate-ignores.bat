@@ -1,1 +1,0 @@
-node ./generate-ignores.cjs

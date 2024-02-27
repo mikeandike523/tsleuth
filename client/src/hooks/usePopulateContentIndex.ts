@@ -34,6 +34,5 @@ export function usePopulateContentIndex(onError?: (error: unknown) => void) {
     }
   }, [contentIndex === null]);
 
-  // No reason to return setter
   return contentIndex;
 }

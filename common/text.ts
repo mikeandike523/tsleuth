@@ -8,7 +8,7 @@ export function normalizeLineEndings(
 }
 
 /**
- * Thrown when trying to dedent inconsitently indented text
+ * Thrown when trying to dedent inconsistently indented text
  */
 export class IndentationInconsistentError extends Error {
   constructor(message: string) {
@@ -17,29 +17,20 @@ export class IndentationInconsistentError extends Error {
   }
 }
 
-/**
- * Going to implement our own dedent even though there are probably libraries out there
- */
 export function dedent(indentedText: string): string {
-  // Step 0, normalize to \n
   indentedText = normalizeLineEndings(indentedText, '\n');
-  // Step 1, remove leading and trailing newlines, but not other whitespace
   indentedText = indentedText.replace(/^\n+/g, '').replace(/\n+$/g, '');
-  // Step 2, if there is only one line, then the behaviour should be to strip leading whitespace and return
   if (!indentedText.includes('\n')) {
     return indentedText.replace(/^\s+/g, '');
   }
-  // Step 3, find the common indentation between the lines
   const lines = indentedText.split('\n');
   const leadingWhitespaces: string[] = [];
   for (const line of lines) {
-    // Use regex to extract leading whitespace
     const match = line.match(/^(\s+)/);
     if (match) {
       leadingWhitespaces.push(match[1]);
     }
   }
-  // Step 4, handle the easiest case of indent incosistency
   let hasAtLeastOneTab = false;
   for (const leadingWhitespace of leadingWhitespaces) {
     if (leadingWhitespace.includes('\t')) {
@@ -49,7 +40,6 @@ export function dedent(indentedText: string): string {
   }
   if (hasAtLeastOneTab) {
     for (const leadingWhitespace of leadingWhitespaces) {
-      // Use regex to test if the leading whitespace contains any character but tab
       const match = leadingWhitespace.match(/[^\t]/g);
       if (match) {
         throw new IndentationInconsistentError(
@@ -58,7 +48,6 @@ export function dedent(indentedText: string): string {
       }
     }
   }
-  // The converse handles the other easy case of indent incosistency
   let hasAtLeastOneSpace = false;
   for (const leadingWhitespace of leadingWhitespaces) {
     if (leadingWhitespace.includes(' ')) {
@@ -68,7 +57,6 @@ export function dedent(indentedText: string): string {
   }
   if (hasAtLeastOneSpace) {
     for (const leadingWhitespace of leadingWhitespaces) {
-      // Use regex to test if the leading whitespace contains any character but space
       const match = leadingWhitespace.match(/[^ ]/g);
       if (match) {
         throw new IndentationInconsistentError(
@@ -77,14 +65,6 @@ export function dedent(indentedText: string): string {
       }
     }
   }
-
-  // The hard case is detecting if number of spaces per indent is not consistent
-  // I guess criteria is if the gcf of the number of leading spaaces in each line is 1, but there is no line that has exactly 1 leading space, then it is incosistent
-  // Note: This means that we consider index=1 space to be valid, and I don't know if that is really relevant
-
-  // Note: We always consider a single tab to be a single indent, we don't calculate gcf for the tab case
-
-  // Since we already checked tab space consistency, its easy to derive the indentation type from the data
 
   let indentationType: 'tab' | 'space' | 'no-indent' = 'no-indent';
   for (const leadingWhitespace of leadingWhitespaces) {
@@ -250,7 +230,6 @@ export function docCommentToParagraph(docCommentText: string): string {
  */
 export function getDocComments(commentText: string): string[] {
   const normalizedCommentText = normalizeLineEndings(commentText, '\n');
-  const trueDocCommentPattern = /(^|\n)\s*?\/\*\*.*?\*\/\s*?(\n|$)/gs; // Once again, not advanced enough to detect conforming to "leading *" doc comment standards
-
+  const trueDocCommentPattern = /(^|\n)\s*?\/\*\*.*?\*\/\s*?(\n|$)/gs;
   return normalizedCommentText.match(trueDocCommentPattern) || [];
 }

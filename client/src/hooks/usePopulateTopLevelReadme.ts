@@ -19,7 +19,6 @@ export function usePopulateTopLevelReadme(onError?: (error: unknown) => void) {
     try {
       loadingTask.begin();
       const readmeFilename = (contentIndex as ContentIndex).topLevelReadme;
-      // readmeFilename being null means the original project from which the documentation site was generated did not have a top-level readme (i.e. README.md or README.txt in the project root directory)
       if (readmeFilename !== null) {
         const textContent = await fetchTextContent(readmeFilename);
         setTopLevelReadme(textContent);
@@ -34,10 +33,6 @@ export function usePopulateTopLevelReadme(onError?: (error: unknown) => void) {
       loadingTask.end();
     }
   };
-
-  // This is the rare situtation where no dependency array is provided, as its much easier to just use an `if` statement
-  // This is primarily because `contentIndex.topLevelReadme` has a valid null-state, which may be valid even after the loading phase of the parent component
-  // It will run each render, but it will only have a significant effect once
   useEffect(() => {
     if (
       contentIndex !== null &&

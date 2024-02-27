@@ -10,12 +10,10 @@ import { useLoadingTaskManager } from '@/components/project/simple-loading-barri
 export function usePopulateProjectName(onError?: (error: unknown) => void) {
   const taskManager = useLoadingTaskManager();
   // No second argument means silent loading task, only shows spinner no message
-  // Not really necessary since property access is instant, but it stays consitent with the other "populate" hooks
   const loadingTask = taskManager.useTask('usePopulateProjectName');
   const contentIndex: ContentIndex | null = usePopulateContentIndex(onError);
   const [projectName, setProjectName] = useRecoilState(projectNameState);
   const fetchRoutine = () => {
-    // There should not really be any error, but handle it just to stay consistent with the other "populate" hooks
     try {
       loadingTask.begin();
       const projectName = (contentIndex as ContentIndex).projectName;

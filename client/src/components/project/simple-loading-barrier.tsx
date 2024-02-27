@@ -7,8 +7,6 @@ import { css } from '@emotion/react';
 import { atom, useRecoilState } from 'recoil';
 
 export interface LoadingTask {
-  // Cannot do compile time validation. User must ensure names are unique.
-  // Need to do this since we don't want to generate a new uuid on each render
   name: string;
   message?: string;
 }

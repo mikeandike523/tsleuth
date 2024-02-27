@@ -104,7 +104,6 @@ export function analyzeSymbolName(
   symbolName: string,
   splitByEnglishWords: boolean = false
 ): Array<SymbolNameSegment> {
-  // Pass 1
   const parts = BetterRegExp.from(
     separatorSpecialCharactersRegex
   ).separateTextWithTyping(symbolName, true);
@@ -143,12 +142,8 @@ export function analyzeSymbolName(
       return [segment];
     }
     // @todo
-    // This might be quite challenging and require and external library
-    // Don't feel like doing it now
-    // So for now, just "return [segment]" which serves as a passthrough
-
-    const todoPasstrhough = [segment];
-    return todoPasstrhough;
+    const todoPassthrough = [segment];
+    return todoPassthrough;
   };
   for (const segment of result) {
     if (segment.kind === 'text') {

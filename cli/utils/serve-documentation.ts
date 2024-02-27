@@ -9,13 +9,9 @@ import { checkNetworkPortAvailable } from '@/lib/network';
 /**
  * The ports to prefer when opening the documentation, in order of preference.
  */
-export const prefferedPorts = [
-  // 3000 don't even try since it will likely be taken
-  3001, 3002, 3003, 3004, 3005,
-  // 5000 doesn't even try since it will likely be taken
-  5001, 5002, 5003, 5004, 5005,
-  // 8000 doesn't even try since it will likely be taken
-  8001, 8002, 8003, 8004, 8005,
+export const preferredPorts = [
+  3001, 3002, 3003, 3004, 3005, 5001, 5002, 5003, 5004, 5005, 8001, 8002, 8003,
+  8004, 8005,
 ];
 
 export async function serveDocumentation(
@@ -38,30 +34,28 @@ export async function serveDocumentation(
     lastPort = port;
   }
 
-  // The absolutely simplest way to do it
-  const ports = lastPort ? [lastPort, ...prefferedPorts] : prefferedPorts;
+  const ports = lastPort ? [lastPort, ...preferredPorts] : preferredPorts;
 
-  let prefferedPort = 0;
+  let preferredPort = 0;
 
-  // Not technically guaranteed that the port is available by the next line, but its ok
   for (const port of ports) {
     if (await checkNetworkPortAvailable(port)) {
-      prefferedPort = port;
+      preferredPort = port;
       break;
     }
   }
 
-  if (prefferedPort !== 0) {
+  if (preferredPort !== 0) {
     const dn = path.dirname(portPath);
     if (!fs.existsSync(dn)) {
       fs.mkdirSync(dn, { recursive: true });
     }
-    fs.writeFileSync(portPath, JSON.stringify(prefferedPort));
+    fs.writeFileSync(portPath, JSON.stringify(preferredPort));
   }
 
   const app = express();
   app.use(express.static(documentationRoot));
-  const server = app.listen(prefferedPort, () => {
+  const server = app.listen(preferredPort, () => {
     const { port } = server.address() as AddressInfo;
     process.stdout.write(`
     Serving documentation for project "${projectName}" on localhost:${port}

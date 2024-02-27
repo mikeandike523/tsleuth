@@ -2,7 +2,6 @@
  * Returns a rotating sequence of slightly differently shaped and filled UTF8 bullet point characters
  */
 export class UTF8BulletSequence {
-  // List of bullet point characters, by ESCAPE CODE
   static bullets: string[] = [
     '\u2022', // • Filled round bullet
     '\u25E6', // ◦ Hollow round bullet
