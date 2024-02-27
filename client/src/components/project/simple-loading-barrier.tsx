@@ -136,7 +136,6 @@ export function LoadingBarrierNoUnmount({
           Loading
         </Text>
       </Box>
-      {/* Matches the exact spinner in index.html used while waiting for React app to load/hydrate */}
       <LoadingSpinner />
       <Box width="100%" flex={1}>
         <Text
