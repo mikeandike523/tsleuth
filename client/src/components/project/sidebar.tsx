@@ -32,7 +32,6 @@ export function SidebarList({ contentIndex }: { contentIndex: ContentIndex }) {
     nodePath: string[] = []
   ) => {
     const margin = 2 * (level - 1) + 'em';
-    const extraMargin = 2 * level + 'em';
     const url = `${nodePath.join('/')}`;
     if (level > 0) {
       const isFile = basenameIsSourceFile(nodePath[nodePath.length - 1]);
@@ -68,7 +67,7 @@ export function SidebarList({ contentIndex }: { contentIndex: ContentIndex }) {
           addItem(
             <SidebarEntityList
               nameComponent={nameComponent}
-              marginLeft={extraMargin}
+              marginLeft={margin}
               sourceFilePath={nodePath}
             />
           );
@@ -90,7 +89,7 @@ export function SidebarList({ contentIndex }: { contentIndex: ContentIndex }) {
     }
   };
   renderHierarchyItem(hierarchy, 0, []);
-  return <>{items}</>;
+  return <div>{items}</div>;
 }
 
 export function Sidebar({}: SidebarProps) {
