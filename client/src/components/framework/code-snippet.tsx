@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 
-import { Box, Text } from '@chakra-ui/react';
+import { Box, Text, Button } from '@chakra-ui/react';
 import Highlight from 'react-highlight';
 
 import { lowerShadowCss } from '@/css/lower-shadow';
 import { heavyMinusSign, heavyPlusSign } from '../project/special-strings';
+import { SerializableASTNode } from '@cli/lib/ast-traversal';
+import useWssOpenFileVscode from '@/hooks/useWssOpenFileVscode';
 
 export const supportedLanguageClassnames = {
   typescript: 'typescript ts tsx',
@@ -51,6 +53,10 @@ export interface CodeSnippetProps {
   code: string;
 
   codeId?: string;
+
+  node?: SerializableASTNode;
+
+  fileOfOriginRelpath?: string;
 }
 
 /**
@@ -65,11 +71,16 @@ export function CodeSnippet({
   previewLines,
   code,
   codeId,
+  node,
+  fileOfOriginRelpath,
 }: CodeSnippetProps) {
+  const openVscode = useWssOpenFileVscode();
   const trueCodeId = codeId ?? code;
   const [expandState, setExpandState] = useState(initialState);
   const [codeIdState, setCodeIdState] = useState(trueCodeId);
 
+  const canOpenInVscode =
+    typeof node !== 'undefined' && typeof fileOfOriginRelpath !== 'undefined';
   useEffect(() => {
     if (codeIdState !== trueCodeId) {
       setCodeIdState(trueCodeId);
@@ -170,6 +181,21 @@ export function CodeSnippet({
           </Box>
         </Box>
       </Box>
+      {canOpenInVscode && (
+        <Box position="absolute" top={0} right={0} background="white">
+          <Button
+            onClick={() => {
+              openVscode(
+                fileOfOriginRelpath,
+                node.startLCP.line + 1,
+                node.startLCP.column + 1
+              );
+            }}
+          >
+            Open in Vscode
+          </Button>
+        </Box>
+      )}
     </Box>
   );
 }

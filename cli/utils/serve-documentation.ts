@@ -3,6 +3,9 @@ import fs from 'fs';
 import path from 'path';
 import express from 'express';
 import open from 'open';
+import * as WebSocket from 'ws';
+import which from 'which';
+import { exec as execSync } from 'child_process';
 
 import { checkNetworkPortAvailable } from '@/lib/network';
 
@@ -13,6 +16,15 @@ export const preferredPorts = [
   3001, 3002, 3003, 3004, 3005, 5001, 5002, 5003, 5004, 5005, 8001, 8002, 8003,
   8004, 8005,
 ];
+
+export function attemptOpenInEditor(resource: string) {
+  if (!which.sync('code', { nothrow: true })) {
+    throw new Error('Vscode is not available');
+  }
+  const command = `code --goto "${resource}"`;
+  console.log(`command ${command}`);
+  execSync(command);
+}
 
 export async function serveDocumentation(
   projectName: string,
@@ -63,6 +75,20 @@ export async function serveDocumentation(
     Documentation root: ${documentationRoot}
     ${openInDefaultBrowser ? '\nOpening in default browser...' : ''}
     `);
+  });
+  const vscodeWss = new WebSocket.Server({ server, path: '/open-file-vscode' });
+  vscodeWss.on('connection', (ws) => {
+    ws.on('message', (data: Buffer) => {
+      const dataJSONString = data.toString('utf8');
+      const message = JSON.parse(dataJSONString) as {
+        relpath: string;
+        line: number;
+        column: number;
+      };
+      const fullPath = path.resolve(projectRoot, message.relpath);
+      const resource = `${fullPath}:${message.line}:${message.column}`;
+      attemptOpenInEditor(resource);
+    });
   });
   if (openInDefaultBrowser) {
     const { port } = server.address() as AddressInfo;

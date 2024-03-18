@@ -10,7 +10,7 @@
     "lint": "yarn run eslint .",
     "lint:fix": "yarn run eslint --fix .",
     "format": "prettier --write .",
-    "spell": "yarn run cspell --gitignore ./**/*.ts ./**/*.tsx ./**/*.js ./**/*.jsx ./**/*.d.ts ./**/*.py ./**/*.pyw ./**/*.json ./**/*.md ./**/*.yml ./**/*.jsonc"
+    "spell": "yarn run cspell --gitignore --no-progress **"
   },
   "keywords": [
     "typescript",
@@ -54,6 +54,8 @@
     "@types/path-browserify": "^1.0.0",
     "@types/react-highlight": "^0.12.7",
     "@types/uuid": "^9.0.5",
+    "@types/which": "^3.0.3",
+    "@types/ws": "^8.5.10",
     "axios": "^1.5.1",
     "chalk": "^5.3.0",
     "common-path-prefix": "^3.0.0",
@@ -75,7 +77,9 @@
     "typescript": "^5.2.2",
     "uuid": "^9.0.1",
     "webpack": "^5.88.2",
-    "webpack-cli": "^5.1.4"
+    "webpack-cli": "^5.1.4",
+    "which": "^4.0.0",
+    "ws": "^8.16.0"
   },
   "type": "commonjs"
 }

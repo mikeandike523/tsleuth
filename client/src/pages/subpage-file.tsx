@@ -178,7 +178,13 @@ export function SymbolSummary({
         </>
       )}
       <Text>Source Code:</Text>
+
       <CodeSnippet
+        node={node}
+        fileOfOriginRelpath={[
+          ...(crumbs?.containingDirectory ?? []),
+          crumbs?.basename ?? '',
+        ].join('/')}
         language="typescript"
         previewLines={6}
         initialState="collapsed"
@@ -313,6 +319,10 @@ export function SubpageFile({}: SubpageFileProps) {
           Full Source Code
         </Text>
         <CodeSnippet
+          node={root}
+          fileOfOriginRelpath={crumbs.containingDirectory
+            .concat([crumbs.basename])
+            .join('/')}
           codeId={JSON.stringify(
             crumbs.containingDirectory
               .concat([crumbs.basename])
