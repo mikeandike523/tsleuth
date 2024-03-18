@@ -81,11 +81,12 @@ export async function serveDocumentation(
     ws.on('message', (data: Buffer) => {
       const dataJSONString = data.toString('utf8');
       const message = JSON.parse(dataJSONString) as {
+        rootPath: string;
         relpath: string;
         line: number;
         column: number;
       };
-      const fullPath = path.resolve(projectRoot, message.relpath);
+      const fullPath = path.resolve(message.rootPath, message.relpath);
       const resource = `${fullPath}:${message.line}:${message.column}`;
       attemptOpenInEditor(resource);
     });

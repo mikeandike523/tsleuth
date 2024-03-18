@@ -1,8 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
+
+import { usePopulateContentIndex } from './usePopulateContentIndex';
+import { ContentIndex } from '@/lib/content-index';
+
 export default function useWssOpenFileVscode() {
   const [wssUri, setWssUri] = useState<string | null>(null);
   const [wss, setWss] = useState<WebSocket | null>(null);
   const [wssReady, setWssReady] = useState<boolean>(false);
+  const rootPath = usePopulateContentIndex()?.projectRoot ?? null;
 
   useEffect(() => {
     if (wssUri === null) {
@@ -38,7 +43,7 @@ export default function useWssOpenFileVscode() {
       if (!wssReady) {
         throw new Error('WSS was not ready');
       }
-      wss.send(JSON.stringify({ relpath, line, column }));
+      wss.send(JSON.stringify({ rootPath, relpath, line, column }));
     },
     [wssUri, wss, wssReady]
   );

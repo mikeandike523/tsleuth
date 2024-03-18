@@ -9,6 +9,9 @@ import { useLoadingTaskManager } from '@/components/project/simple-loading-barri
 
 export function usePopulateContentIndex(onError?: (error: unknown) => void) {
   const [contentIndex, setContentIndex] = useRecoilState(contentIndexState);
+  // @delete {
+  console.log(contentIndex);
+  // } @delete
   const loadingTaskManager = useLoadingTaskManager();
   // No second argument = silent loading task, only shows spinner no message
   const loadingTask = loadingTaskManager.useTask('usePopulateContentIndex');
