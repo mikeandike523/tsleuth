@@ -1,1 +1,0 @@
-node %~dp0cli/dist/main.js "%CD%" %*
