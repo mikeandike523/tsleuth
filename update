@@ -1,9 +1,0 @@
-#!/bin/bash
-
-dn="$(dirname "$(realpath "$0")")"
-
-cd "$dn"
-
-yarn install
-
-yarn run build-all
