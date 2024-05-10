@@ -1,0 +1,12 @@
+#!/bin/bash
+
+dn="$(dirname "$(realpath "$0")")"
+
+cd "$dn"
+
+sudo chmod +x ./tsleuth
+sudo chmod +x ./update
+
+yarn install
+
+yarn run build-all
